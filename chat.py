@@ -1,163 +1,66 @@
-import time
-import random
 import IPython
 from google.colab import output
 
-CORGI_STYLE = '''
+HTML_CSS = '''
 <style>
-/* 全体 */
-.sb-box {
-    position: relative;
-    overflow: hidden;
-}
+.sb-box { position: relative; overflow: hidden; }
 /* アイコン画像 */
 .icon-img {
-    position: absolute;
-    overflow: hidden;
-    top: 0;
-    width: 80px;
-    height: 80px;
+    position: absolute; overflow: hidden; top: 0; width: 64px; height: 64px;
 }
 /* アイコン画像（左） */
-.icon-img-left {
-    left: 0;
-}
+.icon-img-left { left: 0; }
 /* アイコン画像（右） */
-.icon-img-right {
-    right: 0;
-}
+.icon-img-right { right: 0; }
 /* アイコン画像 */
-.icon-img img {
-    border-radius: 50%;
-    border: 2px solid #eee;
-}
+.icon-img img { border-radius: 50%; border: 2px solid #eee; }
 /* アイコンネーム */
 .icon-name {
-    position: absolute;
-    width: 80px;
-    text-align: center;
-    top: 83px;
-    color: #fff;
-    font-size: 10px;
+    position: absolute; width: 64px; text-align: center;
+    top: 68px; color: #fff; font-size: 10px;
 }
 /* アイコンネーム（左） */
-.icon-name-left {
-    left: 0;
-}
+.icon-name-left { left: 0; }
 /* アイコンネーム（右） */
-.icon-name-right {
-    right: 0;
-}
+.icon-name-right { right: 0; }
 /* 吹き出し */
-.sb-side {
-    position: relative;
-    float: left;
-    margin: 0 105px 40px 105px;
-}
-.sb-side-right {
-    float: right;
-}
+.sb-side { position: relative; float: left; margin: 0 85px 20px 85px; }
+.sb-side-right { float: right; }
 /* 吹き出し内のテキスト */
 .sb-txt {
-    position: relative;
-    border: 2px solid #eee;
-    border-radius: 6px;
-    background: #eee;
-    color: #333;
-    font-size: 15px;
-    line-height: 1.7;
-    padding: 18px;
+    position: relative; border: 2px solid #eee; border-radius: 6px;
+    background: #eee; color: #333;
+    font-size: 15px; line-height: 1.7; padding: 18px;
 }
-.sb-txt>p:last-of-type {
-    padding-bottom: 0;
-    margin-bottom: 0;
-}
+.sb-txt>p:last-of-type { padding-bottom: 0; margin-bottom: 0; }
 /* 吹き出しの三角 */
-.sb-txt:before {
-    content: "";
-    position: absolute;
-    border-style: solid;
-    top: 16px;
-    z-index: 3;
-}
-.sb-txt:after {
-    content: "";
-    position: absolute;
-    border-style: solid;
-    top: 15px;
-    z-index: 2;
-}
+.sb-txt:before { content: ""; position: absolute; border-style: solid; top: 16px; z-index: 3; }
+.sb-txt:after { content: ""; position: absolute; border-style: solid; top: 15px; z-index: 2; }
 /* 吹き出しの三角（左） */
 .sb-txt-left:before {
-    left: -7px;
-    border-width: 7px 10px 7px 0;
+    left: -7px; border-width: 7px 10px 7px 0;
     border-color: transparent #eee transparent transparent;
 }
 .sb-txt-left:after {
-    left: -10px;
-    border-width: 8px 10px 8px 0;
+    left: -10px; border-width: 8px 10px 8px 0;
     border-color: transparent #eee transparent transparent;
 }
 /* 吹き出しの三角（右） */
 .sb-txt-right:before {
-    right: -7px;
-    border-width: 7px 0 7px 10px;
+    right: -7px; border-width: 7px 0 7px 10px;
     border-color: transparent transparent transparent #eee;
 }
 .sb-txt-right:after {
-    right: -10px;
-    border-width: 8px 0 8px 10px;
+    right: -10px; border-width: 8px 0 8px 10px;
     border-color: transparent transparent transparent #eee;
 }
-/* 767px（iPad）以下 */
-@media (max-width: 767px) {
-    .icon-img {
-        width: 60px;
-        height: 60px;
-    }
-    /* アイコンネーム */
-    .icon-name {
-        width: 60px;
-        top: 62px;
-        font-size: 9px;
-    }
-    /* 吹き出し（左） */
-    .sb-side-left {
-        margin: 0 0 30px 78px;
-        /* 吹き出し（左）の上下左右の余白を狭く */
-    }
-    /* 吹き出し（右） */
-    .sb-side-right {
-        margin: 0 78px 30px 0;
-        /* 吹き出し（右）の上下左右の余白を狭く */
-    }
-    /* 吹き出し内のテキスト */
-    .sb-txt {
-        padding: 8px;
-        /* 吹き出し内の上下左右の余白を-6px */
-    }
-}
-.box{
-  /*width:150px;*/
-  /*height:200px;*/
-  /*padding:30px;*/
-  /*margin:10px;*/
-  background:#ddd;
-}
-.scroll{
-  overflow:scroll;
-}
-.scrollx{
-  overflow:hidden;
-  overflow-x:scroll;
-}
-.scrolly{
-  overflow-y:scroll;
-}
+.box{ background: powderblue; }
+.scrolly{ overflow-y: scroll; }
 </style>
 '''
 
-CORGI_HTML = '''
+HTML_CHAT = '''
+<div id='main'>
 <script>
 var inputPane = document.getElementById('input');
 inputPane.addEventListener('keydown', (e) => {
@@ -175,12 +78,15 @@ target.scrollIntoView(false);
 <div style='text-align: right'>
 <textarea id='input' placeholder='質問はここに' style='width: 100%; background: #eee;'></textarea>
 </div>
+</div>
 '''
 
-BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/元気なコーギー.jpg'
+BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
+#BOT_ICON = 'https://kohacu.com/wp-content/uploads/2021/05/kohacu.com_samune_003370-768x768.png'
+#'https://chojugiga.com/c/choju51_0039/s512_choju51_0039_0.png'
 YOUR_ICON = 'https://2.bp.blogspot.com/-VVtgu8RyEJo/VZ-QWqgI_wI/AAAAAAAAvKY/N-xnZvqeGYY/s800/girl_question.png'
 
-BOT_HTML = '''
+HTML_BOT = '''
 <div class="sb-box">
     <div class="icon-img icon-img-left">
         <img src="{}" width="60px">
@@ -195,12 +101,24 @@ BOT_HTML = '''
 '''
 
 def _display_bot(bot_text, **kw):
-  with output.redirect_to_element('#output'):
-    bot_name = kw.get('bot_name', 'コーギー')
-    bot_icon = kw.get('bot_icon', BOT_ICON)
-    display(IPython.display.HTML(BOT_HTML.format(bot_icon, bot_name, bot_text)))
+    with output.redirect_to_element('#output'):
+        bot_name = kw.get('bot_name', 'コーギー')
+        bot_icon = kw.get('bot_icon', BOT_ICON)
+        display(IPython.display.HTML(HTML_BOT.format(bot_icon, bot_name, bot_text)))
+    if 'バイバイ' in bot_text:
+        display(IPython.display.HTML(HTML_CLEAR))
 
-YOUR_HTML = '''
+HTML_CLEAR = '''
+<script>
+setTimeout(()=>{
+    const element = document.getElementById('main'); 
+    element.remove();
+}, 8000);
+</script>
+'''
+
+
+HTML_USER = '''
 <div class="sb-box">
   <div class="icon-img icon-img-right">
       <img src="{}" width="60px">
@@ -218,27 +136,38 @@ def _display_you(your_text, **kw):
   with output.redirect_to_element('#output'):
     your_name = kw.get('your_name', 'あなた')
     your_icon = kw.get('your_icon', YOUR_ICON)
-    display(IPython.display.HTML(YOUR_HTML.format(your_icon, your_name, your_text)))
+    display(IPython.display.HTML(HTML_USER.format(your_icon, your_name, your_text)))
+    if 'ありがとう' in your_text or 'バイバイ' in your_text:
+        _display_bot('バイバイ')
+
 
 def chat_vow(s, **kw):
   return 'わん'
 
-def ask_corgi(msg=[], chat=chat_vow):
-  display(IPython.display.HTML(CORGI_STYLE))
-  display(IPython.display.HTML(CORGI_HTML))
+def corgi_chat(msg=[], chat=chat_vow, background='powderblue'):
+    display(IPython.display.HTML(HTML_CSS.replace('powderblue', background)))
+    display(IPython.display.HTML(HTML_CHAT))
 
-  kw = {}
-  def ask(your_text):
-    _display_you(your_text, **kw)
-    bot_text = chat(your_text, **kw)
-    # time.sleep(random.randint(0,4))
-    if bot_text is not None:
-      _display_bot(bot_text, **kw)
+    kw = {
+        'your_name': 'あなた',
+        'your_icon': YOUR_ICON,
+        'bot_name': 'コーギー',
+        'bot_icon': BOT_ICON,
+        'display': _display_bot,
+    }
+    def ask(your_text):
+        _display_you(your_text, **kw)
+        bot_text = chat(your_text, **kw)
+        if bot_text is not None:
+            _display_bot(bot_text, **kw)
 
-  output.register_callback('notebook.ask', ask)
-  if isinstance(msg, str):
-    msg = [msg]
-  for m in msg:
-    _display_bot(m)
+    output.register_callback('notebook.ask', ask)
 
-ask_corgi('わん')
+    if isinstance(msg, str):
+        msg = [msg]
+    for m in msg:
+        _display_bot(m)
+
+### 
+##
+# corgi_chat('わん')
