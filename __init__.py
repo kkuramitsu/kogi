@@ -35,4 +35,4 @@ def _corgi_check_option(option):
 
 @register_cell_magic
 def corgi(option, code):
-    corgi_run(code, option, run_fn=_corgi_check_option(option))
+    corgi_run(code, option, run_cell=_corgi_check_option(option))
