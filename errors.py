@@ -1,5 +1,8 @@
-import re, traceback
-import os, sys, re
+import re
+import traceback
+import os
+import sys
+import re
 
 
 def _deco(s, type='name', return_html=True):
@@ -11,21 +14,24 @@ def _deco(s, type='name', return_html=True):
 
 DEFINED_ERRORS = []
 
+
 def CORGI_ERR(d):
     global DEFINED_ERRORS
     DEFINED_ERRORS.append(d)
+
 
 def _translate_error(errtype, errmsg, code=None, errlines=None, return_html=True):
     s = f'{errtype}: {errmsg}'
     results = {'errtype': errtype, 'error': s}
     for defined in DEFINED_ERRORS:
-        if isinstance(defined['pattern'],str):
+        if isinstance(defined['pattern'], str):
             defined['pattern'] = re.compile(defined['pattern'])
             defined['keys'] = tuple(defined['keys'].split(','))
         matched = defined['pattern'].search(s)
         if matched:
             for i, key in enumerate(defined['keys']):
-                if key == '': break
+                if key == '':
+                    break
                 results[key] = matched.group(i+1)
             if 'inspect' in defined:
                 defined['inspect'](code, errlines, results)
@@ -33,21 +39,24 @@ def _translate_error(errtype, errmsg, code=None, errlines=None, return_html=True
                 ext_messages = defined['error_ext']
                 for ext in ext_messages.keys():
                     if ext in results:
-                        results['translated'] = ext_messages[ext].format(**results)
+                        results['translated'] = ext_messages[ext].format(
+                            **results)
                         return results
             results['translated'] = defined['error'].format(**results)
             return results
     return results
 
+
 LinePat = re.compile(r'line (\d+)')
 #print(LinePat.match('aa line 18, in <module>'))
 
+
 def _get_error_lines():
     ss = []
-    formatted_lines= traceback.format_exc().splitlines()
+    formatted_lines = traceback.format_exc().splitlines()
     for i, line in enumerate(formatted_lines):
         #print(i, line)
-        #if 'ipython-input' in line and ', in ' in line:
+        # if 'ipython-input' in line and ', in ' in line:
         if ', in ' in line:
             matched = LinePat.search(line)
             if matched:
@@ -55,10 +64,12 @@ def _get_error_lines():
                 ss.append(formatted_lines[i+1])
     return ss[::-1]
 
-def corgi_translate_error(code = None, verbose=False, return_html=False):
+
+def corgi_translate_error(code=None, verbose=False, return_html=False):
     exc_type, exc_value, _ = sys.exc_info()
     error_lines = _get_error_lines()
-    results = _translate_error(f'{exc_type.__name__}', exc_value, code, error_lines, return_html=False)
+    results = _translate_error(
+        f'{exc_type.__name__}', exc_value, code, error_lines, return_html=False)
     if verbose:
         print(results['error'])
         print(' =>', results.get('translated'), '')
@@ -66,7 +77,7 @@ def corgi_translate_error(code = None, verbose=False, return_html=False):
 
 
 def _find_index_callee(lines, index=None):
-    if lines is None: 
+    if lines is None:
         return None
     if index is not None:
         pattern = f'((\\w|\\.)+?)\\[[\'\"]?{index}[\'\"]?\\]'
@@ -80,16 +91,18 @@ def _find_index_callee(lines, index=None):
             return matched.group(1)
     return None
 
+
 _find_index_callee("print(1+math.d['a'])", "a")
 
 
-### CORGI 定義
+# CORGI 定義
 
 def test_NameError():
     try:
         print(undefined)
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': 'name \'(.*?)\' is not defined',
@@ -100,9 +113,9 @@ CORGI_ERR({
 
 
 def _inspect_method_callee(code, lines, slots):
-    if lines is None: 
+    if lines is None:
         return
-    
+
     suffix = slots.get('name', 'undefined')
     pattern = re.compile(f'((\\w|\\.)+?)\\.{suffix}\\s*(.?)')
 
@@ -121,12 +134,14 @@ def _inspect_method_callee(code, lines, slots):
                 slots['nametype'] = 'プロパティ'
             return
 
+
 def test_NoAttribute():
     try:
-        d = {'a':1}
+        d = {'a': 1}
         print(d.a)
-    except :
+    except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '\'(.*?)\' object has no attribute \'(.*?)\'',
@@ -150,6 +165,7 @@ def test_ModuleNoAttribute():
     except:
         corgi_translate_error(verbose=True)
 
+
 CORGI_ERR({
     'pattern': 'module \'(.*?)\' has no attribute \'(.*?)\'',
     'keys': 'name,name2',
@@ -157,17 +173,19 @@ CORGI_ERR({
     'test': test_ModuleNoAttribute,
 })
 
+
 def test_UnsupportedOperand():
     try:
         print(1+'2')
     except:
         corgi_translate_error(verbose=True)
 
+
 CORGI_ERR({
     'pattern': 'unsupported operand type\(s\) for (.*?): \'(.*?)\' and \'(.*?)\'',
     'keys': 'name,type,type2',
     'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
-    'test': test_UnsupportedOperand, 
+    'test': test_UnsupportedOperand,
 })
 
 CORGI_ERR({
@@ -176,12 +194,14 @@ CORGI_ERR({
     'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.'
 })
 
+
 def test_NotCallable():
     try:
         a = 1
         a()
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '\'(.*?)\' object is not callable',
@@ -190,11 +210,13 @@ CORGI_ERR({
     'test': test_NotCallable,
 })
 
+
 def test_NotIterable():
     try:
         list(1)
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '\'(.*?)\' object is not iterable',
@@ -203,12 +225,14 @@ CORGI_ERR({
     'test': test_NotIterable,
 })
 
+
 def test_NotSubscriptable():
     try:
         a = 1
         a[0]
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '\'(.*?)\' object is not subscriptable',
@@ -217,11 +241,13 @@ CORGI_ERR({
     'test': test_NotSubscriptable,
 })
 
+
 def test_MustBeNoneOr():
     try:
         print(end=1)
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '(\\w+?) must be None or a (\\w+?), not (\\w+)',
@@ -230,11 +256,13 @@ CORGI_ERR({
     'test': test_MustBeNoneOr,
 })
 
+
 def test_InvalidKeyword():
     try:
         print(color='red')
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '\'(.*?)\' is an invalid keyword argument for (.*?)\\(\\)',
@@ -268,11 +296,13 @@ CORGI_ERR({
     'error': 'コードが途中までしか書かれていません. たぶん、括弧やクオートの閉じ忘れの可能性が高いです.'
 })
 
+
 def test_InvalidLiteral():
     try:
         int('a')
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': 'invalid literal for int\(\) with base (.*?): (\'.*?\')',
@@ -281,11 +311,13 @@ CORGI_ERR({
     'test': test_InvalidLiteral,
 })
 
+
 def test_NotConvert():
     try:
         float('a')
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': 'could not convert (\w+?) to (\w+?): \'(.*?)\'',
@@ -294,12 +326,14 @@ CORGI_ERR({
     'test': test_NotConvert,
 })
 
+
 def test_OutOfRange():
     try:
         s = "ABC"
         s[3]
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '(\\w+) index out of range',
@@ -308,12 +342,14 @@ CORGI_ERR({
     'test': test_OutOfRange,
 })
 
+
 def test_MustBeInteger():
     try:
         s = "ABC"
         s['3']
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': '(\\w+) indices must be integers',
@@ -322,12 +358,14 @@ CORGI_ERR({
     'test': test_MustBeInteger,
 })
 
+
 def test_KeyError():
     try:
         s = "ABC"
         s[3]
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': 'KeyError: (.*?)',
@@ -336,11 +374,13 @@ CORGI_ERR({
     'test': test_KeyError,
 })
 
+
 def test_DividedByZero():
     try:
         print(1/0)
     except:
         corgi_translate_error(verbose=True)
+
 
 CORGI_ERR({
     'pattern': 'division by zero',
@@ -349,10 +389,12 @@ CORGI_ERR({
     'test': test_DividedByZero
 })
 
+
 def test_DEFINED_ERRORS():
     for defined in DEFINED_ERRORS:
         if 'test' in defined:
             defined['test']()
+
 
 if __name__ == '__main__':
     test_DEFINED_ERRORS()

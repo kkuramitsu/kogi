@@ -1,5 +1,12 @@
 import IPython
+from IPython.display import display, HTML
 from google.colab import output
+# https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
+
+BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
+#BOT_ICON = 'https://kohacu.com/wp-content/uploads/2021/05/kohacu.com_samune_003370-768x768.png'
+# 'https://chojugiga.com/c/choju51_0039/s512_choju51_0039_0.png'
+YOUR_ICON = 'https://2.bp.blogspot.com/-VVtgu8RyEJo/VZ-QWqgI_wI/AAAAAAAAvKY/N-xnZvqeGYY/s800/girl_question.png'
 
 HTML_CSS = '''
 <style>
@@ -81,11 +88,6 @@ target.scrollIntoView(false);
 </div>
 '''
 
-BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
-#BOT_ICON = 'https://kohacu.com/wp-content/uploads/2021/05/kohacu.com_samune_003370-768x768.png'
-#'https://chojugiga.com/c/choju51_0039/s512_choju51_0039_0.png'
-YOUR_ICON = 'https://2.bp.blogspot.com/-VVtgu8RyEJo/VZ-QWqgI_wI/AAAAAAAAvKY/N-xnZvqeGYY/s800/girl_question.png'
-
 HTML_BOT = '''
 <div class="sb-box">
     <div class="icon-img icon-img-left">
@@ -99,14 +101,6 @@ HTML_BOT = '''
     </div>
 </div>
 '''
-
-def _display_bot(bot_text, **kw):
-    with output.redirect_to_element('#output'):
-        bot_name = kw.get('bot_name', 'コーギー')
-        bot_icon = kw.get('bot_icon', BOT_ICON)
-        display(IPython.display.HTML(HTML_BOT.format(bot_icon, bot_name, bot_text)))
-    if 'バイバイ' in bot_text:
-        display(IPython.display.HTML(HTML_CLEAR))
 
 HTML_CLEAR = '''
 <script>
@@ -132,34 +126,68 @@ HTML_USER = '''
 </div>
 '''
 
+
+def _display_bot(bot_text, **kw):
+    with output.redirect_to_element('#output'):
+        bot_name = kw.get('bot_name', 'コーギー')
+        bot_icon = kw.get('bot_icon', BOT_ICON)
+        display(HTML(HTML_BOT.format(bot_icon, bot_name, bot_text)))
+    if 'バイバイ' in bot_text:
+        display(HTML(HTML_CLEAR))
+
+
 def _display_you(your_text, **kw):
-  with output.redirect_to_element('#output'):
-    your_name = kw.get('your_name', 'あなた')
-    your_icon = kw.get('your_icon', YOUR_ICON)
-    display(IPython.display.HTML(HTML_USER.format(your_icon, your_name, your_text)))
-    if 'ありがとう' in your_text or 'バイバイ' in your_text:
-        _display_bot('バイバイ')
+    with output.redirect_to_element('#output'):
+        your_name = kw.get('your_name', 'あなた')
+        your_icon = kw.get('your_icon', YOUR_ICON)
+        display(HTML(HTML_USER.format(your_icon, your_name, your_text)))
 
 
-def chat_vow(s, **kw):
-  return 'わん'
+corgi_frame = {  # グローバルフレーム
+    'your_name': 'あなた',
+    'your_icon': YOUR_ICON,
+    'bot_name': 'コーギー',
+    'bot_icon': BOT_ICON,
+    'display': _display_bot,
+}
 
-def corgi_chat(msg=[], chat=chat_vow, background='powderblue'):
-    display(IPython.display.HTML(HTML_CSS.replace('powderblue', background)))
-    display(IPython.display.HTML(HTML_CHAT))
 
-    kw = {
-        'your_name': 'あなた',
-        'your_icon': YOUR_ICON,
-        'bot_name': 'コーギー',
-        'bot_icon': BOT_ICON,
-        'display': _display_bot,
-    }
+def chat_vow(your_text, frame):
+    if your_text == '':
+        return 'わん'
+
+    #print(repr(your_text), frame)
+    if 'asking' in frame:
+        asking = frame['asking']
+        frame[asking] = your_text
+        del frame['asking']
+
+    if frame['your_name'] == 'あなた':
+        frame['asking'] = 'your_name'
+        return 'お名前は？'
+
+    if 'access_key' not in frame:
+        frame['asking'] = 'access_key'
+        your_name = frame['your_name']
+        return f'{your_name}さん、アクセスキーは？'
+    else:
+        return '出席記録できました. 今日も１日がんばりましょう!'
+
+
+def corgi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue'):
+    display(HTML(HTML_CSS.replace('powderblue', background)))
+    display(HTML(HTML_CHAT))
+
     def ask(your_text):
-        _display_you(your_text, **kw)
-        bot_text = chat(your_text, **kw)
-        if bot_text is not None:
-            _display_bot(bot_text, **kw)
+        global corgi_frame
+        your_text = your_text.strip()
+        if 'ありがとう' in your_text or 'バイバイ' in your_text:
+            _display_bot('バイバイ')
+        else:
+            bot_text = chat(your_text, corgi_frame)
+            _display_you(your_text, **corgi_frame)
+            if bot_text is not None:
+                _display_bot(bot_text, **corgi_frame)
 
     output.register_callback('notebook.ask', ask)
 
@@ -167,7 +195,8 @@ def corgi_chat(msg=[], chat=chat_vow, background='powderblue'):
         msg = [msg]
     for m in msg:
         _display_bot(m)
+    if asking is not None:
+        corgi_frame['asking'] = asking
 
-### 
-##
-# corgi_chat('わん')
+
+# corgi_chat('お名前は？', asking='your_name')
