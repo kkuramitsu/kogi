@@ -4,6 +4,8 @@ from .errors import corgi_translate_error
 from .chat import corgi_chat
 from .atcoder import input, print, run_judge, check_atcoder
 
+from .dialog import response_simply
+
 
 def _run_cell(code, option):
     res = get_ipython().run_cell(code)
@@ -14,11 +16,12 @@ def corgi_run(code, option, run_cell=_run_cell):
     try:
         run_cell(code, option)
     except:
-        results = corgi_translate_error(code, return_html=True)
+        results = corgi_translate_error(
+            code, chat=response_simply, return_html=True)
         if 'translated' in results:
             corgi_chat(results['translated'])
         else:
-            corgi_chat('わん')
+            corgi_chat('くーん. 限界を感じるわん')
 
 
 CORGI_OPTIONS = [
