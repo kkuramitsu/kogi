@@ -17,10 +17,10 @@ def corgi_run(code, option, run_cell=_run_cell):
         run_cell(code, option)
     except:
         results = corgi_translate_error(code, return_html=True)
-        if 'translated' in results:
-            corgi_chat(results['translated'], chat=response_simply)
+        if 'error_orig' in results:
+            corgi_chat(results['error'], chat=response_simply)
         else:
-            corgi_chat('くーん. 限界を感じる', chat=response_simply)
+            corgi_chat('くーん(限界を感じる)', chat=response_simply)
 
 
 CORGI_OPTIONS = [
