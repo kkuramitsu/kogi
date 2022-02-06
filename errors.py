@@ -1,16 +1,12 @@
 import re
 import traceback
-import os
 import sys
 import re
 
-
-def _deco(s, type='name', return_html=True):
-    if return_html == True:
-        if type.startswith('name'):
-            return f'<span class="{type}">{s}</span>'
-    return s
-
+try:
+    from .dialog import render
+except ImportError:
+    from dialog import render
 
 DEFINED_ERRORS = []
 
@@ -20,9 +16,26 @@ def CORGI_ERR(d):
     DEFINED_ERRORS.append(d)
 
 
+def _format(ss, results):
+    vocab = results
+    if isinstance(ss, str):
+        return ss.format(**vocab)
+    return [s.format(**vocab) for s in ss]
+
+
+def formatting(defined, key, ext, results):
+    key_ext = key+ext
+    if key_ext in defined:
+        results[key] = _format(defined[key_ext], results)
+        return
+    if ext == '' and key in defined:
+        results[key] = _format(defined[key_ext], results)
+        return
+
+
 def _translate_error(errtype, errmsg, code=None, errlines=None, return_html=True):
     s = f'{errtype}: {errmsg}'
-    results = {'errtype': errtype, 'error': s}
+    results = {'error_type': errtype, 'error': s}
     for defined in DEFINED_ERRORS:
         if isinstance(defined['pattern'], str):
             defined['pattern'] = re.compile(defined['pattern'])
@@ -33,29 +46,29 @@ def _translate_error(errtype, errmsg, code=None, errlines=None, return_html=True
                 if key == '':
                     break
                 results[key] = matched.group(i+1)
+            _ext = ''
             if 'inspect' in defined:
-                defined['inspect'](code, errlines, results)
-            if 'error_ext' in defined:
-                ext_messages = defined['error_ext']
-                for ext in ext_messages.keys():
-                    if ext in results:
-                        results['translated'] = ext_messages[ext].format(
-                            **results)
-                        return results
-            results['translated'] = defined['error'].format(**results)
+                _ext = defined['inspect'](code, errlines, results)
+            if 'error_type' in defined:
+                results['error_type'] = defined['error_type']
+            results['error_orig'] = results['error']
+            formatting(defined, 'error', _ext, results)
+            formatting(defined, 'reason', _ext, results)
+            formatting(defined, 'solution', _ext, results)
+            formatting(defined, 'hint', _ext, results)
             return results
     return results
 
 
 LinePat = re.compile(r'line (\d+)')
-#print(LinePat.match('aa line 18, in <module>'))
+# print(LinePat.match('aa line 18, in <module>'))
 
 
 def _get_error_lines():
     ss = []
     formatted_lines = traceback.format_exc().splitlines()
     for i, line in enumerate(formatted_lines):
-        #print(i, line)
+        # print(i, line)
         # if 'ipython-input' in line and ', in ' in line:
         if ', in ' in line:
             matched = LinePat.search(line)
@@ -69,30 +82,34 @@ def corgi_translate_error(code=None, verbose=False, return_html=False):
     exc_type, exc_value, _ = sys.exc_info()
     error_lines = _get_error_lines()
     results = _translate_error(
-        f'{exc_type.__name__}', exc_value, code, error_lines, return_html=False)
-    if verbose:
-        print(results['error'])
-        print(' =>', results.get('translated'), '')
+        f'{exc_type.__name__}', exc_value, code, error_lines, return_html=return_html)
+    if verbose and 'error_orig' in results:
+        print(results['error_orig'])
+        print(' =>', results.get('error'), '')
+        if 'reason' in results:
+            print(' reason: ', results.get('reason'), '')
+        if 'solution' in results:
+            print(' solution:', results.get('solution'), '')
     return results
 
 
-def _find_index_callee(lines, index=None):
-    if lines is None:
-        return None
-    if index is not None:
-        pattern = f'((\\w|\\.)+?)\\[[\'\"]?{index}[\'\"]?\\]'
-    else:
-        pattern = f'((\\w|\\.)+?)\\['
-    if isinstance(lines, str):
-        lines = [lines]
-    for line in lines:
-        matched = re.search(pattern, line)
-        if matched:
-            return matched.group(1)
-    return None
+# def _find_index_callee(lines, index=None):
+#     if lines is None:
+#         return None
+#     if index is not None:
+#         pattern = f'((\\w|\\.)+?)\\[[\'\"]?{index}[\'\"]?\\]'
+#     else:
+#         pattern = f'((\\w|\\.)+?)\\['
+#     if isinstance(lines, str):
+#         lines = [lines]
+#     for line in lines:
+#         matched = re.search(pattern, line)
+#         if matched:
+#             return matched.group(1)
+#     return None
 
 
-_find_index_callee("print(1+math.d['a'])", "a")
+# _find_index_callee("print(1+math.d['a'])", "a")
 
 
 # CORGI 定義
@@ -107,7 +124,15 @@ def test_NameError():
 CORGI_ERR({
     'pattern': 'name \'(.*?)\' is not defined',
     'keys': 'name',
-    'error': '変数名{name}は、打ち間違いか、まだインポートされていないか、とにかく未定義です',
+    'error': '名前エラー: {name}は、未定義です',
+    'reason': [
+        '単なる打ち間違い',
+        'まだ変数に一度も値を代入していない `{name} = ...`',
+        '関数名やクラス名なら未定義、もしくは定義したセルを実行していない',
+        '正しくインポートされていない `from ... import {name}` ',
+    ],
+    'solution': '{name}の種類をちゃんと確認しましょう',
+    'hint': '「{name}をインポートするには？」と聞いてみる',
     'test': test_NameError,
 })
 
@@ -132,7 +157,8 @@ def _inspect_method_callee(code, lines, slots):
                 slots['nametype'] = 'メソッド'
             else:
                 slots['nametype'] = 'プロパティ'
-            return
+            return '_callee'
+    return ''
 
 
 def test_NoAttribute():
@@ -147,14 +173,13 @@ CORGI_ERR({
     'pattern': '\'(.*?)\' object has no attribute \'(.*?)\'',
     'keys': 'type,name',
     'error': '{type}には、{name}のようなメソッドやプロパティはありません.',
-    'test': test_NoAttribute,
+    'reason': '{name}の打ち間違い、もしくは間違った値が使われている.',
+    'solution': '間違った値が代入された箇所を探してください.',
     'inspect': _inspect_method_callee,
-    'error_ext': {
-        'callee': '''{callee}は、{type}です. {name}のような{nametype}はありません.
-{callee}の型は、{type}で正しいですか？
- - もし正しいなら、{name}の打ち間違いを確認してください.
- - もし正しくないなら、どこかで{name}に間違った値が代入されています. '''
-    }
+    'error_callee': '{callee}は、{type}です. {name}のような{nametype}はありません.',
+    'reason_callee': '{name}の打ち間違い、もしくは{callee}に間違った値が代入されている.',
+    'solution_callee': '{callee}に間違った値を代入した箇所を探してください.',
+    'test': test_NoAttribute,
 })
 
 
@@ -170,6 +195,7 @@ CORGI_ERR({
     'pattern': 'module \'(.*?)\' has no attribute \'(.*?)\'',
     'keys': 'name,name2',
     'error': '{name}モジュールには、{name2}のような関数やプロパティはありません',
+    'reason': '{name2}の打ち間違いでは？',
     'test': test_ModuleNoAttribute,
 })
 
@@ -185,13 +211,15 @@ CORGI_ERR({
     'pattern': 'unsupported operand type\(s\) for (.*?): \'(.*?)\' and \'(.*?)\'',
     'keys': 'name,type,type2',
     'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
+    'solution': '{type}と{type2}をどちらかに変換するといいかも',
     'test': test_UnsupportedOperand,
 })
 
 CORGI_ERR({
     'pattern': '\'(.*?)\' not supported between instances of \'(.*?)\' and \'(.*?)\'',
     'keys': 'name,type,type2',
-    'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.'
+    'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
+    'solution': '{type}と{type2}をどちらかに変換するといいかも',
 })
 
 
@@ -207,6 +235,7 @@ CORGI_ERR({
     'pattern': '\'(.*?)\' object is not callable',
     'keys': 'type',
     'error': '{type}は、関数ではありません. たぶん、関数名に{type}の値を間違って代入してしまったため関数適用できません.',
+    'solution': 'import builtins',
     'test': test_NotCallable,
 })
 
@@ -238,6 +267,7 @@ CORGI_ERR({
     'pattern': '\'(.*?)\' object is not subscriptable',
     'keys': 'type',
     'error': '{type}は、データ列でもマッピングでもありません.',
+    'reason': 'たぶん、x[y]のように操作したけど、xは[]で値を取れません。',
     'test': test_NotSubscriptable,
 })
 
@@ -385,7 +415,8 @@ def test_DividedByZero():
 CORGI_ERR({
     'pattern': 'division by zero',
     'keys': '',
-    'error': 'ゼロで割り算しました. 分母の値を確認してみましょう.',
+    'error': 'ゼロで割り算しました. ',
+    'solution': '分母の値を確認してみましょう.',
     'test': test_DividedByZero
 })
 
