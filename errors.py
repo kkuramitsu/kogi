@@ -45,7 +45,8 @@ def _translate_error(errtype, errmsg, code=None, errlines=None, return_html=True
             for i, key in enumerate(defined['keys']):
                 if key == '':
                     break
-                results[key] = matched.group(i+1)
+                results[key] = render(matched.group(
+                    i+1), key, return_html=return_html)
             _ext = ''
             if 'inspect' in defined:
                 _ext = defined['inspect'](code, errlines, results)
@@ -124,12 +125,12 @@ def test_NameError():
 CORGI_ERR({
     'pattern': 'name \'(.*?)\' is not defined',
     'keys': 'name',
-    'error': '名前エラー: {name}は、未定義です',
+    'error': '{name}という名前を使おうとしましたが、まだ何の名前かかわかりません',
     'reason': [
-        '単なる打ち間違い',
-        'まだ変数に一度も値を代入していない `{name} = ...`',
+        '{name}の単なる打ち間違い',
+        '変数なら、まだ一度も値を代入していない `{name} = ...`',
         '関数名やクラス名なら未定義、もしくは定義したセルを実行していない',
-        '正しくインポートされていない `from ... import {name}` ',
+        'もしくは、正しくインポートされていない `from ... import {name}` ',
     ],
     'solution': '{name}の種類をちゃんと確認しましょう',
     'hint': '「{name}をインポートするには？」と聞いてみる',

@@ -154,6 +154,11 @@ def response_simply(text, frame):
             if 'reason' in frame:
                 return '原因を特定してみてね'
             return 'ググってみたら'
+    if text.startswith('ヒント'):
+        if 'hint' in frame:
+            return frame['hint']
+        else:
+            return 'ノー ヒント！'
     return response_whatis(text, frame)
 
 

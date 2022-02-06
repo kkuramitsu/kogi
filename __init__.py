@@ -18,9 +18,20 @@ def corgi_run(code, option, run_cell=_run_cell):
     except:
         results = corgi_translate_error(code, return_html=True)
         if 'error_orig' in results:
-            corgi_chat(results['error'], chat=response_simply)
+            update_frame = {
+                'reason': results.get('reason', None),
+                'solution': results.get('solution', None),
+                'hint': results.get('hint', None),
+            }
+            corgi_chat(results['error'], chat=response_simply,
+                       update_frame=update_frame)
         else:
-            corgi_chat('くーん(限界を感じる)', chat=response_simply)
+            update_frame = {
+                'reason': '限界しか感じません',
+                'solution': 'プログラミングが得意な新しい友達を作ろう',
+                'hint': None,
+            }
+            corgi_chat('くーん', chat=response_simply, update_frame=update_frame)
 
 
 CORGI_OPTIONS = [

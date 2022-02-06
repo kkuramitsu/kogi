@@ -174,7 +174,16 @@ def chat_vow(your_text, frame):
         return '出席記録できました. 今日も１日がんばりましょう!'
 
 
-def corgi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue'):
+def corgi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', update_frame={}):
+    global corgi_frame
+
+    for key in update_frame:
+        value = update_frame[key]
+        if value is None:
+            del corgi_frame[key]
+        else:
+            corgi_frame[key] = value
+
     display(HTML(HTML_CSS.replace('powderblue', background)))
     display(HTML(HTML_CHAT))
 
