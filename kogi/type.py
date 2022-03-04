@@ -18,55 +18,62 @@ _PYTYPE = {
     'type': '型もしくはクラス',
 }
 
+
 def _span(s, css_class, return_html=True):
     if return_html:
         return f'<span class="{css_class}">{s}</span>'
     return s
 
-def _corgi_typename(value, return_html=True):
+
+def _kogi_typename(value, return_html=True):
     typename = type(value).__name__
     if typename in _PYTYPE:
         return _span(_PYTYPE[typename], "type", return_html)
     return _span(typename, "type", return_html) + 'クラス'
 
-def _corgi_typename(type_name, suffix=''):
-  if type_name in _PYTYPE:
-    return _simple(_PYTYPE[type_name]) + suffix
-  else:
-    return type_name + _simple('型/クラス')
 
-def _corgi_inspect(v):
-  type_name = type(v).__name__
-  d = {'typeid': type_name, 'type': _corgi_typename(type_name)}
-  if hasattr(v, '__next__'):
-    d['iterable'] = hasattr(v, '__next__')
-  if hasattr(v, '__len__'):
-    d['len'] = len(v)
-  if hasattr(v, '__name__'):
-    d['name'] = v.__name__
-  return d
+def _kogi_typename(type_name, suffix=''):
+    if type_name in _PYTYPE:
+        return _simple(_PYTYPE[type_name]) + suffix
+    else:
+        return type_name + _simple('型/クラス')
+
+
+def _kogi_inspect(v):
+    type_name = type(v).__name__
+    d = {'typeid': type_name, 'type': _kogi_typename(type_name)}
+    if hasattr(v, '__next__'):
+        d['iterable'] = hasattr(v, '__next__')
+    if hasattr(v, '__len__'):
+        d['len'] = len(v)
+    if hasattr(v, '__name__'):
+        d['name'] = v.__name__
+    return d
+
 
 def _html_symbol(s, return_html=True):
-  if return_html:
-    return f'<span class="symbol" style="color: #c3c; font-family: monospace;">{s}</span>'
-  return s
+    if return_html:
+        return f'<span class="symbol" style="color: #c3c; font-family: monospace;">{s}</span>'
+    return s
+
 
 def _html_value(s, return_html=True):
-  if len(s) > 100:
-    s = s[:100] + '...(以下、省略)'
-  if return_html:
-    return f'<span class="value" style="font-family: monospace">{s}</span>'
-  return s
+    if len(s) > 100:
+        s = s[:100] + '...(以下、省略)'
+    if return_html:
+        return f'<span class="value" style="font-family: monospace">{s}</span>'
+    return s
 
-def _corgi_say_names(names, msgs, return_html=True):
-  for d in names:
-    if 'value' in d:
-      symbol = _html_symbol(d['id'], return_html=True)
-      typename = _html_type(d['type'], return_html=True)
-      value = d['value']
-      if hasattr(value, '_repr_html_'):
-        value = value._repr_html_()
-      else:
-        value = _html_value(repr(value))
-      msg = f'{symbol}は、{typename}。値は{value}'
-      msgs.append(msg)
+
+def _kogi_say_names(names, msgs, return_html=True):
+    for d in names:
+        if 'value' in d:
+            symbol = _html_symbol(d['id'], return_html=True)
+            typename = _html_type(d['type'], return_html=True)
+            value = d['value']
+            if hasattr(value, '_repr_html_'):
+                value = value._repr_html_()
+            else:
+                value = _html_value(repr(value))
+            msg = f'{symbol}は、{typename}。値は{value}'
+            msgs.append(msg)

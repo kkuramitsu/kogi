@@ -143,7 +143,7 @@ def _display_you(your_text, **kw):
         display(HTML(HTML_USER.format(your_icon, your_name, your_text)))
 
 
-corgi_frame = {  # グローバルフレーム
+kogi_frame = {  # グローバルフレーム
     'your_name': 'あなた',
     'your_icon': YOUR_ICON,
     'bot_name': 'コーギー',
@@ -174,29 +174,29 @@ def chat_vow(your_text, frame):
         return '出席記録できました. 今日も１日がんばりましょう!'
 
 
-def corgi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', update_frame={}):
-    global corgi_frame
+def kogi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', update_frame={}):
+    global kogi_frame
 
     for key in update_frame:
         value = update_frame[key]
         if value is None:
-            del corgi_frame[key]
+            del kogi_frame[key]
         else:
-            corgi_frame[key] = value
+            kogi_frame[key] = value
 
     display(HTML(HTML_CSS.replace('powderblue', background)))
     display(HTML(HTML_CHAT))
 
     def ask(your_text):
-        global corgi_frame
+        global kogi_frame
         your_text = your_text.strip()
         if 'ありがとう' in your_text or 'バイバイ' in your_text:
             _display_bot('バイバイ')
         else:
-            bot_text = chat(your_text, corgi_frame)
-            _display_you(your_text, **corgi_frame)
+            bot_text = chat(your_text, kogi_frame)
+            _display_you(your_text, **kogi_frame)
             if bot_text is not None:
-                _display_bot(bot_text, **corgi_frame)
+                _display_bot(bot_text, **kogi_frame)
 
     output.register_callback('notebook.ask', ask)
 
@@ -205,7 +205,7 @@ def corgi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', upda
     for m in msg:
         _display_bot(m)
     if asking is not None:
-        corgi_frame['asking'] = asking
+        kogi_frame['asking'] = asking
 
 
-# corgi_chat('お名前は？', asking='your_name')
+# kogi_chat('お名前は？', asking='your_name')

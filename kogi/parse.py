@@ -33,7 +33,7 @@ def fix2(s):
     return s
 
 
-parser = pg.generate(pg.grammar('corgi.pegtree'))
+parser = pg.generate(pg.grammar('kogi.pegtree'))
 
 
 class Flatten(ParseTreeVisitor):

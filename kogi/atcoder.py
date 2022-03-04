@@ -128,4 +128,4 @@ def run_judge(code, problem):
 
 # @register_cell_magic
 # def atcoder(problem, code):  # Colab上で最初に一度定義する。
-#     _run_corgi(code, problem, run_fn=_judge_fn)
+#     _run_kogi(code, problem, run_fn=_judge_fn)

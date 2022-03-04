@@ -11,7 +11,7 @@ except ImportError:
 DEFINED_ERRORS = []
 
 
-def CORGI_ERR(d):
+def kogi_ERR(d):
     global DEFINED_ERRORS
     DEFINED_ERRORS.append(d)
 
@@ -79,7 +79,7 @@ def _get_error_lines():
     return ss[::-1]
 
 
-def corgi_translate_error(code=None, verbose=False, return_html=False):
+def kogi_translate_error(code=None, verbose=False, return_html=False):
     exc_type, exc_value, _ = sys.exc_info()
     error_lines = _get_error_lines()
     results = _translate_error(
@@ -113,16 +113,16 @@ def corgi_translate_error(code=None, verbose=False, return_html=False):
 # _find_index_callee("print(1+math.d['a'])", "a")
 
 
-# CORGI 定義
+# kogi 定義
 
 def test_NameError():
     try:
         print(undefined)
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'name \'(.*?)\' is not defined',
     'keys': 'name',
     'error': '{name}という名前を使おうとしましたが、まだ何の名前かかわかりません',
@@ -167,10 +167,10 @@ def test_NoAttribute():
         d = {'a': 1}
         print(d.a)
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '\'(.*?)\' object has no attribute \'(.*?)\'',
     'keys': 'type,name',
     'error': '{type}には、{name}のようなメソッドやプロパティはありません.',
@@ -189,10 +189,10 @@ def test_ModuleNoAttribute():
         import math
         math.sins(1)
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'module \'(.*?)\' has no attribute \'(.*?)\'',
     'keys': 'name,name2',
     'error': '{name}モジュールには、{name2}のような関数やプロパティはありません',
@@ -205,10 +205,10 @@ def test_UnsupportedOperand():
     try:
         print(1+'2')
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'unsupported operand type\(s\) for (.*?): \'(.*?)\' and \'(.*?)\'',
     'keys': 'name,type,type2',
     'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
@@ -216,7 +216,7 @@ CORGI_ERR({
     'test': test_UnsupportedOperand,
 })
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '\'(.*?)\' not supported between instances of \'(.*?)\' and \'(.*?)\'',
     'keys': 'name,type,type2',
     'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
@@ -229,10 +229,10 @@ def test_NotCallable():
         a = 1
         a()
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '\'(.*?)\' object is not callable',
     'keys': 'type',
     'error': '{type}は、関数ではありません. たぶん、関数名に{type}の値を間違って代入してしまったため関数適用できません.',
@@ -245,10 +245,10 @@ def test_NotIterable():
     try:
         list(1)
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '\'(.*?)\' object is not iterable',
     'keys': 'type',
     'error': '{type}は、イテラブルではありません. つまり、リストに変換できませんし、for文などで繰り返し処理もできません.',
@@ -261,10 +261,10 @@ def test_NotSubscriptable():
         a = 1
         a[0]
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '\'(.*?)\' object is not subscriptable',
     'keys': 'type',
     'error': '{type}は、データ列でもマッピングでもありません.',
@@ -277,10 +277,10 @@ def test_MustBeNoneOr():
     try:
         print(end=1)
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '(\\w+?) must be None or a (\\w+?), not (\\w+)',
     'keys': 'name,type,type2',
     'error': '{name}は、Noneか{type}の値です. {type2}の値は使えません.',
@@ -292,36 +292,36 @@ def test_InvalidKeyword():
     try:
         print(color='red')
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '\'(.*?)\' is an invalid keyword argument for (.*?)\\(\\)',
     'keys': 'name,name2',
     'error': '{name}は、関数もしくはメソッド{name2}で使えるキーワード引数ではありません.',
     'test': test_InvalidKeyword,
 })
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '(.*?)\\(\\) got an unexpected keyword argument \'(.*?)\'',
     'keys': 'name,name2',
     'error': '{name2}は、関数もしくはメソッド{name}で使えるキーワード引数ではありません.'
 })
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'expected an indented block',
     'keys': '',
     'error': 'ここでインデントされるはずです'
 })
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'invalid character in identifier',
     'keys': '',
     'error': '半角文字を使うべきところで、全角文字が混ざって使われています'
 })
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'unexpected EOF while parsing',
     'keys': '',
     'error': 'コードが途中までしか書かれていません. たぶん、括弧やクオートの閉じ忘れの可能性が高いです.'
@@ -332,10 +332,10 @@ def test_InvalidLiteral():
     try:
         int('a')
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'invalid literal for int\(\) with base (.*?): (\'.*?\')',
     'keys': 'base,value',
     'error': '文字列{value}は、整数に変換できる文字列ではありません',
@@ -347,10 +347,10 @@ def test_NotConvert():
     try:
         float('a')
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'could not convert (\w+?) to (\w+?): \'(.*?)\'',
     'keys': 'type,type2,value',
     'error': '{type}の{value}は、{type2}に変換することはできません.',
@@ -363,10 +363,10 @@ def test_OutOfRange():
         s = "ABC"
         s[3]
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '(\\w+) index out of range',
     'keys': 'type',
     'error': 'インデックスが{type}の大きさを超えています. ',
@@ -379,10 +379,10 @@ def test_MustBeInteger():
         s = "ABC"
         s['3']
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': '(\\w+) indices must be integers',
     'keys': 'type',
     'error': '{type}のインデックスは、整数でなければなりません.',
@@ -395,10 +395,10 @@ def test_KeyError():
         s = "ABC"
         s[3]
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'KeyError: (.*?)',
     'keys': 'key',
     'error': 'キー{key}が見つかりません',
@@ -410,10 +410,10 @@ def test_DividedByZero():
     try:
         print(1/0)
     except:
-        corgi_translate_error(verbose=True)
+        kogi_translate_error(verbose=True)
 
 
-CORGI_ERR({
+kogi_ERR({
     'pattern': 'division by zero',
     'keys': '',
     'error': 'ゼロで割り算しました. ',
