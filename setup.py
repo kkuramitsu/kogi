@@ -1,5 +1,13 @@
 from setuptools import setup, find_packages
 
+'''
+python3 -m unittest
+vim setup.py
+rm -rf dist/
+python3 setup.py sdist bdist_wheel
+twine upload --repository pypi dist/*
+'''
+
 
 def _requires_from_file(filename):
     return open(filename).read().splitlines()
@@ -7,10 +15,21 @@ def _requires_from_file(filename):
 
 setup(name="kogi",
       version="0.1",
+      license='MIT',
+      author='Kimio Kuramitsu',
       description="Kogi Programming AI",
       url="https://github.com/kkuramitsu/kogi",
-      packages=find_packages("src"),
-      package_dir={"": "src"},
+      packages=find_packages("kogi"),
+      #package_dir={"": "src"},
       package_data={'kogi': ['data/*.txt']},
       install_requires=_requires_from_file('requirements.txt'),
+      classifiers=[
+          'Development Status :: 4 - Beta',
+          'License :: OSI Approved :: MIT License',
+          'Framework :: IPython',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
+          'Intended Audience :: Education',
+      ],
       )
