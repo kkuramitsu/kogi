@@ -211,8 +211,49 @@ def kogi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', updat
         kogi_frame['asking'] = asking
 
 
-# translate
+N_GLOBALS = 0
 
+
+def _needs_new_chat():
+    global N_GLOBALS
+    state = get_ipython().ev('len(globals())')
+    if state != N_GLOBALS:
+        N_GLOBALS = state
+        return True
+    return False
+
+
+def _display_chat(chatbot=None):
+    display(HTML(CHAT_CSS))
+    display(HTML(CHAT_HTML))
+    if chatbot is None:
+        chatbot = get_chatbot()
+
+    def ask(your_text):
+        global kogi_frame
+        your_text = your_text.strip()
+        if 'ありがとう' in your_text or 'バイバイ' in your_text:
+            _display_bot('バイバイ')
+        else:
+            bot_text = chatbot(your_text, kogi_frame)
+            _display_you(your_text, **kogi_frame)
+            if bot_text is not None:
+                _display_bot(bot_text, **kogi_frame)
+
+
+def kogi_say(msg, chatbot=None):
+    if _needs_new_chat():
+        _display_chat(chatbot)
+    _display_bot(msg, **kogi_frame)
+
+
+def kogi_help(chatbot=None):
+    if _needs_new_chat():
+        _display_chat(chatbot)
+    _display_bot('どうしました？', **kogi_frame)
+
+
+# translate
 TRANSLATE_CSS_HTML = '''
 <style>
 .parent {
@@ -329,9 +370,13 @@ def kogi_translate(delay=600, print=print_nop):
             ss = []
             for line in text.split('\n'):
                 if line not in cached:
-                    translated = nmt(line, beams=1)
+                    translated = nmt(line)
                     print(line, '=>', translated)
                     cached[line] = translated
+                    log(
+                        type='realtime-nmt',
+                        input=line, output=translated,
+                    )
                 else:
                     translated = cached[line]
                 ss.append(translated)
@@ -343,5 +388,5 @@ def kogi_translate(delay=600, print=print_nop):
     output.register_callback('notebook.Convert', convert)
     output.register_callback('notebook.Logger', lognow)
     display(IPython.display.HTML(TRANSLATE_CSS_HTML))
-    TRANSLATE_SCRIPT = TRANSLATE_SCRIPT.replace('600', str(delay))
-    display(IPython.display.HTML(TRANSLATE_SCRIPT))
+    SCRIPT = TRANSLATE_SCRIPT.replace('600', str(delay))
+    display(IPython.display.HTML(SCRIPT))

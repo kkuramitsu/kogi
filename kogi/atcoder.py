@@ -55,7 +55,7 @@ def _get_sample(problem):
     return d
 
 
-def check_atcoder(option):
+def _check_atcoder(option):
     try:
         if 'atcoder' in option:
             d = _get_sample(option)
@@ -96,7 +96,7 @@ def _display_diff(ground_truth, target):
         HTML(f'<h4>差分</h4><div style="white-space: pre-wrap;">{result}</div>'))
 
 
-def run_judge(code, problem):
+def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
     try:
@@ -124,8 +124,3 @@ def run_judge(code, problem):
     finally:
         _lines = None
         _outputs = None
-
-
-# @register_cell_magic
-# def atcoder(problem, code):  # Colab上で最初に一度定義する。
-#     _run_kogi(code, problem, run_fn=_judge_fn)

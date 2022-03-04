@@ -126,16 +126,16 @@ REMOVED = [
 ]
 
 
-def tailing(s):
+def remove_tails(s):
     for suffix in REMOVED:
         if s.endswith(suffix):
-            return tailing(s[:-len(suffix)])
+            return remove_tails(s[:-len(suffix)])
     return s
 
 
 def response_simply(text, frame):
     # text = _normalize(text)
-    text = tailing(text)
+    text = remove_tails(text)
     if text.endswith('には'):
         text = text[:-2]
         return 'TODO: コード翻訳するよ！'
@@ -160,6 +160,10 @@ def response_simply(text, frame):
         else:
             return 'ノー ヒント！'
     return response_whatis(text, frame)
+
+
+def get_chatbot():
+    return response_simply
 
 
 if __name__ == '__main__':

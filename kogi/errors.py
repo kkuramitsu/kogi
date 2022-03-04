@@ -11,7 +11,7 @@ except ImportError:
 DEFINED_ERRORS = []
 
 
-def kogi_ERR(d):
+def KOGI_ERR(d):
     global DEFINED_ERRORS
     DEFINED_ERRORS.append(d)
 
@@ -122,7 +122,7 @@ def test_NameError():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'name \'(.*?)\' is not defined',
     'keys': 'name',
     'error': '{name}という名前を使おうとしましたが、まだ何の名前かかわかりません',
@@ -170,7 +170,7 @@ def test_NoAttribute():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '\'(.*?)\' object has no attribute \'(.*?)\'',
     'keys': 'type,name',
     'error': '{type}には、{name}のようなメソッドやプロパティはありません.',
@@ -192,7 +192,7 @@ def test_ModuleNoAttribute():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'module \'(.*?)\' has no attribute \'(.*?)\'',
     'keys': 'name,name2',
     'error': '{name}モジュールには、{name2}のような関数やプロパティはありません',
@@ -208,7 +208,7 @@ def test_UnsupportedOperand():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'unsupported operand type\(s\) for (.*?): \'(.*?)\' and \'(.*?)\'',
     'keys': 'name,type,type2',
     'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
@@ -216,7 +216,7 @@ kogi_ERR({
     'test': test_UnsupportedOperand,
 })
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '\'(.*?)\' not supported between instances of \'(.*?)\' and \'(.*?)\'',
     'keys': 'name,type,type2',
     'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
@@ -232,7 +232,7 @@ def test_NotCallable():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '\'(.*?)\' object is not callable',
     'keys': 'type',
     'error': '{type}は、関数ではありません. たぶん、関数名に{type}の値を間違って代入してしまったため関数適用できません.',
@@ -248,7 +248,7 @@ def test_NotIterable():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '\'(.*?)\' object is not iterable',
     'keys': 'type',
     'error': '{type}は、イテラブルではありません. つまり、リストに変換できませんし、for文などで繰り返し処理もできません.',
@@ -264,7 +264,7 @@ def test_NotSubscriptable():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '\'(.*?)\' object is not subscriptable',
     'keys': 'type',
     'error': '{type}は、データ列でもマッピングでもありません.',
@@ -280,7 +280,7 @@ def test_MustBeNoneOr():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '(\\w+?) must be None or a (\\w+?), not (\\w+)',
     'keys': 'name,type,type2',
     'error': '{name}は、Noneか{type}の値です. {type2}の値は使えません.',
@@ -295,33 +295,33 @@ def test_InvalidKeyword():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '\'(.*?)\' is an invalid keyword argument for (.*?)\\(\\)',
     'keys': 'name,name2',
     'error': '{name}は、関数もしくはメソッド{name2}で使えるキーワード引数ではありません.',
     'test': test_InvalidKeyword,
 })
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '(.*?)\\(\\) got an unexpected keyword argument \'(.*?)\'',
     'keys': 'name,name2',
     'error': '{name2}は、関数もしくはメソッド{name}で使えるキーワード引数ではありません.'
 })
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'expected an indented block',
     'keys': '',
     'error': 'ここでインデントされるはずです'
 })
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'invalid character in identifier',
     'keys': '',
     'error': '半角文字を使うべきところで、全角文字が混ざって使われています'
 })
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'unexpected EOF while parsing',
     'keys': '',
     'error': 'コードが途中までしか書かれていません. たぶん、括弧やクオートの閉じ忘れの可能性が高いです.'
@@ -335,7 +335,7 @@ def test_InvalidLiteral():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'invalid literal for int\(\) with base (.*?): (\'.*?\')',
     'keys': 'base,value',
     'error': '文字列{value}は、整数に変換できる文字列ではありません',
@@ -350,7 +350,7 @@ def test_NotConvert():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'could not convert (\w+?) to (\w+?): \'(.*?)\'',
     'keys': 'type,type2,value',
     'error': '{type}の{value}は、{type2}に変換することはできません.',
@@ -366,7 +366,7 @@ def test_OutOfRange():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '(\\w+) index out of range',
     'keys': 'type',
     'error': 'インデックスが{type}の大きさを超えています. ',
@@ -382,7 +382,7 @@ def test_MustBeInteger():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': '(\\w+) indices must be integers',
     'keys': 'type',
     'error': '{type}のインデックスは、整数でなければなりません.',
@@ -398,7 +398,7 @@ def test_KeyError():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'KeyError: (.*?)',
     'keys': 'key',
     'error': 'キー{key}が見つかりません',
@@ -413,7 +413,7 @@ def test_DividedByZero():
         kogi_translate_error(verbose=True)
 
 
-kogi_ERR({
+KOGI_ERR({
     'pattern': 'division by zero',
     'keys': '',
     'error': 'ゼロで割り算しました. ',
@@ -430,22 +430,3 @@ def test_DEFINED_ERRORS():
 
 if __name__ == '__main__':
     test_DEFINED_ERRORS()
-
-
-# CODE_STYLE = '''
-# 拡大するから落ち着いて、構文エラーを探してね
-# <div style="white-space: pre; font-family: monospace; font-size: 16pt; ">$CODE
-# </div>
-# '''
-
-# def _magnify_code(code, msgs, return_html=True):
-#   if return_html and code is not None:
-#     ss = []
-#     for c in code:
-#       if c == '\t':
-#         ss.append(f'<span style="background: lightblue; color: white">→→</span>')
-#       elif ord(c) > 126:
-#         ss.append(f'<span style="background: pink; color: white">{c}</span>')
-#       else:
-#         ss.append(c)
-#     msgs.append(CODE_STYLE.replace('$CODE', ''.join(ss)))
