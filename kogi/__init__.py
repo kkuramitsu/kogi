@@ -1,7 +1,7 @@
 from IPython.core.magic import register_cell_magic
 
-from .errors import kogi_translate_error
 from .chat import kogi_chat
+from .errors import kogi_translate_error
 from .atcoder import input, print, run_judge, check_atcoder
 
 from .dialog import response_simply
