@@ -1,6 +1,8 @@
 import IPython
 from IPython.display import display, HTML
 from google.colab import output
+from .logger import print_nop, lognow, log
+
 # https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
 
 BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
@@ -8,7 +10,7 @@ BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラ�
 # 'https://chojugiga.com/c/choju51_0039/s512_choju51_0039_0.png'
 YOUR_ICON = 'https://2.bp.blogspot.com/-VVtgu8RyEJo/VZ-QWqgI_wI/AAAAAAAAvKY/N-xnZvqeGYY/s800/girl_question.png'
 
-HTML_CSS = '''
+CHAT_CSS = '''
 <style>
 .sb-box { position: relative; overflow: hidden; }
 /* アイコン画像 */
@@ -66,7 +68,7 @@ HTML_CSS = '''
 </style>
 '''
 
-HTML_CHAT = '''
+CHAT_HTML = '''
 <div id='main'>
 <script>
 var inputPane = document.getElementById('input');
@@ -88,7 +90,7 @@ target.scrollIntoView(false);
 </div>
 '''
 
-HTML_BOT = '''
+BOT_HTML = '''
 <div class="sb-box">
     <div class="icon-img icon-img-left">
         <img src="{}" width="60px">
@@ -102,7 +104,7 @@ HTML_BOT = '''
 </div>
 '''
 
-HTML_CLEAR = '''
+CLEAR_HTML = '''
 <script>
 setTimeout(()=>{
     const element = document.getElementById('main'); 
@@ -112,7 +114,7 @@ setTimeout(()=>{
 '''
 
 
-HTML_USER = '''
+USER_HTML = '''
 <div class="sb-box">
   <div class="icon-img icon-img-right">
       <img src="{}" width="60px">
@@ -131,16 +133,16 @@ def _display_bot(bot_text, **kw):
     with output.redirect_to_element('#output'):
         bot_name = kw.get('bot_name', 'コーギー')
         bot_icon = kw.get('bot_icon', BOT_ICON)
-        display(HTML(HTML_BOT.format(bot_icon, bot_name, bot_text)))
+        display(HTML(BOT_HTML.format(bot_icon, bot_name, bot_text)))
     if 'バイバイ' in bot_text:
-        display(HTML(HTML_CLEAR))
+        display(HTML(CLEAR_HTML))
 
 
 def _display_you(your_text, **kw):
     with output.redirect_to_element('#output'):
         your_name = kw.get('your_name', 'あなた')
         your_icon = kw.get('your_icon', YOUR_ICON)
-        display(HTML(HTML_USER.format(your_icon, your_name, your_text)))
+        display(HTML(USER_HTML.format(your_icon, your_name, your_text)))
 
 
 kogi_frame = {  # グローバルフレーム
@@ -184,8 +186,8 @@ def kogi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', updat
         else:
             kogi_frame[key] = value
 
-    display(HTML(HTML_CSS.replace('powderblue', background)))
-    display(HTML(HTML_CHAT))
+    display(HTML(CHAT_CSS.replace('powderblue', background)))
+    display(HTML(CHAT_HTML))
 
     def ask(your_text):
         global kogi_frame
@@ -208,4 +210,141 @@ def kogi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', updat
         kogi_frame['asking'] = asking
 
 
-# kogi_chat('お名前は？', asking='your_name')
+# translate
+
+TRANSLATE_CSS_HTML = '''
+<style>
+.parent {
+  background-color: #edebeb;
+  width: 100%;
+  height: 150px;
+}
+textarea {
+  width: 100%; 
+  box-sizing: border-box;  /* ※これがないと横にはみ出る */
+  height:120px; 
+  font-size: large;
+  outline: none;           /* ※ブラウザが標準で付加する線を消したいとき */
+  resize: none;
+}
+.box11{
+//    padding: 0.5em 1em;
+//    margin: 2em 0;
+    color: #5d627b;
+    background: white;
+    border-top: solid 5px #5d627b;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.22);
+}
+.box18{
+  //padding: 0.2em 0.5em;
+  //margin: 2em 0;
+  color: #565656;
+  background: #ffeaea;
+  background-image: url(https://2.bp.blogspot.com/-u7NQvQSgyAY/Ur1HXta5W7I/AAAAAAAAcfE/omW7_szrzao/s800/dog_corgi.png);
+  background-size: 150%;
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-color:rgba(255,255,255,0.8);
+  background-blend-mode:lighten;
+  //box-shadow: 0px 0px 0px 10px #ffeaea;
+  border: dashed 2px #ffc3c3;
+  //border-radius: 8px;
+}
+.box16{
+    //padding: 0.5em 1em;
+    //margin: 2em 0;
+    background: -webkit-repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+}
+.box24 {
+    position: relative;
+    padding: 0.5em 0.7em;
+    margin: 2em 0;
+    background: #6f4b3e;
+    color: white;
+    font-weight: bold;
+}
+.box24:after {
+    position: absolute;
+    content: '';
+    top: 100%;
+    left: 30px;
+    border: 15px solid transparent;
+    border-top: 15px solid #6f4b3e;
+    width: 0;
+    height: 0;
+}
+</style>
+<div class="parent">
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="input">日本語</label>
+<textarea id="input" class="box16"></textarea>
+</div>
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="outout">Python</label>
+<textarea id="output" class="box18 python" readonly></textarea>
+</div>
+</div>
+'''
+
+TRANSLATE_SCRIPT = '''
+<script>
+    var timer = null;
+    var logtimer = null;
+    document.getElementById('input').addEventListener('input', (e) => {
+        var text = e.srcElement.value;
+        if(timer !== null) {
+            clearTimeout(timer);
+        }
+        if(logtimer !== null) {
+            clearTimeout(logtimer);
+        }
+        timer = setTimeout(() => {
+            timer = null;
+            (async function() {
+                const result = await google.colab.kernel.invokeFunction('notebook.Convert', [text], {});
+                const data = result.data['application/json'];
+                const textarea = document.getElementById('output');
+                textarea.textContent = data.result;
+            })();
+        }, 600);  // 何も打たななかったら600ms秒後に送信
+        logtimer = setTimeout(() => {
+            logtimer = null;
+            google.colab.kernel.invokeFunction('notebook.Logger', [text], {});
+        }, 60*1000*5); // 5分に１回まとめて送信
+    });
+</script>
+'''
+
+
+def get_nmt():
+    return lambda s: f'{s}'
+
+
+cached = {}
+
+
+def kogi_translate(delay=600, print=print_nop):
+    nmt = get_nmt()
+
+    def convert(text):
+        try:
+            ss = []
+            for line in text.split('\n'):
+                if line not in cached:
+                    translated = nmt(line, beams=1)
+                    print(line, '=>', translated)
+                    cached[line] = translated
+                else:
+                    translated = cached[line]
+                ss.append(translated)
+            text = '\n'.join(ss)
+            return IPython.display.JSON({'result': text})
+        except Exception as e:
+            print(e)
+        return e
+    output.register_callback('notebook.Convert', convert)
+    output.register_callback('notebook.Logger', lognow)
+    display(IPython.display.HTML(TRANSLATE_CSS_HTML))
+    TRANSLATE_SCRIPT = TRANSLATE_SCRIPT.replace('600', str(delay))
+    display(IPython.display.HTML(TRANSLATE_SCRIPT))
