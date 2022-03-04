@@ -2,6 +2,7 @@ import IPython
 from IPython.display import display, HTML
 from google.colab import output
 from .logger import print_nop, lognow, log
+from .nmt import get_nmt
 
 # https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
 
@@ -315,10 +316,6 @@ TRANSLATE_SCRIPT = '''
     });
 </script>
 '''
-
-
-def get_nmt():
-    return lambda s: f'{s}'
 
 
 cached = {}
