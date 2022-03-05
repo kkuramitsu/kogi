@@ -33,7 +33,7 @@ def fix2(s):
     return s
 
 
-parser = pg.generate(pg.grammar('kogi.pegtree'))
+parser = pg.generate(pg.grammar('inspect.pegtree'))
 
 
 class Flatten(ParseTreeVisitor):
@@ -179,6 +179,75 @@ def find_name(lines, name):
             if len(results) > 0:
                 return results
     return []
+
+
+def inspect_name(code, lines, slots):
+    if lines is None:
+        return ''
+    return ''
+
+
+def inspect_callee(code, lines, slots):
+    if lines is None:
+        return ''
+
+    results = find_callee(lines, slots['name'])
+    # print(slots)
+    # print(results, 'callee' in results)
+    for result in results:
+        if 'callee' in result:
+            slots['callee'] = result['callee']
+            if result.get('type', 'prop') == 'prop':
+                slots['pyname'] = 'プロパティ'
+            else:
+                slots['pyname'] = '関数' if 'module' in slots['error'] else 'メソッド'
+            # print(slots)
+            return '_ext'
+    return ''
+
+
+def inspect_infix(code, lines, slots):
+    if lines is None:
+        return ''
+    results = find_infix(lines, slots['name'])
+    # print(slots)
+    # print(results)
+    for result in results:
+        if 'left' in result:
+            slots['left'] = result['left']
+            slots['right'] = result['right']
+            # print(slots)
+            return '_ext'
+    return ''
+
+
+def inspect_funcname(code, lines, slots):
+    if lines is None:
+        return ''
+    results = find_app(lines)
+    # print(slots)
+    # print(results)
+    for result in results:
+        if 'name' in result:
+            slots['name'] = result['name']
+            # print(slots)
+            return '_ext'
+    return ''
+
+
+def inspect_index(code, lines, slots):
+    if lines is None:
+        return ''
+    results = find_sub(lines)
+    print(slots)
+    print(results)
+    for result in results:
+        if 'sub' in result:
+            slots['index'] = result['sub']
+            slots['callee'] = result['callee']
+            # print(slots)
+            return '_ext'
+    return ''
 
 
 if __name__ == '__main__':

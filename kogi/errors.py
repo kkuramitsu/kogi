@@ -8,12 +8,19 @@ try:
 except ImportError:
     from dialog import render
 
+from error_inspect import inspect_callee, inspect_infix, inspect_funcname, inspect_index
+
 DEFINED_ERRORS = []
 
 
 def KOGI_ERR(d):
     global DEFINED_ERRORS
     DEFINED_ERRORS.append(d)
+
+
+def KOGI_ERR2(**kw):
+    global DEFINED_ERRORS
+    DEFINED_ERRORS.append(dict(**kw))
 
 
 def _format(ss, results):
@@ -23,7 +30,7 @@ def _format(ss, results):
     return [s.format(**vocab) for s in ss]
 
 
-def formatting(defined, key, ext, results):
+def _formatting(defined, key, ext, results):
     key_ext = key+ext
     if key_ext in defined:
         results[key] = _format(defined[key_ext], results)
@@ -33,7 +40,7 @@ def formatting(defined, key, ext, results):
         return
 
 
-def _translate_error(errtype, errmsg, code=None, errlines=None, return_html=True):
+def _check_error(errtype, errmsg, code=None, errlines=None, return_html=True):
     s = f'{errtype}: {errmsg}'
     results = {'error_type': errtype, 'error': s}
     for defined in DEFINED_ERRORS:
@@ -53,10 +60,10 @@ def _translate_error(errtype, errmsg, code=None, errlines=None, return_html=True
             if 'error_type' in defined:
                 results['error_type'] = defined['error_type']
             results['error_orig'] = results['error']
-            formatting(defined, 'error', _ext, results)
-            formatting(defined, 'reason', _ext, results)
-            formatting(defined, 'solution', _ext, results)
-            formatting(defined, 'hint', _ext, results)
+            _formatting(defined, 'error', _ext, results)
+            _formatting(defined, 'reason', _ext, results)
+            _formatting(defined, 'solution', _ext, results)
+            _formatting(defined, 'hint', _ext, results)
             return results
     return results
 
@@ -79,38 +86,23 @@ def _get_error_lines():
     return ss[::-1]
 
 
-def kogi_translate_error(code=None, verbose=False, return_html=False):
-    exc_type, exc_value, _ = sys.exc_info()
-    error_lines = _get_error_lines()
-    results = _translate_error(
-        f'{exc_type.__name__}', exc_value, code, error_lines, return_html=return_html)
-    if verbose and 'error_orig' in results:
+def _show_verbose(results):
+    if 'error_orig' in results:
         print(results['error_orig'])
         print(' =>', results.get('error'), '')
         if 'reason' in results:
             print(' reason: ', results.get('reason'), '')
         if 'solution' in results:
             print(' solution:', results.get('solution'), '')
+
+
+def kogi_check_error(code=None, show=_show_verbose, return_html=False):
+    exc_type, exc_value, _ = sys.exc_info()
+    error_lines = _get_error_lines()
+    results = _check_error(
+        f'{exc_type.__name__}', exc_value, code, error_lines, return_html=return_html)
+    show(results)
     return results
-
-
-# def _find_index_callee(lines, index=None):
-#     if lines is None:
-#         return None
-#     if index is not None:
-#         pattern = f'((\\w|\\.)+?)\\[[\'\"]?{index}[\'\"]?\\]'
-#     else:
-#         pattern = f'((\\w|\\.)+?)\\['
-#     if isinstance(lines, str):
-#         lines = [lines]
-#     for line in lines:
-#         matched = re.search(pattern, line)
-#         if matched:
-#             return matched.group(1)
-#     return None
-
-
-# _find_index_callee("print(1+math.d['a'])", "a")
 
 
 # kogi 定義
@@ -119,47 +111,23 @@ def test_NameError():
     try:
         print(undefined)
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': 'name \'(.*?)\' is not defined',
-    'keys': 'name',
-    'error': '{name}という名前を使おうとしましたが、まだ何の名前かかわかりません',
-    'reason': [
+KOGI_ERR2(
+    pattern='name \'(.*?)\' is not defined',
+    keys='name',
+    error='{name}という名前を使おうとしましたが、まだ一度も使われていません',
+    reason=[
         '{name}の単なる打ち間違い',
-        '変数なら、まだ一度も値を代入していない `{name} = ...`',
-        '関数名やクラス名なら未定義、もしくは定義したセルを実行していない',
-        'もしくは、正しくインポートされていない `from ... import {name}` ',
+        '{name}が変数なら、まだ一度も値を代入していない `{name} = ...`',
+        '{name}が関数名やクラス名なら未定義、もしくは定義したセルを実行していない',
+        '{name}がモジュールなら正しくインポートされていない `import {name}` ',
     ],
-    'solution': '{name}の種類をちゃんと確認しましょう',
-    'hint': '「{name}をインポートするには？」と聞いてみる',
-    'test': test_NameError,
-})
-
-
-def _inspect_method_callee(code, lines, slots):
-    if lines is None:
-        return
-
-    suffix = slots.get('name', 'undefined')
-    pattern = re.compile(f'((\\w|\\.)+?)\\.{suffix}\\s*(.?)')
-
-    if isinstance(lines, str):
-        lines = [lines]
-    for line in lines:
-        matched = pattern.search(line+' ')
-        if matched:
-            next_char = matched.group(3)
-            if next_char.isascii() and next_char.isalnum():
-                continue
-            slots['callee'] = matched.group(1)
-            if next_char == '(':
-                slots['nametype'] = 'メソッド'
-            else:
-                slots['nametype'] = 'プロパティ'
-            return '_callee'
-    return ''
+    solution='{name}の種類をちゃんと確認しましょう',
+    hint='「{name}をインポートするには？」と聞いてみる',
+    test=test_NameError,
+)
 
 
 def test_NoAttribute():
@@ -167,61 +135,85 @@ def test_NoAttribute():
         d = {'a': 1}
         print(d.a)
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': '\'(.*?)\' object has no attribute \'(.*?)\'',
-    'keys': 'type,name',
-    'error': '{type}には、{name}のようなメソッドやプロパティはありません.',
-    'reason': '{name}の打ち間違い、もしくは間違った値が使われている.',
-    'solution': '間違った値が代入された箇所を探してください.',
-    'inspect': _inspect_method_callee,
-    'error_callee': '{callee}は、{type}です. {name}のような{nametype}はありません.',
-    'reason_callee': '{name}の打ち間違い、もしくは{callee}に間違った値が代入されている.',
-    'solution_callee': '{callee}に間違った値を代入した箇所を探してください.',
-    'test': test_NoAttribute,
-})
+KOGI_ERR2(
+    pattern='\'(.*?)\' object has no attribute \'(.*?)\'',
+    keys='type,name',
+    error='{type}には、{name}のようなメソッドやプロパティはありません.',
+    reason='{name}の打ち間違い、もしくは間違った値が使われている.',
+    solution='間違った値が代入された箇所を探してください.',
+    inspect=inspect_callee,
+    error_ext='{callee}は、{type}です. {name}のような{pyname}はありません.',
+    reason_ext='{name}{pyname}の打ち間違い、もしくは{callee}に間違った型の値が代入されている.',
+    solution_ext='{callee}に間違った値を代入した箇所を探してください.',
+    test=test_NoAttribute,
+)
 
 
 def test_ModuleNoAttribute():
     try:
-        import math
-        math.sins(1)
+        import math as m
+        m.sins(1)
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': 'module \'(.*?)\' has no attribute \'(.*?)\'',
-    'keys': 'name,name2',
-    'error': '{name}モジュールには、{name2}のような関数やプロパティはありません',
-    'reason': '{name2}の打ち間違いでは？',
-    'test': test_ModuleNoAttribute,
-})
+KOGI_ERR2(
+    pattern='module \'(.*?)\' has no attribute \'(.*?)\'',
+    keys='module,name',
+    error='{module}モジュールには、{name}のような関数やプロパティはありません',
+    reason='{name}の打ち間違いでは？',
+    solution='dir({module})で利用できる名前を調べてみよう.',
+    inspect=inspect_callee,
+    error_ext='{module}モジュールには、{name}のような{pyname}はありません',
+    test=test_ModuleNoAttribute,
+)
+
+
+def test_ImportError():
+    try:
+        from math import sins
+    except:
+        kogi_check_error()
+
+
+KOGI_ERR2(
+    pattern='ImportError: cannot import name \'(.*?)\' from \'(.*?)\'',
+    keys='name,module',
+    error='モジュール{module}には{name}が見つかりません. ',
+    reason='{name}の打ち間違いか、モジュール{module}の勘違い．',
+    solution='dir({module})で利用できる名前を調べてみよう.',
+    test=test_ImportError,
+)
 
 
 def test_UnsupportedOperand():
     try:
         print(1+'2')
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': 'unsupported operand type\(s\) for (.*?): \'(.*?)\' and \'(.*?)\'',
-    'keys': 'name,type,type2',
-    'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
-    'solution': '{type}と{type2}をどちらかに変換するといいかも',
-    'test': test_UnsupportedOperand,
-})
+KOGI_ERR2(
+    pattern='unsupported operand type\(s\) for (.*?): \'(.*?)\' and \'(.*?)\'',
+    keys='name,type,type2',
+    error='{type}と{type2}の間で計算しようとしたけど、そこでは演算子{name}は使えません.',
+    solution='{type}か{type2}のどちらかの型に変換するといいかも',
+    inspect=inspect_infix,
+    error_ext='{left}と{right}の間で計算しようとしたけど、型がそれぞれ{type}と{type2}で異なり、演算子{name}は使えません.',
+    test=test_UnsupportedOperand,
+)
 
-KOGI_ERR({
-    'pattern': '\'(.*?)\' not supported between instances of \'(.*?)\' and \'(.*?)\'',
-    'keys': 'name,type,type2',
-    'error': '{type}と{type2}の間で演算子{name}を計算しようとしたけど、そこでは使えません.',
-    'solution': '{type}と{type2}をどちらかに変換するといいかも',
-})
+KOGI_ERR2(
+    pattern='\'(.*?)\' not supported between instances of \'(.*?)\' and \'(.*?)\'',
+    keys='name,type,type2',
+    error='{type}と{type2}の間で計算しようとしたけど、そこでは演算子{name}は使えません.',
+    solution='{type}か{type2}のどちらかの型に変換するといいかも',
+    inspect=inspect_infix,
+    error_ext='{left}と{right}の間で計算しようとしたけど、型がそれぞれ{type}と{type2}で異なり、演算子{name}は使えません.',
+)
 
 
 def test_NotCallable():
@@ -229,23 +221,27 @@ def test_NotCallable():
         a = 1
         a()
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': '\'(.*?)\' object is not callable',
-    'keys': 'type',
-    'error': '{type}は、関数ではありません. たぶん、関数名に{type}の値を間違って代入してしまったため関数適用できません.',
-    'solution': 'import builtins',
-    'test': test_NotCallable,
-})
+KOGI_ERR2(
+    pattern='\'(.*?)\' object is not callable',
+    keys='type',
+    error='{type}は、関数ではありません. ',
+    reason='変数名に{type}の値を間違って代入してしまうと発生することがあります.',
+    solution='環境を初期化してみてください',
+    inspect=inspect_funcname,
+    error_ext='{name}は、{type}型であり、関数ではありません. ',
+    reason_ext='{name}に{type}の値を代入してしまうと、発生します.',
+    test=test_NotCallable,
+)
 
 
 def test_NotIterable():
     try:
         list(1)
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
 KOGI_ERR({
@@ -261,7 +257,7 @@ def test_NotSubscriptable():
         a = 1
         a[0]
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
 KOGI_ERR({
@@ -277,7 +273,7 @@ def test_MustBeNoneOr():
     try:
         print(end=1)
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
 KOGI_ERR({
@@ -292,21 +288,23 @@ def test_InvalidKeyword():
     try:
         print(color='red')
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': '\'(.*?)\' is an invalid keyword argument for (.*?)\\(\\)',
-    'keys': 'name,name2',
-    'error': '{name}は、関数もしくはメソッド{name2}で使えるキーワード引数ではありません.',
-    'test': test_InvalidKeyword,
-})
+KOGI_ERR2(
+    pattern='\'(.*?)\' is an invalid keyword argument for (.*?)\\(\\)',
+    keys='name,funcname',
+    error='{name}は、{funcname}の引数として使えるキーワードではありません.',
+    solution='{funcname}のリファレンスを読んで確認してください.',
+    test=test_InvalidKeyword,
+)
 
-KOGI_ERR({
-    'pattern': '(.*?)\\(\\) got an unexpected keyword argument \'(.*?)\'',
-    'keys': 'name,name2',
-    'error': '{name2}は、関数もしくはメソッド{name}で使えるキーワード引数ではありません.'
-})
+KOGI_ERR2(
+    pattern='(.*?)\\(\\) got an unexpected keyword argument \'(.*?)\'',
+    keys='funcname,name',
+    error='{name}は、{funcname}の引数として使えるキーワードではありません.',
+    solution='{funcname}のリファレンスを読んで確認してください.',
+)
 
 
 KOGI_ERR({
@@ -332,7 +330,7 @@ def test_InvalidLiteral():
     try:
         int('a')
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
 KOGI_ERR({
@@ -347,7 +345,7 @@ def test_NotConvert():
     try:
         float('a')
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
 KOGI_ERR({
@@ -363,15 +361,38 @@ def test_OutOfRange():
         s = "ABC"
         s[3]
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': '(\\w+) index out of range',
-    'keys': 'type',
-    'error': 'インデックスが{type}の大きさを超えています. ',
-    'test': test_OutOfRange,
-})
+KOGI_ERR2(
+    pattern='(\\w+) index out of range',
+    keys='type',
+    error='インデックスが{type}の大きさを超えています. ',
+    inspect=inspect_index,
+    error_ext='インデックス{index}が{callee}の大きさを超えています. ',
+    solution_ext='インデックス{index}がlen({callee})未満に収まるように条件を加えてください. ',
+    test=test_OutOfRange,
+)
+
+
+def test_KeyError():
+    try:
+        s = {}
+        s["A"]
+    except:
+        kogi_check_error()
+
+
+KOGI_ERR2(
+    pattern='KeyError: (.+?)$',
+    keys='key',
+    error='キー{key}が見つかりません',
+    inspect=inspect_index,
+    error_ext='{callee}にはキー{key}がありません. ',
+    reason_ext='{index}が未定義なキー{key}として与えられています. ',
+    solution_ext='{callee}のキーを確認しましょう. ',
+    test=test_KeyError,
+)
 
 
 def test_MustBeInteger():
@@ -379,47 +400,53 @@ def test_MustBeInteger():
         s = "ABC"
         s['3']
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': '(\\w+) indices must be integers',
-    'keys': 'type',
-    'error': '{type}のインデックスは、整数でなければなりません.',
-    'test': test_MustBeInteger,
-})
-
-
-def test_KeyError():
-    try:
-        s = "ABC"
-        s[3]
-    except:
-        kogi_translate_error(verbose=True)
-
-
-KOGI_ERR({
-    'pattern': 'KeyError: (.*?)',
-    'keys': 'key',
-    'error': 'キー{key}が見つかりません',
-    'test': test_KeyError,
-})
+KOGI_ERR2(
+    pattern='(\\w+) indices must be integers',
+    keys='type',
+    error='{type}のインデックスは、整数でなければなりません.',
+    inspect=inspect_index,
+    error_ext='{callee}のインデックスは、整数でなければなりません. ',
+    reason_ext='{index}が整数でありません. ',
+    solution_ext='{index}を整数に変換してみては？ ',
+    test=test_MustBeInteger,
+)
 
 
 def test_DividedByZero():
     try:
         print(1/0)
     except:
-        kogi_translate_error(verbose=True)
+        kogi_check_error()
 
 
-KOGI_ERR({
-    'pattern': 'division by zero',
-    'keys': '',
-    'error': 'ゼロで割り算しました. ',
-    'solution': '分母の値を確認してみましょう.',
-    'test': test_DividedByZero
-})
+KOGI_ERR2(
+    pattern='division by zero',
+    keys='',
+    error='ゼロで割り算しました. ',
+    reason='ゼロで割ることはできません. ',
+    solution='分母の値を確認してみましょう.',
+    test=test_DividedByZero
+)
+
+
+def test_FileNotFoundError():
+    try:
+        open('file')
+    except:
+        kogi_check_error()
+
+
+KOGI_ERR2(
+    pattern='FileNotFoundError: \\[Errno (\\d+)\\] No such file or directory: (\'.*\')',
+    keys='errno,file',
+    error='{file}が見つかりません. ',
+    reason='ファイル名やファイルパスが間違っている. ',
+    solution='{file}が存在するか確認しよう.',
+    test=test_FileNotFoundError,
+)
 
 
 def test_DEFINED_ERRORS():

@@ -1,21 +1,4 @@
-# try:
-#     import jaconv
-# except ModuleNotFoundError:
-#     import os
-#     os.system('pip install jaconv')
-#     import jaconv
-
-
-# def normalize(s):
-#     #jaconv.z2h('フィロ･ﾌｨﾅｰﾚ ！？? １abcａｂｃ', kana=False, ascii=True, digit=True)
-#     return jaconv.z2h('s', kana=False, ascii=True, digit=True)
-
-
-def listfy(s):
-    if not isinstance(s, list):
-        return [s]
-    return s
-
+from .utils import han2zen, listfy
 
 VOCAB = {
     '型': 'クラス',
@@ -134,7 +117,7 @@ def remove_tails(s):
 
 
 def response_simply(text, frame):
-    # text = _normalize(text)
+    text = han2zen(text)
     text = remove_tails(text)
     if text.endswith('には'):
         text = text[:-2]

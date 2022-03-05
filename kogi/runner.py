@@ -1,4 +1,4 @@
-from .errors import kogi_translate_error
+from .errors import kogi_check_error
 
 
 def _run_cell(code, option):
@@ -27,7 +27,7 @@ def kogi_run(code, option, run_cell=None):
     try:
         run_cell(code, option)
     except:
-        results = kogi_translate_error(code, return_html=True)
+        results = kogi_check_error(code, return_html=True)
         if 'error_orig' in results:
             update_frame = {
                 'reason': results.get('reason', None),
