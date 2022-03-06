@@ -2,7 +2,7 @@ import IPython
 from IPython.display import display, HTML
 from google.colab import output
 from .utils import listfy
-from .logger import print_nop, lognow, log
+from .logger import kogi_print, log_now, log
 from .nmt import get_nmt
 from .dialog import get_chatbot
 
@@ -374,7 +374,7 @@ TRANSLATE_SCRIPT = '''
 cached = {}
 
 
-def kogi_translate(delay=600, print=print_nop):
+def kogi_translate(delay=600, print=kogi_print):
     nmt = get_nmt()
 
     def convert(text):
@@ -529,11 +529,7 @@ LOGIN_SCRIPT = '''
 '''
 
 
-def print_nop(*x):
-    pass
-
-
-def kogi_login(print=print_nop):
+def kogi_login(print=kogi_print):
     def login(name, code, counts, keys, useragent):
         try:
             code = code.strip()

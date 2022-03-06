@@ -1,6 +1,5 @@
 import uuid
 import json
-import builtins
 
 try:
     from slackweb import Slack
@@ -12,6 +11,20 @@ try:
     slack = Slack(URL)
 except ModuleNotFoundError:
     slack = None
+
+verbose = True
+
+
+def kogi_verbose(enabled: bool):
+    global verbose
+    verbose = enabled
+
+
+def kogi_print(*args, **kw):
+    global verbose
+    if verbose:
+        print('\033[35m[LOG]', *args, **kw)
+        print('\033[0m', end='')
 
 
 def print_nop(*x):
@@ -30,20 +43,20 @@ def log(**kw):
     seq += 1
 
 
-def lognow(print=print_nop):
+def log_now(print):
     global LOGS
     try:
         if len(LOGS) > 0:
             data = LOGS.copy()
             LOGS.clear()
             data = json.dumps(data, ensure_ascii=False)
-            print(data)
+            kogi_print(data)
             if slack is not None:
                 slack.notify(text=data)
     except Exception as e:
-        builtins.print(e)
+        kogi_print(e)
 
 
 if __name__ == '__main__':
     log(a=1, b=2)
-    lognow(print=print)
+    log_now()
