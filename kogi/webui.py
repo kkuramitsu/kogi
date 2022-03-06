@@ -244,6 +244,8 @@ def _display_chat(chatbot=None):
             if bot_text is not None:
                 _display_bot(bot_text, **kogi_frame)
 
+    output.register_callback('notebook.ask', ask)
+
 
 def kogi_say(msg, chatbot=None):
     if _needs_new_chat():
@@ -252,9 +254,7 @@ def kogi_say(msg, chatbot=None):
 
 
 def kogi_help(chatbot=None):
-    if _needs_new_chat():
-        _display_chat(chatbot)
-    _display_bot('どうした？', **kogi_frame)
+    kogi_say('どうした？', chatbot)
 
 
 # translate
