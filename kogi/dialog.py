@@ -1,4 +1,4 @@
-from .utils import han2zen, listfy
+from .utils import zen2han, listfy
 from .render_html import render, render_value, render_astype
 from .dialog_desc import response_desc
 from .nmt import get_nmt
@@ -46,7 +46,7 @@ class Chatbot(object):
         self.render_html = render_html
 
     def response(self, text):
-        text = han2zen(text)
+        text = zen2han(text)
         text = remove_tails(text)
         if text.endswith('には'):
             text = text[:-2]
@@ -55,20 +55,20 @@ class Chatbot(object):
             text = text[:-2]
             return self.response_desc(text)
         if text.startswith('原因') or text.startswith('理由'):
-            if 'reason' in frame:
+            if 'reason' in self.frame:
                 return self.frame['reason']
             else:
                 return self.response_vow(text)
         if text.startswith('解決') or text.startswith('どう'):
-            if 'solution' in frame:
+            if 'solution' in self.frame:
                 return self.frame['solution']
             else:
-                if 'reason' in frame:
+                if 'reason' in self.frame:
                     return '原因を特定してみてね'
                 return 'ググってみたら'
         if text.startswith('ヒント'):
-            if 'hint' in frame:
-                return frame['hint']
+            if 'hint' in self.frame:
+                return self.frame['hint']
             else:
                 return 'ノー ヒント！'
         return self.response_code(text)
