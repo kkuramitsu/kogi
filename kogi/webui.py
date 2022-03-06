@@ -68,6 +68,14 @@ CHAT_CSS = '''
 }
 .box{ background: powderblue; }
 .scrolly{ overflow-y: scroll; }
+textarea {
+  width: 100%; 
+  box-sizing: border-box;  /* ※これがないと横にはみ出る */
+  height:60px; 
+  font-size: large;
+  outline: none; /* ※ブラウザが標準で付加する線を消したいとき */
+  resize: none;
+}
 </style>
 '''
 
@@ -88,7 +96,7 @@ target.scrollIntoView(false);
 <div id='output' class='box scrolly'>
 </div>
 <div style='text-align: right'>
-<textarea id='input' placeholder='質問はここに' style='width: 100%; background: #eee;'></textarea>
+<textarea id='input' placeholder='質問はここに'></textarea>
 </div>
 </div>
 '''

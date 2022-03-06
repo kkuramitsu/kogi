@@ -5,6 +5,7 @@ try:
 except ModuleNotFoundError:
     pass
 
+from .utils import print_nop
 from .dialog import get_chatbot
 from .errors import kogi_check_error
 
@@ -35,7 +36,7 @@ def kogi_run(code, option, run_cell=None):
     try:
         run_cell(code, option)
     except:
-        results = kogi_check_error(code, render_html=True)
+        results = kogi_check_error(code, show=print_nop, render_html=True)
         print(results)
         if 'error_orig' in results:
             kogi_say(results['error'], get_chatbot(results))
