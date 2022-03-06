@@ -1,4 +1,13 @@
+from IPython.core.magic import register_cell_magic
+
+try:
+    from .webui import kogi_say
+except ModuleNotFoundError:
+    pass
+
+from .dialog import get_chatbot
 from .errors import kogi_check_error
+
 
 KOGI_OPTIONS = [
 ]
@@ -26,20 +35,19 @@ def kogi_run(code, option, run_cell=None):
     try:
         run_cell(code, option)
     except:
-        results = kogi_check_error(code, return_html=True)
+        results = kogi_check_error(code, render_html=True)
         print(results)
-        # if 'error_orig' in results:
-        #     update_frame = {
-        #         'reason': results.get('reason', None),
-        #         'solution': results.get('solution', None),
-        #         'hint': results.get('hint', None),
-        #     }
-        #     kogi_chat(results['error'], chat=response_simply,
-        #               update_frame=update_frame)
-        # else:
-        #     update_frame = {
-        #         'reason': '限界しか感じません',
-        #         'solution': 'プログラミングが得意な新しい友達を作ろう',
-        #         'hint': None,
-        #     }
-        #     kogi_chat('くーん', chat=response_simply)
+        if 'error_orig' in results:
+            kogi_say(results['error_orig'], get_chatbot(results))
+        else:
+            kogi_say(('クゥーン'))
+
+
+@register_cell_magic
+def kogi(option, code):
+    kogi_run(code, option)
+
+
+@register_cell_magic
+def corgi(option, code):
+    kogi_run(code, option)

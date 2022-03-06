@@ -1,11 +1,9 @@
-import json
-import uuid
-import os
 import IPython
 from IPython.display import display, HTML
 from google.colab import output
 from .logger import print_nop, lognow, log
 from .nmt import get_nmt
+from .dialog import get_chatbot
 
 # https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
 
@@ -238,7 +236,7 @@ def _display_chat(chatbot=None):
         if 'ありがとう' in your_text or 'バイバイ' in your_text:
             _display_bot('バイバイ')
         else:
-            bot_text = chatbot(your_text, kogi_frame)
+            bot_text = chatbot(your_text)
             _display_you(your_text, **kogi_frame)
             if bot_text is not None:
                 _display_bot(bot_text, **kogi_frame)
@@ -253,7 +251,7 @@ def kogi_say(msg, chatbot=None):
 def kogi_help(chatbot=None):
     if _needs_new_chat():
         _display_chat(chatbot)
-    _display_bot('どうしました？', **kogi_frame)
+    _display_bot('どうした？', **kogi_frame)
 
 
 # translate
