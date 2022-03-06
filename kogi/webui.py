@@ -71,7 +71,7 @@ CHAT_CSS = '''
 textarea {
   width: 100%; 
   box-sizing: border-box;  /* ※これがないと横にはみ出る */
-  height:60px; 
+  height:30px; 
   font-size: large;
   outline: none; /* ※ブラウザが標準で付加する線を消したいとき */
   resize: none;
@@ -87,7 +87,7 @@ inputPane.addEventListener('keydown', (e) => {
   if(e.keyCode == 13) {
     var text = inputPane.value;
     google.colab.kernel.invokeFunction('notebook.ask', [text], {});
-    inputPane.value=''
+    inputPane.value='';
   }
 });
 var target = document.getElementById('output');
@@ -165,62 +165,6 @@ kogi_frame = {  # グローバルフレーム
     'bot_icon': BOT_ICON,
     'display': _display_bot,
 }
-
-
-# def chat_vow(your_text, frame):
-#     if your_text == '':
-#         return 'わん'
-
-#     #print(repr(your_text), frame)
-#     if 'asking' in frame:
-#         asking = frame['asking']
-#         frame[asking] = your_text
-#         del frame['asking']
-
-#     if frame['your_name'] == 'あなた':
-#         frame['asking'] = 'your_name'
-#         return 'お名前は？'
-
-#     if 'access_key' not in frame:
-#         frame['asking'] = 'access_key'
-#         your_name = frame['your_name']
-#         return f'{your_name}さん、アクセスキーは？'
-#     else:
-#         return '出席記録できました. 今日も１日がんばりましょう!'
-
-
-# def kogi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', update_frame={}):
-#     global kogi_frame
-
-#     for key in update_frame:
-#         value = update_frame[key]
-#         if value is None:
-#             del kogi_frame[key]
-#         else:
-#             kogi_frame[key] = value
-
-#     display(HTML(CHAT_CSS.replace('powderblue', background)))
-#     display(HTML(CHAT_HTML))
-
-#     def ask(your_text):
-#         global kogi_frame
-#         your_text = your_text.strip()
-#         if 'ありがとう' in your_text or 'バイバイ' in your_text:
-#             _display_bot('バイバイ')
-#         else:
-#             bot_text = chat(your_text, kogi_frame)
-#             _display_you(your_text, **kogi_frame)
-#             if bot_text is not None:
-#                 _display_bot(bot_text, **kogi_frame)
-
-#     output.register_callback('notebook.ask', ask)
-
-#     if isinstance(msg, str):
-#         msg = [msg]
-#     for m in msg:
-#         _display_bot(m)
-#     if asking is not None:
-#         kogi_frame['asking'] = asking
 
 
 N_GLOBALS = 0
@@ -398,7 +342,7 @@ def kogi_translate(delay=600, print=kogi_print):
             print(e)
         return e
     output.register_callback('notebook.Convert', convert)
-    output.register_callback('notebook.Logger', lognow)
+    output.register_callback('notebook.Logger', log_now)
     display(IPython.display.HTML(TRANSLATE_CSS_HTML))
     SCRIPT = TRANSLATE_SCRIPT.replace('600', str(delay))
     display(IPython.display.HTML(SCRIPT))
