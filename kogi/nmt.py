@@ -1,6 +1,6 @@
 
 import sys
-from nmt_compose import compose
+from .nmt_compose import compose
 
 
 def get_nmt(beams=1):
