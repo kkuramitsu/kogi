@@ -38,9 +38,9 @@ def kogi_run(code, option, run_cell=None):
         results = kogi_check_error(code, render_html=True)
         print(results)
         if 'error_orig' in results:
-            kogi_say(results['error_orig'], get_chatbot(results))
+            kogi_say(results['error'], get_chatbot(results))
         else:
-            kogi_say(('クゥーン'))
+            kogi_say(('くぅーん'))
 
 
 @register_cell_magic

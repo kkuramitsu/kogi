@@ -2,7 +2,7 @@ import sys
 from IPython.core.magic import register_cell_magic
 
 from .errors import kogi_translate_error
-from .chat import kogi_chat
+from .webui import kogi_chat
 
 # _lines = None
 # _outputs = None
@@ -18,7 +18,7 @@ def kogi_run(code, option, run_fn=_run_fn):
     try:
         run_fn(code, option)
     except:
-        kogi_translate_error(code, return_html=True)
+        kogi_translate_error(code, render_html=True)
         kogi_chat()
     # finally:
     #     _lines = None

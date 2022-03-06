@@ -1,6 +1,7 @@
 import IPython
 from IPython.display import display, HTML
 from google.colab import output
+from .utils import listfy
 from .logger import print_nop, lognow, log
 from .nmt import get_nmt
 from .dialog import get_chatbot
@@ -133,9 +134,10 @@ USER_HTML = '''
 
 def _display_bot(bot_text, **kw):
     with output.redirect_to_element('#output'):
-        bot_name = kw.get('bot_name', 'コーギー')
+        bot_name = kw.get('bot_name', 'コギー')
         bot_icon = kw.get('bot_icon', BOT_ICON)
-        display(HTML(BOT_HTML.format(bot_icon, bot_name, bot_text)))
+        for text in listfy(bot_text):
+            display(HTML(BOT_HTML.format(bot_icon, bot_name, text)))
     if 'バイバイ' in bot_text:
         display(HTML(CLEAR_HTML))
 
@@ -144,72 +146,73 @@ def _display_you(your_text, **kw):
     with output.redirect_to_element('#output'):
         your_name = kw.get('your_name', 'あなた')
         your_icon = kw.get('your_icon', YOUR_ICON)
-        display(HTML(USER_HTML.format(your_icon, your_name, your_text)))
+        for text in listfy(your_text):
+            display(HTML(USER_HTML.format(your_icon, your_name, text)))
 
 
 kogi_frame = {  # グローバルフレーム
     'your_name': 'あなた',
     'your_icon': YOUR_ICON,
-    'bot_name': 'コーギー',
+    'bot_name': 'コギー',
     'bot_icon': BOT_ICON,
     'display': _display_bot,
 }
 
 
-def chat_vow(your_text, frame):
-    if your_text == '':
-        return 'わん'
+# def chat_vow(your_text, frame):
+#     if your_text == '':
+#         return 'わん'
 
-    #print(repr(your_text), frame)
-    if 'asking' in frame:
-        asking = frame['asking']
-        frame[asking] = your_text
-        del frame['asking']
+#     #print(repr(your_text), frame)
+#     if 'asking' in frame:
+#         asking = frame['asking']
+#         frame[asking] = your_text
+#         del frame['asking']
 
-    if frame['your_name'] == 'あなた':
-        frame['asking'] = 'your_name'
-        return 'お名前は？'
+#     if frame['your_name'] == 'あなた':
+#         frame['asking'] = 'your_name'
+#         return 'お名前は？'
 
-    if 'access_key' not in frame:
-        frame['asking'] = 'access_key'
-        your_name = frame['your_name']
-        return f'{your_name}さん、アクセスキーは？'
-    else:
-        return '出席記録できました. 今日も１日がんばりましょう!'
+#     if 'access_key' not in frame:
+#         frame['asking'] = 'access_key'
+#         your_name = frame['your_name']
+#         return f'{your_name}さん、アクセスキーは？'
+#     else:
+#         return '出席記録できました. 今日も１日がんばりましょう!'
 
 
-def kogi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', update_frame={}):
-    global kogi_frame
+# def kogi_chat(msg=[], asking=None, chat=chat_vow, background='powderblue', update_frame={}):
+#     global kogi_frame
 
-    for key in update_frame:
-        value = update_frame[key]
-        if value is None:
-            del kogi_frame[key]
-        else:
-            kogi_frame[key] = value
+#     for key in update_frame:
+#         value = update_frame[key]
+#         if value is None:
+#             del kogi_frame[key]
+#         else:
+#             kogi_frame[key] = value
 
-    display(HTML(CHAT_CSS.replace('powderblue', background)))
-    display(HTML(CHAT_HTML))
+#     display(HTML(CHAT_CSS.replace('powderblue', background)))
+#     display(HTML(CHAT_HTML))
 
-    def ask(your_text):
-        global kogi_frame
-        your_text = your_text.strip()
-        if 'ありがとう' in your_text or 'バイバイ' in your_text:
-            _display_bot('バイバイ')
-        else:
-            bot_text = chat(your_text, kogi_frame)
-            _display_you(your_text, **kogi_frame)
-            if bot_text is not None:
-                _display_bot(bot_text, **kogi_frame)
+#     def ask(your_text):
+#         global kogi_frame
+#         your_text = your_text.strip()
+#         if 'ありがとう' in your_text or 'バイバイ' in your_text:
+#             _display_bot('バイバイ')
+#         else:
+#             bot_text = chat(your_text, kogi_frame)
+#             _display_you(your_text, **kogi_frame)
+#             if bot_text is not None:
+#                 _display_bot(bot_text, **kogi_frame)
 
-    output.register_callback('notebook.ask', ask)
+#     output.register_callback('notebook.ask', ask)
 
-    if isinstance(msg, str):
-        msg = [msg]
-    for m in msg:
-        _display_bot(m)
-    if asking is not None:
-        kogi_frame['asking'] = asking
+#     if isinstance(msg, str):
+#         msg = [msg]
+#     for m in msg:
+#         _display_bot(m)
+#     if asking is not None:
+#         kogi_frame['asking'] = asking
 
 
 N_GLOBALS = 0
