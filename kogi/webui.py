@@ -543,6 +543,3 @@ def kogi_login(print=print_nop):
     output.register_callback('notebook.login', login)
     display(IPython.display.HTML(LOGIN_HTML))
     display(IPython.display.HTML(LOGIN_SCRIPT))
-
-
-kogi_login()

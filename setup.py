@@ -21,7 +21,7 @@ setup(name="kogi",
       url="https://github.com/kkuramitsu/kogi",
       packages=['kogi'],
       #package_dir={"": "src"},
-      package_data={'kogi': ['data/*.txt']},
+      package_data={'kogi': ['./*.pegtree', 'data/*.*']},
       install_requires=_requires_from_file('requirements.txt'),
       classifiers=[
           'Development Status :: 4 - Beta',
