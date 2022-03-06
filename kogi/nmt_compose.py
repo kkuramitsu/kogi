@@ -1,4 +1,4 @@
-from utils import zen2han, print_nop
+from .utils import zen2han, print_nop
 import pegtree as pg
 
 import pandas as pd
