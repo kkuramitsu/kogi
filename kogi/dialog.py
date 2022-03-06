@@ -1,7 +1,7 @@
-from kogi.utils import han2zen, listfy
-from kogi.render_html import render, render_value, render_astype
-from kogi.dialog_desc import response_desc
-from kogi.nmt import get_nmt
+from .utils import han2zen, listfy
+from .render_html import render, render_value, render_astype
+from .dialog_desc import response_desc
+from .nmt import get_nmt
 
 # VOCAB = {
 #     '型': 'クラス',
