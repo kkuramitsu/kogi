@@ -3,12 +3,9 @@ import traceback
 import sys
 import re
 
-try:
-    from .dialog import render
-except ImportError:
-    from dialog import render
+from .render_html import render
 
-from error_inspect import inspect_callee, inspect_infix, inspect_funcname, inspect_index
+from .error_inspect import inspect_callee, inspect_infix, inspect_funcname, inspect_index
 
 DEFINED_ERRORS = []
 
@@ -40,7 +37,7 @@ def _formatting(defined, key, ext, results):
         return
 
 
-def _check_error(errtype, errmsg, code=None, errlines=None, return_html=True):
+def _check_error(errtype, errmsg, code=None, errlines=None, render_html=True):
     s = f'{errtype}: {errmsg}'
     results = {'error_type': errtype, 'error': s}
     for defined in DEFINED_ERRORS:
@@ -53,7 +50,7 @@ def _check_error(errtype, errmsg, code=None, errlines=None, return_html=True):
                 if key == '':
                     break
                 results[key] = render(matched.group(
-                    i+1), key, return_html=return_html)
+                    i+1), key, render_html=render_html)
             _ext = ''
             if 'inspect' in defined:
                 _ext = defined['inspect'](code, errlines, results)
@@ -96,11 +93,11 @@ def _show_verbose(results):
             print(' solution:', results.get('solution'), '')
 
 
-def kogi_check_error(code=None, show=_show_verbose, return_html=False):
+def kogi_check_error(code=None, show=_show_verbose, render_html=False):
     exc_type, exc_value, _ = sys.exc_info()
     error_lines = _get_error_lines()
     results = _check_error(
-        f'{exc_type.__name__}', exc_value, code, error_lines, return_html=return_html)
+        f'{exc_type.__name__}', exc_value, code, error_lines, render_html=render_html)
     show(results)
     return results
 

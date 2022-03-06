@@ -33,3 +33,13 @@ _ZEN2HAN = str.maketrans(_ZEN(), _HAN())
 
 def zen2han(s: str) -> str:
     return s.translate(_ZEN2HAN)
+
+
+# HTML render
+
+def render(s: str, type='type', return_html=True) -> str:
+    if not return_html:
+        return s
+    if type.startswith('type'):
+        return f'<span class="type">{s}</span>'
+    return f'<b style="color: #c3c; font-family: monospace;">{s}</b>'

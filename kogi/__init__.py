@@ -1,6 +1,10 @@
 from IPython.core.magic import register_cell_magic
 
-from .webui import kogi_help, kogi_translate, kogi_login
+try:
+    from .webui import kogi_help, kogi_translate, kogi_login
+except ModuleNotFoundError:
+    pass
+
 from .runner import kogi_run, kogi_add_option
 from .atcoder import input, print, _check_atcoder, _run_judge
 
