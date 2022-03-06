@@ -99,12 +99,13 @@ def _display_diff(ground_truth, target):
 def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
+    sample_html = None
     try:
         for key in ['入力例 1', '入力例 2', '入力例 3']:
             if key not in d:
                 continue
-            display(
-                HTML(f'<h4>{key}</h4><pre style="background: #ddd">{d[key]}</pre>'))
+            sample_html = f'<h4>{key}@</h4><pre style="background: #ddd">{d[key]}</pre>'
+            display(HTML(sample_html))
             _lines = [s for s in d[key].split('\n') if len(s) > 0]
             _outputs = []
             res = get_ipython().run_cell(code)
@@ -116,11 +117,12 @@ def _run_judge(code, problem):
                 ratio = difflib.SequenceMatcher(
                     None, result, output_example).ratio()
                 display(HTML(
-                    f'<h4>{key} (近さ: {ratio:.2f})</h4><pre style="background: #ddd">{d[key]}</pre>'))
+                    f'<h4>{key}(正解)</h4><pre style="background: #eee">{d[key]}</pre>'))
                 if ratio > 0.8:
                     _display_diff(output_example, result)
             else:
-                display(HTML('<h4 style="color: green">✔︎</h4>'))
+                pass
+                #display(HTML('<h4 style="color: green">✔︎</h4>'))
     finally:
         _lines = None
         _outputs = None

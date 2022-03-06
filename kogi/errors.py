@@ -304,23 +304,28 @@ KOGI_ERR2(
 )
 
 
-KOGI_ERR({
-    'pattern': 'expected an indented block',
-    'keys': '',
-    'error': 'ここでインデントされるはずです'
-})
+KOGI_ERR2(
+    pattern='expected an indented block',
+    keys='',
+    error='インデントが足りません'
+)
 
-KOGI_ERR({
-    'pattern': 'invalid character in identifier',
-    'keys': '',
-    'error': '半角文字を使うべきところで、全角文字が混ざって使われています'
-})
+KOGI_ERR2(
+    pattern='invalid character in identifier',
+    keys='',
+    error='半角文字を使うべきところで、全角文字が混ざって使われています',
+    solution='日本語入力をオフにして、打ち直そう',
+    hint='先生やTAさんに質問する案件ではありません.',
+)
 
-KOGI_ERR({
-    'pattern': 'unexpected EOF while parsing',
-    'keys': '',
-    'error': 'コードが途中までしか書かれていません. たぶん、括弧やクオートの閉じ忘れの可能性が高いです.'
-})
+KOGI_ERR2(
+    pattern='unexpected EOF while parsing',
+    keys='',
+    error='コードが途中までしか書かれていません. ',
+    reason='たぶん、括弧やクオートの閉じ忘れの可能性が高いです.',
+    solution='エラーの発生した行の前後を含めて、構文エラーを探して！',
+    hint='友達にチェックしてもらうとエラーが見つかるかも',
+)
 
 
 def test_InvalidLiteral():
