@@ -104,7 +104,7 @@ def _run_judge(code, problem):
         for key in ['入力例 1', '入力例 2', '入力例 3']:
             if key not in d:
                 continue
-            sample_html = f'<h4>{key}@</h4><pre style="background: #ddd">{d[key]}</pre>'
+            sample_html = f'<h4>{key}</h4><pre style="background: #ddd">{d[key]}</pre>'
             display(HTML(sample_html))
             _lines = [s for s in d[key].split('\n') if len(s) > 0]
             _outputs = []

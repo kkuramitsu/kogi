@@ -305,9 +305,29 @@ KOGI_ERR2(
 
 
 KOGI_ERR2(
+    pattern='invalid syntax',
+    keys='',
+    error='構文エラーです',
+    reason='Pythonは構文規則通りに書かなければなりません',
+)
+
+KOGI_ERR2(
     pattern='expected an indented block',
     keys='',
-    error='インデントが足りません'
+    error='インデントが足りません',
+)
+
+KOGI_ERR2(
+    pattern='unexpected indent',
+    keys='',
+    error='インデントが余分です',
+)
+
+KOGI_ERR2(
+    pattern='unindent does not match any outer indentation level',
+    keys='',
+    error='インデントの深さが変で、どのブロックに属すのかわかりません',
+    solution='インデントの深さを揃えます',
 )
 
 KOGI_ERR2(
