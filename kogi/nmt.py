@@ -9,17 +9,19 @@ DEVICE = None
 model = None
 tokenizer = None
 
-
-def load_model(model_path):
-    return model, tokenizer
+def load_gdown(model_path='./model', model_id='18W8uCn0C4-VXjBNRT543aRSG1YkQfMrh', quiet=False):
+    os.system('pip install --upgrade gdown')
+    import gdown
+    url = f'https://drive.google.com/uc?id={model_id}'
+    gdown.download(url, 'model.zip', quiet=quiet)
+    os.system(f'unzip model.zip -d {model_path}')
 
 
 def load_nmt(model_path='./model', model_id=None):
     global model, tokenizer, DEVICE
     from google_drive_downloader import GoogleDriveDownloader
     if model_id is not None and not os.path.exists(model_path):
-        GoogleDriveDownloader.download_file_from_google_drive(
-            file_id=model_id, dest_path='./model.zip', unzip=True)
+        load_gdown(model_path=model_path, model_id=model_id)
     try:
         import sentencepiece
     except ModuleNotFoundError:
