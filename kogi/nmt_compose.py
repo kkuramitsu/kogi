@@ -1,7 +1,8 @@
-from .utils import zen2han, print_nop
 import pegtree as pg
-
 import pandas as pd
+from .logger import kogi_print
+from .utils import zen2han
+
 
 TYPE_PREFIX = {
     'type': 'クラス',
@@ -171,11 +172,11 @@ def _translate(s: str) -> str:
 
 
 def compose(translate=_translate):
-    def replace_around(s, always_policy=False, print=print_nop):
+    def replace_around(s, always_policy=False, print=kogi_print):
         s = zen2han(s)
         s, vars = _replace_expression(s, always_policy=always_policy)
         print('[BEFORE]', s)
-        s = _translate(s)
+        s = translate(s)
         print('[AFTER]', s)
         return _replace_special(s, vars)
     return replace_around

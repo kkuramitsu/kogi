@@ -14,7 +14,8 @@ def load_gdown(model_path='./model', model_id='18W8uCn0C4-VXjBNRT543aRSG1YkQfMrh
     import gdown
     url = f'https://drive.google.com/uc?id={model_id}'
     gdown.download(url, 'model.zip', quiet=quiet)
-    os.system(f'unzip model.zip -d {model_path}')
+    os.system(f'rm -rf {model_path}')
+    os.system(f'unzip -d {model_path} -j model.zip')
 
 
 def load_model(model_path='./model', model_id=None):
@@ -103,7 +104,7 @@ def _translate_beam(s: str, beams: int, max_length=64):
 cached = {}
 
 
-def get_nmt2(beams=1):
+def get_nmt(beams=1):
     global model, cached
     if model is None:
         load_model(model_id='1qZmBK0wHO3OZblH8nabuWrrPXU6JInDc')
@@ -117,7 +118,7 @@ def get_nmt2(beams=1):
     return compose(generate)
 
 
-def get_nmt(beams=1):
+def get_nmt0(beams=1):
     return compose()
 
 
