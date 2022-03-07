@@ -17,7 +17,7 @@ def load_gdown(model_path='./model', model_id='18W8uCn0C4-VXjBNRT543aRSG1YkQfMrh
     os.system(f'unzip model.zip -d {model_path}')
 
 
-def load_nmt(model_path='./model', model_id=None):
+def load_model(model_path='./model', model_id=None):
     global model, tokenizer, DEVICE
     from google_drive_downloader import GoogleDriveDownloader
     if model_id is not None and not os.path.exists(model_path):
@@ -42,7 +42,7 @@ def load_nmt(model_path='./model', model_id=None):
         model, {torch.nn.Linear}, dtype=torch.qint8
     ).to(DEVICE)
     tokenizer = MT5Tokenizer.from_pretrained(model_path, is_fast=True)
-    tokenizer.add_tokens([f'<e{i}>' for i in range(16)])
+    #tokenizer.add_tokens([f'<e{i}>' for i in range(16)])
 
 
 def greedy_search(s: str, max_length=128, beam=1) -> str:
@@ -108,7 +108,6 @@ def get_nmt2(beams=1):
     if model is None:
         load_model(model_id='1qZmBK0wHO3OZblH8nabuWrrPXU6JInDc')
     cached = {}
-
     def generate(s, max_length=128):
         if s in cached:
             return cached[s]
