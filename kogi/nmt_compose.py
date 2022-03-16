@@ -168,30 +168,23 @@ def _replace_special(s: str, vars: dict) -> str:
 
 
 def _translate(s: str) -> str:
-    return f'translate: {s}'
+    return f'trans: {s}'
 
 
 def compose(translate=_translate):
     def replace_around(s, always_policy=False, print=kogi_print):
         s = zen2han(s)
-        s, vars = _replace_expression(s, always_policy=always_policy)
-        print('[BEFORE]', s)
-        s = translate(s)
-        print('[AFTER]', s)
-        return _replace_special(s, vars)
+        if s.startswith('trans'):
+            s, vars = _replace_expression(s, always_policy=always_policy)
+            print('[BEFORE]', s)
+            s = translate(s)
+            print('[AFTER]', s)
+            return _replace_special(s, vars)
+        else:
+            return translate(s)
     return replace_around
 
 
 if __name__ == '__main__':
     tr = compose()
     tr('「a」をみる', always_policy=True, print=print)
-
-# def compose_nmt(nmt, replace_before=replace_expression, replace_after=replace_special):
-#     def translate(s, beams=5):
-#         s, vars = replace_before(s)
-#         pred, prob = nmt(s, max(beams, 5))
-#         pred = [replace_after(s, vars) for s in pred]
-#         if beams <= 1:
-#             return pred[0]
-#         return pred, prob
-#     return translate

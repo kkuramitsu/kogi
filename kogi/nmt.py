@@ -9,7 +9,9 @@ DEVICE = None
 model = None
 tokenizer = None
 
-def load_gdown(model_path='./model', model_id='18W8uCn0C4-VXjBNRT543aRSG1YkQfMrh', quiet=False):
+
+def _load_gdown(model_path, model_id, quiet=False):
+    kogi_print('Downloading Kogi Programming AI...')
     os.system('pip install --upgrade gdown')
     import gdown
     url = f'https://drive.google.com/uc?id={model_id}'
@@ -18,32 +20,27 @@ def load_gdown(model_path='./model', model_id='18W8uCn0C4-VXjBNRT543aRSG1YkQfMrh
     os.system(f'unzip -d {model_path} -j model.zip')
 
 
-def load_model(model_path='./model', model_id=None):
+def load_model(model_path='./kogi_model', model_id=None):
     global model, tokenizer, DEVICE
-    from google_drive_downloader import GoogleDriveDownloader
-    if model_id is not None and not os.path.exists(model_path):
-        load_gdown(model_path=model_path, model_id=model_id)
+    if not os.path.exists(model_path):
+        _load_gdown(model_path=model_path, model_id=model_id)
     try:
         import sentencepiece
     except ModuleNotFoundError:
         os.system('pip install sentencepiece')
     import torch
     try:
-        from transformers import MT5ForConditionalGeneration, MT5Tokenizer
+        from transformers import T5ForConditionalGeneration, MT5Tokenizer
     except ModuleNotFoundError:
         os.system('pip install transformers')
-        from transformers import MT5ForConditionalGeneration, MT5Tokenizer
+        from transformers import T5ForConditionalGeneration, MT5Tokenizer
 
     USE_GPU = torch.cuda.is_available()
     DEVICE = torch.device('cuda:0' if USE_GPU else 'cpu')
     kogi_print('DEVICE :', DEVICE)
 
-    model = MT5ForConditionalGeneration.from_pretrained(model_path)
-    model = torch.quantization.quantize_dynamic(
-        model, {torch.nn.Linear}, dtype=torch.qint8
-    ).to(DEVICE)
+    model = T5ForConditionalGeneration.from_pretrained(model_path)
     tokenizer = MT5Tokenizer.from_pretrained(model_path, is_fast=True)
-    #tokenizer.add_tokens([f'<e{i}>' for i in range(16)])
 
 
 def greedy_search(s: str, max_length=128, beam=1) -> str:
@@ -104,12 +101,13 @@ def _translate_beam(s: str, beams: int, max_length=64):
 cached = {}
 
 
-def get_nmt(beams=1):
+def get_nmt():
     global model, cached
     if model is None:
-        load_model(model_id='1qZmBK0wHO3OZblH8nabuWrrPXU6JInDc')
+        load_model(model_id='1arLlC4cTg8bhAjk1QxjaHLOVnHoJ1WHr')
     cached = {}
-    def generate(s, max_length=128):
+
+    def generate(s, max_length=80):
         if s in cached:
             return cached[s]
         t = greedy_search(s, max_length=max_length)
