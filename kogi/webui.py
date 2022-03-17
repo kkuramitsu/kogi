@@ -481,7 +481,7 @@ LOGIN_SCRIPT = '''
 '''
 
 
-def kogi_login(access_key=None, slack_key=None, print=kogi_print):
+def kogi_login(ai_key=None, slack_key=None, print=kogi_print):
     def login(name, code, counts, keys, useragent):
         code = code.strip()
         keys = keys.split('\n')[-1]
@@ -491,5 +491,5 @@ def kogi_login(access_key=None, slack_key=None, print=kogi_print):
     display(IPython.display.HTML(LOGIN_HTML))
     display(IPython.display.HTML(LOGIN_SCRIPT))
     load_slack(slack_key)
-    if access_key is not None:
-        kogi_enable_ai(access_key, start_loading=True)
+    if ai_key is not None:
+        kogi_enable_ai(ai_key, start_loading=True)

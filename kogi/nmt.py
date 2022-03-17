@@ -104,7 +104,7 @@ def greedy_search(s: str, max_length=128, beam=1) -> str:
 model_id = None
 
 
-def kogi_enable_ai(access_key='1arLlC4cTg8bhAjk1QxjaHLOVnHoJ1WHr', start_loading=False):
+def kogi_enable_ai(access_key:str, start_loading=False):
     global model_id
     model_id = access_key
     if model_id is not None:
