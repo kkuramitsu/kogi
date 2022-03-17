@@ -71,7 +71,7 @@ def check_logging():
     if len(LOGS) > 32: 
         return True
 
-def send_log(right_now=True, print=kogi_print):
+def send_log(right_now=False, print=kogi_print):
     global epoch, LOGS
     try:
         now = datetime.now().timestamp()

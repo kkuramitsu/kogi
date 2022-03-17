@@ -12,38 +12,41 @@ cached = {}
 
 
 def _load_gdown(model_path, model_id, quiet=False):
-    kogi_print('Downloading Kogi Programming AI...')
+    kogi_print('Downloading Kogi Programming AI Model...')
     os.system('pip install --upgrade gdown')
     import gdown
     url = f'https://drive.google.com/uc?id={model_id}'
+
     gdown.download(url, 'model.zip', quiet=quiet)
     os.system(f'rm -rf {model_path}')
     os.system(f'unzip -d {model_path} -j model.zip')
 
 
-def load_model(model_path='./kogi_model', model_id=None):
+def load_model(model_id, model_path='./kogi_model'):
     global model, tokenizer, cached, DEVICE
     if not os.path.exists(model_path):
         _load_gdown(model_path=model_path, model_id=model_id)
-    kogi_print('Initializing Transormers and T5 ...')
-    try:
-        import sentencepiece
-    except ModuleNotFoundError:
-        os.system('pip install sentencepiece')
-    import torch
-    try:
-        from transformers import T5ForConditionalGeneration, MT5Tokenizer
-    except ModuleNotFoundError:
-        os.system('pip install transformers')
-        from transformers import T5ForConditionalGeneration, MT5Tokenizer
 
-    USE_GPU = torch.cuda.is_available()
-    DEVICE = torch.device('cuda:0' if USE_GPU else 'cpu')
-    kogi_print('DEVICE :', DEVICE)
+    if os.path.exists(model_path):
+        kogi_print('Initializing Transormers and T5 ...')
+        try:
+            import sentencepiece
+        except ModuleNotFoundError:
+            os.system('pip install sentencepiece')
+        import torch
+        try:
+            from transformers import T5ForConditionalGeneration, MT5Tokenizer
+        except ModuleNotFoundError:
+            os.system('pip install transformers')
+            from transformers import T5ForConditionalGeneration, MT5Tokenizer
 
-    model = T5ForConditionalGeneration.from_pretrained(model_path)
-    tokenizer = MT5Tokenizer.from_pretrained(model_path, is_fast=True)
-    cached = {}
+        USE_GPU = torch.cuda.is_available()
+        DEVICE = torch.device('cuda:0' if USE_GPU else 'cpu')
+        kogi_print('DEVICE :', DEVICE)
+
+        model = T5ForConditionalGeneration.from_pretrained(model_path)
+        tokenizer = MT5Tokenizer.from_pretrained(model_path, is_fast=True)
+        cached = {}
 
 
 def greedy_search(s: str, max_length=128, beam=1) -> str:
@@ -104,7 +107,7 @@ def greedy_search(s: str, max_length=128, beam=1) -> str:
 model_id = None
 
 
-def kogi_enable_ai(access_key:str, start_loading=False):
+def kogi_enable_ai(access_key: str, start_loading=False):
     global model_id
     model_id = access_key
     if model_id is not None:
