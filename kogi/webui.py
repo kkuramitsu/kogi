@@ -2,7 +2,7 @@ import IPython
 from IPython.display import display, HTML
 from google.colab import output
 from .utils import listfy
-from .logger import kogi_print, log_now, log
+from .logger import load_slack, kogi_print, log, send_log, print_nop, record_login
 from .nmt import get_nmt, kogi_enable_ai
 from .dialog import get_chatbot
 
@@ -10,7 +10,6 @@ from .dialog import get_chatbot
 
 BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
 #BOT_ICON = 'https://kohacu.com/wp-content/uploads/2021/05/kohacu.com_samune_003370-768x768.png'
-# 'https://chojugiga.com/c/choju51_0039/s512_choju51_0039_0.png'
 YOUR_ICON = 'https://2.bp.blogspot.com/-VVtgu8RyEJo/VZ-QWqgI_wI/AAAAAAAAvKY/N-xnZvqeGYY/s800/girl_question.png'
 
 CHAT_CSS = '''
@@ -82,12 +81,19 @@ textarea {
 CHAT_HTML = '''
 <div id='main'>
 <script>
+var timer = null;
 var inputPane = document.getElementById('input');
 inputPane.addEventListener('keydown', (e) => {
   if(e.keyCode == 13) {
     var text = inputPane.value;
     google.colab.kernel.invokeFunction('notebook.ask', [text], {});
     inputPane.value='';
+    if(timer !== null) {
+        clearTimeout(timer);
+    }
+    timer = setTimeout(()=>{
+        google.colab.kernel.invokeFunction('notebook.log', [], {});
+    }, 1000*60*5);
   }
 });
 var target = document.getElementById('output');
@@ -192,11 +198,13 @@ def _display_chat(chatbot=None):
             _display_bot('バイバイ')
         else:
             bot_text = chatbot(your_text)
+            log(type='chat', user=your_text, bot=bot_text)
             _display_you(your_text, **kogi_frame)
             if bot_text is not None:
                 _display_bot(bot_text, **kogi_frame)
 
     output.register_callback('notebook.ask', ask)
+    output.register_callback('notebook.log', send_log)
 
 
 def kogi_say(msg, chatbot=None):
@@ -307,8 +315,8 @@ TRANSLATE_SCRIPT = '''
             })();
         }, 600);  // 何も打たななかったら600ms秒後に送信
         logtimer = setTimeout(() => {
-            logtimer = null;
-            google.colab.kernel.invokeFunction('notebook.Logger', [text], {});
+            // logtimer = null;
+            google.colab.kernel.invokeFunction('notebook.Logger', [], {});
         }, 60*1000*5); // 5分に１回まとめて送信
     });
 </script>
@@ -318,7 +326,7 @@ TRANSLATE_SCRIPT = '''
 cached = {}
 
 
-def kogi_translate(delay=600, print=kogi_print):
+def kogi_translate(delay=600, print=print_nop):
     nmt = get_nmt()
 
     def convert(text):
@@ -342,7 +350,7 @@ def kogi_translate(delay=600, print=kogi_print):
             print(e)
         return e
     output.register_callback('notebook.Convert', convert)
-    output.register_callback('notebook.Logger', log_now)
+    output.register_callback('notebook.Logger', send_log)
     display(IPython.display.HTML(TRANSLATE_CSS_HTML))
     SCRIPT = TRANSLATE_SCRIPT.replace('600', str(delay))
     display(IPython.display.HTML(SCRIPT))
@@ -473,24 +481,15 @@ LOGIN_SCRIPT = '''
 '''
 
 
-def kogi_login(access_key=None, print=kogi_print):
+def kogi_login(access_key=None, slack_key=None, print=kogi_print):
     def login(name, code, counts, keys, useragent):
-        try:
-            code = code.strip()
-            keys = keys.split('\n')[-1]
-            jsondata = {
-                'name': name,
-                'code': code,
-                'keys': keys,
-                'counts': counts,
-                'browser': useragent,
-            }
-            print(jsondata)
-        except Exception as e:
-            print(e)
+        code = code.strip()
+        keys = keys.split('\n')[-1]
+        record_login(uid=name, code=code, keys=keys, counts=counts, browser=useragent)
 
     output.register_callback('notebook.login', login)
     display(IPython.display.HTML(LOGIN_HTML))
     display(IPython.display.HTML(LOGIN_SCRIPT))
+    load_slack(slack_key)
     if access_key is not None:
         kogi_enable_ai(access_key, start_loading=True)
