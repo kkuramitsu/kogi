@@ -13,7 +13,7 @@ def kogi_verbose(enabled: bool):
 def kogi_print(*args, **kw):
     global verbose
     if verbose:
-        print('\033[35m[LOG]', *args, **kw)
+        print('\033[35m[🐶]', *args, **kw)
         print('\033[0m', end='')
 
 

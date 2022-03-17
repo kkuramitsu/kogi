@@ -6,6 +6,13 @@ from .logger import load_slack, kogi_print, log, send_log, print_nop, record_log
 from .nmt import get_nmt, kogi_enable_ai
 from .dialog import get_chatbot
 
+def debug_log():
+    try:
+        kogi_print('recieving events')
+        send_log()
+    except Exception as e:
+        kogi_print(e)
+
 # https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
 
 BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
@@ -204,7 +211,7 @@ def _display_chat(chatbot=None):
                 _display_bot(bot_text, **kogi_frame)
 
     output.register_callback('notebook.ask', ask)
-    output.register_callback('notebook.log', send_log)
+    output.register_callback('notebook.log', debug_log)
 
 
 def kogi_say(msg, chatbot=None):
@@ -350,7 +357,7 @@ def kogi_translate(delay=600, print=print_nop):
             print(e)
         return e
     output.register_callback('notebook.Convert', convert)
-    output.register_callback('notebook.Logger', send_log)
+    output.register_callback('notebook.Logger', debug_log)
     display(IPython.display.HTML(TRANSLATE_CSS_HTML))
     SCRIPT = TRANSLATE_SCRIPT.replace('600', str(delay))
     display(IPython.display.HTML(SCRIPT))
