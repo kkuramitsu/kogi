@@ -3,7 +3,7 @@ from IPython.display import display, HTML
 from google.colab import output
 from .utils import listfy
 from .logger import kogi_print, log_now, log
-from .nmt import get_nmt
+from .nmt import get_nmt, kogi_enable_ai
 from .dialog import get_chatbot
 
 # https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
@@ -473,7 +473,7 @@ LOGIN_SCRIPT = '''
 '''
 
 
-def kogi_login(print=kogi_print):
+def kogi_login(access_key=None, print=kogi_print):
     def login(name, code, counts, keys, useragent):
         try:
             code = code.strip()
@@ -492,3 +492,5 @@ def kogi_login(print=kogi_print):
     output.register_callback('notebook.login', login)
     display(IPython.display.HTML(LOGIN_HTML))
     display(IPython.display.HTML(LOGIN_SCRIPT))
+    if access_key is not None:
+        kogi_enable_ai(access_key, start_loading=True)

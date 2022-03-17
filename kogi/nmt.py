@@ -8,6 +8,7 @@ from .nmt_compose import compose
 DEVICE = None
 model = None
 tokenizer = None
+cached = {}
 
 
 def _load_gdown(model_path, model_id, quiet=False):
@@ -21,9 +22,10 @@ def _load_gdown(model_path, model_id, quiet=False):
 
 
 def load_model(model_path='./kogi_model', model_id=None):
-    global model, tokenizer, DEVICE
+    global model, tokenizer, cached, DEVICE
     if not os.path.exists(model_path):
         _load_gdown(model_path=model_path, model_id=model_id)
+    kogi_print('Initializing Transormers and T5 ...')
     try:
         import sentencepiece
     except ModuleNotFoundError:
@@ -41,6 +43,7 @@ def load_model(model_path='./kogi_model', model_id=None):
 
     model = T5ForConditionalGeneration.from_pretrained(model_path)
     tokenizer = MT5Tokenizer.from_pretrained(model_path, is_fast=True)
+    cached = {}
 
 
 def greedy_search(s: str, max_length=128, beam=1) -> str:
@@ -55,57 +58,65 @@ def greedy_search(s: str, max_length=128, beam=1) -> str:
     return tokenizer.decode(greedy_output[0], skip_special_tokens=True)
 
 
-def beam_search(s, max_length=128, beams=5):
-    input_ids = tokenizer.encode_plus(
-        s,
-        add_special_tokens=True,
-        max_length=max_length,
-        padding="do_not_pad",
-        truncation=True,
-        return_tensors='pt').input_ids.to(DEVICE)
-    beam_outputs = model.generate(
-        input_ids,
-        max_length=max_length,
-        num_beams=beams,
-        no_repeat_ngram_size=2,
-        num_return_sequences=beams,
-        early_stopping=True
-    )
-    return [tokenizer.decode(beam_output, skip_special_tokens=True) for beam_output in beam_outputs]
+# def beam_search(s, max_length=128, beams=5):
+#     input_ids = tokenizer.encode_plus(
+#         s,
+#         add_special_tokens=True,
+#         max_length=max_length,
+#         padding="do_not_pad",
+#         truncation=True,
+#         return_tensors='pt').input_ids.to(DEVICE)
+#     beam_outputs = model.generate(
+#         input_ids,
+#         max_length=max_length,
+#         num_beams=beams,
+#         no_repeat_ngram_size=2,
+#         num_return_sequences=beams,
+#         early_stopping=True
+#     )
+#     return [tokenizer.decode(beam_output, skip_special_tokens=True) for beam_output in beam_outputs]
 
 
-def _translate_beam(s: str, beams: int, max_length=64):
-    global model, tokenizer, DEVICE
-    model.config.update({"num_beams": beams})
-    input_ids = tokenizer.encode_plus(s,
-                                      add_special_tokens=True,
-                                      max_length=max_length,
-                                      # padding="max_length",
-                                      padding="do_not_pad",
-                                      truncation=True,
-                                      return_tensors='pt').input_ids.to(DEVICE)
-    predict = model.generate(input_ids,
-                             return_dict_in_generate=True,
-                             output_scores=True,
-                             length_penalty=8.0,
-                             max_length=max_length,
-                             num_return_sequences=beams,
-                             early_stopping=True)
-    pred_list = sorted([[tokenizer.decode(predict.sequences[i], skip_special_tokens=True),
-                         predict.sequences_scores[i].item()] for i in range(len(predict))], key=lambda x: x[1], reverse=True)
-    sentences_list = [i[0] for i in pred_list]
-    scores_list = [i[1] for i in pred_list]
-    return sentences_list, scores_list
+# def _translate_beam(s: str, beams: int, max_length=64):
+#     global model, tokenizer, DEVICE
+#     model.config.update({"num_beams": beams})
+#     input_ids = tokenizer.encode_plus(s,
+#                                       add_special_tokens=True,
+#                                       max_length=max_length,
+#                                       # padding="max_length",
+#                                       padding="do_not_pad",
+#                                       truncation=True,
+#                                       return_tensors='pt').input_ids.to(DEVICE)
+#     predict = model.generate(input_ids,
+#                              return_dict_in_generate=True,
+#                              output_scores=True,
+#                              length_penalty=8.0,
+#                              max_length=max_length,
+#                              num_return_sequences=beams,
+#                              early_stopping=True)
+#     pred_list = sorted([[tokenizer.decode(predict.sequences[i], skip_special_tokens=True),
+#                          predict.sequences_scores[i].item()] for i in range(len(predict))], key=lambda x: x[1], reverse=True)
+#     sentences_list = [i[0] for i in pred_list]
+#     scores_list = [i[1] for i in pred_list]
+#     return sentences_list, scores_list
 
 
-cached = {}
+model_id = None
+
+
+def kogi_enable_ai(access_key='1arLlC4cTg8bhAjk1QxjaHLOVnHoJ1WHr', start_loading=False):
+    global model_id
+    model_id = access_key
+    if model_id is not None:
+        load_model(model_id)
 
 
 def get_nmt():
     global model, cached
+    if model_id is None:
+        return compose(lambda s: 'わん')
     if model is None:
-        load_model(model_id='1arLlC4cTg8bhAjk1QxjaHLOVnHoJ1WHr')
-    cached = {}
+        load_model(model_id)
 
     def generate(s, max_length=80):
         if s in cached:
@@ -114,10 +125,6 @@ def get_nmt():
         cached[s] = t
         return t
     return compose(generate)
-
-
-def get_nmt0(beams=1):
-    return compose()
 
 
 if __name__ == '__main__':

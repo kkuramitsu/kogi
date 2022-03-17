@@ -44,6 +44,7 @@ class Chatbot(object):
         self.frame = {} if frame is None else frame
         self.frame.update(get_global_frame())
         self.render_html = render_html
+        self.nmt = get_nmt()
 
     def response(self, text):
         text = zen2han(text)
@@ -74,8 +75,7 @@ class Chatbot(object):
         return self.response_code(text)
 
     def response_translate(self, text):
-        nmt = get_nmt()
-        return nmt(text)
+        return self.nmt(f'trans: {text}')
 
     def response_desc(self, text):
         return response_desc(text)
@@ -95,7 +95,7 @@ class Chatbot(object):
         return [f'{code}の型は{tyname}。値は', value]
 
     def response_vow(self, text):
-        return 'わん'
+        return self.nmt(f'talk: {text}')
 
 
 def get_chatbot(frame=None):
