@@ -492,4 +492,8 @@ def kogi_login(ai_key=None, slack_key=None, print=kogi_print):
     display(IPython.display.HTML(LOGIN_SCRIPT))
     load_slack(slack_key)
     if ai_key is not None:
-        kogi_enable_ai(ai_key, start_loading=True)
+        try:
+            kogi_enable_ai(ai_key, start_loading=True)
+        except Exception as e:
+            print('Disabled AI', e)
+            kogi_enable_ai(None, start_loading=True)
