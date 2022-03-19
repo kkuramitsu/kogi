@@ -26,6 +26,17 @@ def print(*a, **kw):
         _outputs.append(s)
 
 
+def _get_url(problem):
+    if '/' in problem:
+        problem, _, _ = problem.partition('&')
+        return problem
+    problem = problem.lower()
+    if problem[-1] in 'abcdefgh':
+        num = problem[-1]
+        problem = problem[:-1].replace('_', '').replace('-', '')
+    return f'https://atcoder.jp/contests/{problem}/tasks/{problem}_{num}'
+
+
 SAMPLE = {}
 
 
@@ -36,8 +47,8 @@ def _get_sample(problem):
     if '_' in problem:
         problem, num = problem.split('_')
     else:
-        num = problem[-1]
-        problem = problem[:-1]
+        num = problem[-1].lower()
+        problem = problem[:-1].lower()
     pid = f'{problem}_{num}'
     if pid in SAMPLE:
         return SAMPLE[pid]
@@ -101,25 +112,17 @@ JUDGE_CSS = '''
 .parent {
   background-color: #edebeb;
   width: 100%;
-  height: 150px;
+  //height: 150px;
 }
 textarea {
   width: 100%; 
   box-sizing: border-box;  /* ※これがないと横にはみ出る */
-  height:120px; 
+  //height:120px; 
   font-size: large;
   outline: none;           /* ※ブラウザが標準で付加する線を消したいとき */
   resize: none;
 }
-.box11{
-//    padding: 0.5em 1em;
-//    margin: 2em 0;
-    color: #5d627b;
-    background: white;
-    border-top: solid 5px #5d627b;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.22);
-}
-.box18{
+.box18{  // ひだり
   //padding: 0.2em 0.5em;
   //margin: 2em 0;
   color: #565656;
@@ -128,16 +131,15 @@ textarea {
   background-repeat: no-repeat;
   background-position: top right;
   background-color:rgba(255,255,255,0.8);
-  background-blend-mode:lighten;
   //box-shadow: 0px 0px 0px 10px #ffeaea;
   border: dashed 2px #ffc3c3;
   //border-radius: 8px;
 }
 .box16{
-    //padding: 0.5em 1em;
-    //margin: 2em 0;
-    background: -webkit-repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
-    background: repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #D5FFB0, #D5FFB0 3px,#ffffff 3px, #ffffff 7px);
+}
+.box17{
+    background-image: repeating-linear-gradient(45deg, rgba(255, 0, 0, .3), rgba(255, 0, 0, .3) 10px, #FFEFF7 10px, #FFEFF7 20px);
 }
 .box24 {
     position: relative;
@@ -159,16 +161,24 @@ textarea {
 JUDGE_HTML = '''
 <div class="parent">
 <h4>{title}</h4>
-<pre>{input}</pre>
+<pre>{input}
+{input}
+{input}
+</pre>
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="input">実行結果</label>
-<textarea id="input" class="box16" readonly>{output}</textarea>
+<textarea id="input" class="box16" style="height:{height}" readonly>{output}</textarea>
 </div>
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="outout">正解例</label>
-<textarea id="output" class="box18" readonly>{sample}</textarea>
+<textarea id="output" class="box18" style="height:{height}" readonly>{sample}</textarea>
 </div>
 </div>
+'''
+
+AC_HTML = '''
+AtCoderでACを取るためには、<b>制約条件</b>を満たす全ての入力にパスするようにプログラムする必要があります。<br/>
+もう一度、確認してから<a href="{url}" target="atcoder">提出</a>しましょう。
 '''
 
 
@@ -176,6 +186,7 @@ def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
     try:
+        ac = 0
         display(HTML(JUDGE_CSS))
         for key in ['入力例 1', '入力例 2', '入力例 3']:
             if key not in d:
@@ -189,17 +200,11 @@ def _run_judge(code, problem):
             key = key.replace('入力', '出力')
             data['sample'] = d[key]
             data['output'] = ''.join(_outputs)
+            data['box'] = 'box16' if data['sample'] == data['output'] else 'box17'
+            ac += 1 if data['sample'] == data['output'] else 0
             display(HTML(JUDGE_HTML.format(**data)))
-            # if result != output_example:
-            #     ratio = difflib.SequenceMatcher(
-            #         None, result, output_example).ratio()
-            #     display(HTML(
-            #         f'<h4>{key}(正解)</h4><pre style="background: #eee">{d[key]}</pre>'))
-            #     if ratio > 0.8:
-            #         _display_diff(output_example, result)
-            # else:
-            #     pass
-            #     #display(HTML('<h4 style="color: green">✔︎</h4>'))
+        if ac == 3:
+            display(HTML.format(url=_get_url(problem)))
     finally:
         _lines = None
         _outputs = None
