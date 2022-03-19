@@ -181,9 +181,10 @@ JUDGE_HTML = '''
 </div>
 <div style="float: left; width: 48%">
 <label class="box24" for="outout">正解例</label>
-<textarea id="output" class="{box}" style="height:{height}" readonly>{sample}</textarea>
+<textarea id="output" class="box18" style="height:{height}" readonly>{sample}</textarea>
 </div>
 </div>
+<p style="clear:both;"></p>
 '''
 
 AC_HTML = '''
