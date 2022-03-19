@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import builtins
 from IPython.display import display, HTML
-from logger import kogi_print
+from .logger import kogi_print, log, send_log
 
 _lines = None
 _outputs = None
@@ -28,11 +28,22 @@ def print(*a, **kw):
         builtins.print(*a, **kw)
 
 
+def _get_problemid(problem):
+    problem, _, _ = problem.partition('&')
+    _, _, problem = problem.rpartition('/')
+    problem = problem.lower()
+    num = 'a'
+    if problem[-1] in 'abcdefgh':
+        num = problem[-1]
+        problem = problem[:-1].replace('_', '').replace('-', '')
+    return f'{problem}_{num}'
+
+
 def _get_url(problem):
     if '/' in problem:
-        problem, _, _ = problem.partition('&')
         return problem
     problem = problem.lower()
+    num = 'a'
     if problem[-1] in 'abcdefgh':
         num = problem[-1]
         problem = problem[:-1].replace('_', '').replace('-', '')
@@ -212,6 +223,8 @@ def _run_judge(code, problem):
             display(HTML(JUDGE_HTML.format(**data)))
         if ac == 3:
             display(HTML(AC_HTML.format(url=_get_url(problem))))
+        log(type='atcoder', problem=_get_problemid(problem), ac=ac, code=code)
+        send_log(right_now=True)
     finally:
         _lines = None
         _outputs = None
