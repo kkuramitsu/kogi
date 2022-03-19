@@ -172,7 +172,7 @@ textarea {
 '''
 
 JUDGE_HTML = '''
-<div class="parent">
+<div class="parent" style="clear:both;">
 <h4>{title}</h4>
 <pre>{input}</pre>
 <div style="float: left; width: 48%; text-align: right;">
@@ -183,13 +183,14 @@ JUDGE_HTML = '''
 <label class="box24" for="outout">正解例</label>
 <textarea id="output" class="{box}" style="height:{height}" readonly>{sample}</textarea>
 </div>
-<div>　</div>
 </div>
 '''
 
 AC_HTML = '''
+<div style="clear:both;">
 AtCoderでACを取るためには、<b>制約条件</b>を満たす全ての入力にパスするようにプログラムする必要があります。<br/>
 もう一度、確認してから<a href="{url}" target="atcoder">提出</a>しましょう。
+</div>
 '''
 
 
