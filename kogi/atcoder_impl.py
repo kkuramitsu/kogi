@@ -18,12 +18,13 @@ def input(s=''):
 
 
 def print(*a, **kw):
-    builtins.print(*a, **kw)
     if _outputs is not None:
         sep = kw.get('sep', ' ')
         end = kw.get('end', '\n')
         s = sep.join([str(s) for s in a]) + end
         _outputs.append(s)
+    else:
+        builtins.print(*a, **kw)
 
 
 def _get_url(problem):
@@ -161,10 +162,7 @@ textarea {
 JUDGE_HTML = '''
 <div class="parent">
 <h4>{title}</h4>
-<pre>{input}
-{input}
-{input}
-</pre>
+<pre>{input}</pre>
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="input">実行結果</label>
 <textarea id="input" class="box16" style="height:{height}" readonly>{output}</textarea>
@@ -185,6 +183,11 @@ AtCoderでACを取るためには、<b>制約条件</b>を満たす全ての入�
 def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
+    if len(d) == 0:
+        kogi_print('問題データが読み込めません', {})
+        res = get_ipython().run_cell(code)
+        res.raise_error()
+        return
     try:
         ac = 0
         display(HTML(JUDGE_CSS))
@@ -202,9 +205,12 @@ def _run_judge(code, problem):
             data['output'] = ''.join(_outputs)
             data['box'] = 'box16' if data['sample'] == data['output'] else 'box17'
             ac += 1 if data['sample'] == data['output'] else 0
+            lines = max(data['output'].count('\n'),
+                        data['sample'].count('\n'))+1
+            data['height'] = '240px' if lines > 10 else f'{lines*24}px'
             display(HTML(JUDGE_HTML.format(**data)))
         if ac == 3:
-            display(HTML.format(url=_get_url(problem)))
+            display(HTML(AC_HTML.format(url=_get_url(problem))))
     finally:
         _lines = None
         _outputs = None
