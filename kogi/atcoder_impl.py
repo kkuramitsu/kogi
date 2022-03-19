@@ -179,10 +179,11 @@ JUDGE_HTML = '''
 <label class="box24" for="input">実行結果</label>
 <textarea id="input" class="{box}" style="height:{height}" readonly>{output}</textarea>
 </div>
-<div style="width: 48%">
+<div style="float: left; width: 48%">
 <label class="box24" for="outout">正解例</label>
 <textarea id="output" class="{box}" style="height:{height}" readonly>{sample}</textarea>
 </div>
+<div>　</div>
 </div>
 '''
 
@@ -196,7 +197,7 @@ def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
     if len(d) == 0:
-        kogi_print('問題データが読み込めません', {})
+        kogi_print('問題データが読み込めません')
         res = get_ipython().run_cell(code)
         res.raise_error()
         return
