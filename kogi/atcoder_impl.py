@@ -160,7 +160,7 @@ textarea {
     margin: 2em 0; background: #6f4b3e;
     color: white; font-weight: bold;
 }
-.box24:after {
+.box23:after {
     position: absolute;
     content: '';
     top: 100%; left: 30px;
@@ -177,11 +177,11 @@ JUDGE_HTML = '''
 <pre>{input}</pre>
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="input">実行結果</label>
-<textarea id="input" class="box16" style="height:{height}" readonly>{output}</textarea>
+<textarea id="input" class="{box}" style="height:{height}" readonly>{output}</textarea>
 </div>
-<div style="float: left; width: 48%">
+<div style="width: 48%">
 <label class="box24" for="outout">正解例</label>
-<textarea id="output" class="box18" style="height:{height}" readonly>{sample}</textarea>
+<textarea id="output" class="{box}" style="height:{height}" readonly>{sample}</textarea>
 </div>
 </div>
 '''
