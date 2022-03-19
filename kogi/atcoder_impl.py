@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import builtins
 from IPython.display import display, HTML
+from logger import kogi_print
 
 _lines = None
 _outputs = None
@@ -167,7 +168,7 @@ JUDGE_HTML = '''
 <label class="box24" for="input">実行結果</label>
 <textarea id="input" class="box16" style="height:{height}" readonly>{output}</textarea>
 </div>
-<div style="float: left; width: 48%; text-align: right;">
+<div style="float: left; width: 48%">
 <label class="box24" for="outout">正解例</label>
 <textarea id="output" class="box18" style="height:{height}" readonly>{sample}</textarea>
 </div>
