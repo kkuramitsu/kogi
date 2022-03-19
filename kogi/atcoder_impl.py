@@ -96,33 +96,110 @@ def _display_diff(ground_truth, target):
         HTML(f'<h4>差分</h4><div style="white-space: pre-wrap;">{result}</div>'))
 
 
+JUDGE_CSS = '''
+<style>
+.parent {
+  background-color: #edebeb;
+  width: 100%;
+  height: 150px;
+}
+textarea {
+  width: 100%; 
+  box-sizing: border-box;  /* ※これがないと横にはみ出る */
+  height:120px; 
+  font-size: large;
+  outline: none;           /* ※ブラウザが標準で付加する線を消したいとき */
+  resize: none;
+}
+.box11{
+//    padding: 0.5em 1em;
+//    margin: 2em 0;
+    color: #5d627b;
+    background: white;
+    border-top: solid 5px #5d627b;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.22);
+}
+.box18{
+  //padding: 0.2em 0.5em;
+  //margin: 2em 0;
+  color: #565656;
+  background: #ffeaea;
+  background-size: 150%;
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-color:rgba(255,255,255,0.8);
+  background-blend-mode:lighten;
+  //box-shadow: 0px 0px 0px 10px #ffeaea;
+  border: dashed 2px #ffc3c3;
+  //border-radius: 8px;
+}
+.box16{
+    //padding: 0.5em 1em;
+    //margin: 2em 0;
+    background: -webkit-repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+}
+.box24 {
+    position: relative;
+    padding: 0.5em 0.7em;
+    margin: 2em 0; background: #6f4b3e;
+    color: white; font-weight: bold;
+}
+.box24:after {
+    position: absolute;
+    content: '';
+    top: 100%; left: 30px;
+    border: 15px solid transparent;
+    border-top: 15px solid #6f4b3e;
+    width: 0; height: 0;
+}
+</style>
+'''
+
+JUDGE_HTML = '''
+<div class="parent">
+<h4>{title}</h4>
+<pre>{input}</pre>
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="input">実行結果</label>
+<textarea id="input" class="box16" readonly>{output}</textarea>
+</div>
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="outout">正解例</label>
+<textarea id="output" class="box18" readonly>{sample}</textarea>
+</div>
+</div>
+'''
+
+
 def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
-    sample_html = None
     try:
+        display(HTML(JUDGE_CSS))
         for key in ['入力例 1', '入力例 2', '入力例 3']:
             if key not in d:
                 continue
-            sample_html = f'<h4>{key}</h4><pre style="background: #ddd">{d[key]}</pre>'
-            display(HTML(sample_html))
+            data = {'title': key, 'input': d[key]}
+            # display(HTML(sample_html))
             _lines = [s for s in d[key].split('\n') if len(s) > 0]
             _outputs = []
             res = get_ipython().run_cell(code)
             res.raise_error()
             key = key.replace('入力', '出力')
-            output_example = d[key]
-            result = ''.join(_outputs)
-            if result != output_example:
-                ratio = difflib.SequenceMatcher(
-                    None, result, output_example).ratio()
-                display(HTML(
-                    f'<h4>{key}(正解)</h4><pre style="background: #eee">{d[key]}</pre>'))
-                if ratio > 0.8:
-                    _display_diff(output_example, result)
-            else:
-                pass
-                #display(HTML('<h4 style="color: green">✔︎</h4>'))
+            data['sample'] = d[key]
+            data['output'] = ''.join(_outputs)
+            display(HTML(JUDGE_HTML.format(**data)))
+            # if result != output_example:
+            #     ratio = difflib.SequenceMatcher(
+            #         None, result, output_example).ratio()
+            #     display(HTML(
+            #         f'<h4>{key}(正解)</h4><pre style="background: #eee">{d[key]}</pre>'))
+            #     if ratio > 0.8:
+            #         _display_diff(output_example, result)
+            # else:
+            #     pass
+            #     #display(HTML('<h4 style="color: green">✔︎</h4>'))
     finally:
         _lines = None
         _outputs = None
