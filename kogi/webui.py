@@ -500,7 +500,7 @@ def _accuracy(code):
     return difflib.SequenceMatcher(None, code.strip(), CODE).ratio()
 
 
-def kogi_login(ai_key=None, slack_key=None, print=print_nop):
+def kogi_login(ai_key=None, class_name='unknown', slack_key=None, print=print_nop):
     def login(name, code, counts, keys, useragent):
         try:
             code = code.strip()
@@ -508,10 +508,11 @@ def kogi_login(ai_key=None, slack_key=None, print=print_nop):
             time = round(_time(keys), 3)
             keys = keys.split('\n')[-1]
             print(keys)
-            record_login(uid=name, type='typing', 
-                        code=code, keys=keys,
-                        mean_time=time, accuracy=acc,
-                        counts=counts, browser=useragent)
+            record_login(type='typing', 
+                uid=name, class_name=class_name, 
+                code=code, keys=keys,
+                mean_time=time, accuracy=acc,
+                counts=counts, browser=useragent)
             return IPython.display.JSON({'acc': acc, 'time': time})
         except Exception as e:
             kogi_print(e)

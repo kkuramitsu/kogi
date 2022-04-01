@@ -83,7 +83,6 @@ def send_log(right_now=False, print=kogi_print):
         LOGS.clear()
         headers = {'x-api-key': f'A{KEY}s'}
         r = requests.post(url, headers=headers, json=data)
-        print('response', r)
         if r.status_code != 200:
             print(data)
 
