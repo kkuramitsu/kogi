@@ -17,7 +17,7 @@ def kogi_print(*args, **kw):
         print('\033[0m', end='')
 
 
-def print_nop(*x):
+def print_nop(*x, **kw):
     pass
 
 ## LOGGER
@@ -83,6 +83,7 @@ def send_log(right_now=False, print=kogi_print):
         LOGS.clear()
         headers = {'x-api-key': f'A{KEY}s'}
         r = requests.post(url, headers=headers, json=data)
+        print('response', r)
         if r.status_code != 200:
             print(data)
 
@@ -100,6 +101,7 @@ def record_login(uid, **kw):
     global UID
     UID = f'{uid}'
     logdata = log(**kw)
+    send_log(right_now=True)
     if slack is None:
         send_slack(logdata)
         
