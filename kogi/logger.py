@@ -1,9 +1,9 @@
 import uuid
 import json
 from datetime import datetime
+import requests
 
 verbose = True
-
 
 def kogi_verbose(enabled: bool):
     global verbose
@@ -65,34 +65,32 @@ SESSION = str(uuid.uuid1())
 SEQ = 0
 LOGS = []
 UID = 'unknown'
+KEY='OjwoF3m0l20OFidHsRea3ptuQRfQL10ahbEtLa'
 epoch = datetime.now().timestamp()
 
-def check_logging():
-    if len(LOGS) > 32: 
-        return True
 
 def send_log(right_now=False, print=kogi_print):
     global epoch, LOGS
-    try:
-        now = datetime.now().timestamp()
-        delta = (now - epoch)
-        epoch = now
-        if len(LOGS) > 0 and (right_now or delta > 180):
-            data = LOGS.copy()
-            LOGS.clear()
-            data = json.dumps(data, ensure_ascii=False)
-            if slack is not None:
-                slack.notify(text=data)
-            else:
-                print(data)
-    except Exception as e:
-        kogi_print(e)
+    url = 'https://ixe8peqfii.execute-api.ap-northeast-1.amazonaws.com/dev'
+    now = datetime.now().timestamp()
+    delta = (now - epoch)
+    epoch = now
+    if len(LOGS) > 0 and (right_now or delta > 180):
+        data = {
+            "session": SESSION,
+            "logs": LOGS.copy(),
+        }
+        LOGS.clear()
+        headers = {'x-api-key': f'A{KEY}s'}
+        r = requests.post(url, headers=headers, json=data)
+        if r.status_code != 200:
+            print(data)
 
 def log(**kw):
     global SEQ, LOGS, epoch
     now = datetime.now()
     date = now.isoformat(timespec='seconds')
-    logdata = dict(session=SESSION, seq=SEQ, uid=UID, date=date, **kw)
+    logdata = dict(seq=SEQ, uid=UID, date=date, **kw)
     LOGS.append(logdata)
     SEQ += 1
     send_log()

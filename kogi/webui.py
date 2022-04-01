@@ -382,20 +382,14 @@ textarea {
   outline: none;           /* ※ブラウザが標準で付加する線を消したいとき */
   resize: none;
 }
-.box18{
-  //padding: 0.2em 0.5em;
-  //margin: 2em 0;
-  color: #565656;
-  background: #ffeaea;
-  //box-shadow: 0px 0px 0px 10px #ffeaea;
-  border: dashed 2px #ffc3c3;
-  //border-radius: 8px;
-}
 .box16{
-    //padding: 0.5em 1em;
-    //margin: 2em 0;
     background: -webkit-repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
     background: repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+}
+.box18{
+  color: #565656;
+  background: #ffeaea;
+  border: dashed 2px #ffc3c3;
 }
 .box24 {
     position: relative;
@@ -406,12 +400,8 @@ textarea {
     font-weight: bold;
 }
 .button02 {
-  //justify-content: space-between;
-  //margin: 0 auto;
-  //padding: 1em 2em;
   width: 300px;
   color: #333;
-  //font-size: 18px;
   font-weight: 700;
   background-color: #cccccc;
   border-radius: 50vh;
@@ -421,10 +411,6 @@ textarea {
 <span class="button02" id="ok">Ready</span>
 <div class="parent">
 <div style="float: left; width: 48%; text-align: right;">
-<label class="box24" for="input">Type In</label>
-<textarea id="input" class="box16"></textarea>
-</div>
-<div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="outout">Code</label>
 <textarea id="output" class="box18 python" readonly>print(math.sin(math.pi/2))
 print(["oranges", "tables"])
@@ -432,6 +418,10 @@ print(weight / (height * height))
 print(x if x >= y else y)
 print(s[0].upper() for s in "abcdefg")
 </textarea>
+</div>
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="input">Type In</label>
+<textarea id="input" class="box16"></textarea>
 </div>
 </div>
 '''
@@ -510,7 +500,7 @@ def _accuracy(code):
     return difflib.SequenceMatcher(None, code.strip(), CODE).ratio()
 
 
-def kogi_login(ai_key=None, slack_key=None, print=kogi_print):
+def kogi_login(ai_key=None, slack_key=None, print=print_nop):
     def login(name, code, counts, keys, useragent):
         code = code.strip()
         acc = _accuracy(code)
