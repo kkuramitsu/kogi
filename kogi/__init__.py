@@ -1,6 +1,6 @@
 
 try:
-    from .webui import kogi_login, kogi_help, kogi_translate
+    from .webui import kogi_login, kogi_help, kogi_translate, kogi_print
 except ModuleNotFoundError:
     pass
 

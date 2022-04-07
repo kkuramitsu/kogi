@@ -8,7 +8,6 @@ from .dialog import get_chatbot
 
 def debug_log():
     try:
-        kogi_print('recieving events')
         send_log()
     except Exception as e:
         kogi_print(e)
