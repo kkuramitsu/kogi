@@ -6,7 +6,7 @@ except ModuleNotFoundError:
     pass
 
 from .utils import print_nop
-from .logger import kogi_print
+from .logger import log, kogi_print
 from .dialog import get_chatbot
 from .errors import kogi_check_error
 
@@ -38,11 +38,11 @@ def kogi_run(code, option, run_cell=None):
         run_cell(code, option)
     except:
         results = kogi_check_error(code, show=print_nop, render_html=True)
-        kogi_print(results)
-        if 'error_orig' in results:
+        log(type='error', **results)
+        if 'error' in results:
             kogi_say(results['error'], get_chatbot(results))
         else:
-            kogi_say(('くぅーん'))
+            kogi_say(('くぅ〜ん'))
 
 
 @register_cell_magic

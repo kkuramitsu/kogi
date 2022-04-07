@@ -333,7 +333,7 @@ TRANSLATE_SCRIPT = '''
 cached = {}
 
 
-def kogi_translate(delay=600, print=print_nop):
+def kogi_translate(delay=600, always_policy=False, print=print_nop):
     nmt = get_nmt()
 
     def convert(text):
@@ -341,7 +341,7 @@ def kogi_translate(delay=600, print=print_nop):
             ss = []
             for line in text.split('\n'):
                 if line not in cached:
-                    translated = nmt(line)
+                    translated = nmt(line, always_policy=always_policy, print=print)
                     print(line, '=>', translated)
                     cached[line] = translated
                     log(

@@ -78,6 +78,7 @@ def send_log(right_now=False, print=kogi_print):
     if len(LOGS) > 0 and (right_now or delta > 180):
         data = {
             "session": SESSION,
+            "uid": UID,
             "logs": LOGS.copy(),
         }
         LOGS.clear()
@@ -90,7 +91,7 @@ def log(**kw):
     global SEQ, LOGS, epoch
     now = datetime.now()
     date = now.isoformat(timespec='seconds')
-    logdata = dict(seq=SEQ, uid=UID, date=date, **kw)
+    logdata = dict(seq=SEQ, date=date, **kw)
     LOGS.append(logdata)
     SEQ += 1
     send_log()
@@ -99,7 +100,7 @@ def log(**kw):
 def record_login(uid, **kw):
     global UID
     UID = f'{uid}'
-    logdata = log(**kw)
+    logdata = log(uid=UID, **kw)
     send_log(right_now=True)
     if slack is None:
         send_slack(logdata)
