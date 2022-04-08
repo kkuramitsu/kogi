@@ -49,8 +49,7 @@ def _check_error(errtype, errmsg, code=None, errlines=None, render_html=True):
             for i, key in enumerate(defined['keys']):
                 if key == '':
                     break
-                results[key] = render(matched.group(
-                    i+1), key, render_html=render_html)
+                results[key] = render(matched.group(i+1), key, render_html=render_html)
             _ext = ''
             if 'inspect' in defined:
                 _ext = defined['inspect'](code, errlines, results)

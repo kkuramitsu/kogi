@@ -214,9 +214,7 @@ def _display_chat(chatbot=None):
 
 def kogi_say(msg, chatbot=None):
     if _needs_new_chat():
-        kogi_print('starting chatbot')
         _display_chat(chatbot)
-    kogi_print('display message')
     _display_bot(msg, **kogi_frame)
 
 
