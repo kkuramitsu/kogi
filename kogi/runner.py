@@ -38,11 +38,13 @@ def kogi_run(code, option, run_cell=None):
         run_cell(code, option)
     except:
         results = kogi_check_error(code, show=print_nop, render_html=True)
-        log(type='error', **results)
         if 'error' in results:
+            results['type'] = 'error'
+            log(**results)
             kogi_say(results['error'], get_chatbot(results))
         else:
-            kogi_say(('くぅ〜ん'))
+            results['type'] = 'undefined_error'
+            log(**results)
 
 
 @register_cell_magic
