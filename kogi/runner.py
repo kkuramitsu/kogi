@@ -39,12 +39,10 @@ def kogi_run(code, option, run_cell=None):
     except:
         results = kogi_check_error(code, show=print_nop, render_html=True)
         if 'error' in results:
-            results['type'] = 'error'
-            log(**results)
+            log(type='error', error=results)
             kogi_say(results['error'], get_chatbot(results))
         else:
-            results['type'] = 'undefined_error'
-            log(**results)
+            log(type='undefined_error', error=results)
 
 
 @register_cell_magic

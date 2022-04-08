@@ -181,7 +181,6 @@ kogi_frame = {  # グローバルフレーム
 
 N_GLOBALS = 0
 
-
 def _needs_new_chat():
     global N_GLOBALS
     state = get_ipython().ev('len(globals())')
