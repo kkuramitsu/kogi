@@ -239,8 +239,8 @@ def inspect_index(code, lines, slots):
     if lines is None:
         return ''
     results = find_sub(lines)
-    print(slots)
-    print(results)
+    # print(slots)
+    # print(results)
     for result in results:
         if 'sub' in result:
             slots['index'] = result['sub']
