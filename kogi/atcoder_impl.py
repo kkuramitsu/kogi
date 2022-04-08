@@ -224,10 +224,8 @@ def _run_judge(code, problem):
                         data['sample'].count('\n'))+1
             data['height'] = '240px' if lines > 10 else f'{lines*24}px'
             display(HTML(JUDGE_HTML.format(**data)))
-        if ac == 3:
-            display(HTML(AC_HTML.format(url=_get_url(problem))))
+        display(HTML(AC_HTML.format(url=_get_url(problem))))
         log(type='atcoder', problem=_get_problemid(problem), ac=ac, code=code)
-        send_log(right_now=True)
     finally:
         _lines = None
         _outputs = None
