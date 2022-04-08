@@ -177,11 +177,11 @@ JUDGE_HTML = '''
 <pre>{input}</pre>
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="input">実行結果</label>
-<textarea id="input" class="{box}" style="height:{height}" readonly>{output}</textarea>
+<textarea class="box18" style="height:{height}" readonly>{output}</textarea>
 </div>
 <div style="float: left; width: 48%">
 <label class="box24" for="outout">正解例</label>
-<textarea id="output" class="box18" style="height:{height}" readonly>{sample}</textarea>
+<textarea class="box18" style="height:{height}" readonly>{sample}</textarea>
 </div>
 </div>
 <p style="clear:both;"></p>
