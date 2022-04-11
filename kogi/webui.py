@@ -433,18 +433,15 @@ LOGIN_SCRIPT = '''
     const inputPane = document.getElementById('input');
     var submitted = false;
     var buttonClick = () => {
-        if(!submitted) {
-            submitted = true;
-            var name = idPane.value;
-            var value = inputPane.value;
-            var text = buffers.join(' ');
-            google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
-            (async function() {
-                const result = await google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
-                const data = result.data['application/json'];
-                document.getElementById('ok').innerText = `出席 平均: ${data.time}ms, 正確さ: ${data.acc}`;
-            })();
-        }
+        var name = idPane.value;
+        var value = inputPane.value;
+        var text = buffers.join(' ');
+        google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
+        (async function() {
+            const result = await google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
+            const data = result.data['application/json'];
+            document.getElementById('ok').innerText = `出席 平均: ${data.time}ms, 正確さ: ${data.acc}`;
+        })();
     };
     var before = new Date().getTime();
     idPane.addEventListener('keydown', (e) => {
@@ -473,7 +470,7 @@ LOGIN_SCRIPT = '''
         if(!submitted) {
             submitted = true;
             document.getElementById('ok').innerText = '出席 (計測中)';
-            setTimeout(buttonClick, 5000);
+            setTimeout(buttonClick, 3000);
         }
       }
       else{
