@@ -434,11 +434,11 @@ LOGIN_SCRIPT = '''
     var submitted = false;
     var buttonClick = () => {
         if(!submitted) {
+            submitted = true;
             var name = idPane.value;
             var value = inputPane.value;
             var text = buffers.join(' ');
             google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
-            submitted = true;
             (async function() {
                 const result = await google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
                 const data = result.data['application/json'];
@@ -470,8 +470,11 @@ LOGIN_SCRIPT = '''
       dict[e.key] = (dict[e.key] || 0) + 1;
       var size = inputPane.value.length;
       if(size > 10 && dict[')'] >= 8 && dict['i'] >= 10 && dict['t'] >= 10) {
-        document.getElementById('ok').innerText = '出席';
-        setTimeout(buttonClick, 5000);
+        if(!submitted) {
+            submitted = true;
+            document.getElementById('ok').innerText = '出席 (計測中)';
+            setTimeout(buttonClick, 5000);
+        }
       }
       else{
         document.getElementById('ok').innerText = `${size}`;
