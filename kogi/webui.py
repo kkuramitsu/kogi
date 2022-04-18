@@ -469,7 +469,7 @@ LOGIN_SCRIPT = '''
       if(size > 10 && dict[')'] >= 8 && dict['i'] >= 10 && dict['t'] >= 10) {
         if(!submitted) {
             submitted = true;
-            document.getElementById('ok').innerText = '出席 (計測中)';
+            document.getElementById('ok').innerText = '出席';
             setTimeout(buttonClick, 3000);
         }
       }
