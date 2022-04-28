@@ -442,7 +442,7 @@ LOGIN_SCRIPT = '''
             var name = idPane.value;
             var value = inputPane.value;
             var text = buffers.join(' ');
-            google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
+            //google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
             submitted = true;
             (async function() {
                 const result = await google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
@@ -488,7 +488,7 @@ LOGIN_SCRIPT = '''
 
 def _time(keys):
     times = [int(t) for t in keys.split() if t.isdigit()]
-    return (sum(times) - max(times)) / (len(times) - 1)
+    return (sum(times) - max(times)) // (len(times) - 1)
 
 
 CODE = '''print(math.sin(math.pi/2))
