@@ -45,12 +45,12 @@ def exception_hook(raw_cell, emsg, stacks):
         d = stack.copy()
         del d['vars']
         traceback.append(d)
-    kogi_print(traceback)
     log(
         type='exception_hook',
         code=raw_cell, emsg=emsg,
         traceback=traceback
     )
+    kogi_print(stacks)
     KOGI_FN(raw_cell, emsg, stacks)
     # try:
     #     KOGI_FN(raw_cell, emsg, stacks)

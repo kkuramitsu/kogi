@@ -10,5 +10,5 @@ from .atcoder_impl import _run_judge
 
 @register_cell_magic
 def atcoder(option, code):
-    _run_judge(option, code)
+    _run_judge(code, option)
     #kogi_run(code, option, run_cell=_run_judge)
