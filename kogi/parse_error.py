@@ -13,6 +13,11 @@ DEFINED_ERRORS = []
 
 def KOGI_ERR(**kw):
     global DEFINED_ERRORS
+    defined = dict(**kw)
+    if isinstance(defined['pattern'], str):
+        defined['pattern'] = re.compile(defined['pattern'])
+        defined['keys'] = tuple(defined['keys'].split(
+            ',')) if ',' in defined['keys'] else (defined['keys'],)
     DEFINED_ERRORS.append(dict(**kw))
 
 
@@ -299,7 +304,7 @@ KOGI_ERR(
 )
 
 KOGI_ERR(
-    pattern='unexpected EOF while parsing',
+    pattern='unexpected (EOF) while parsing',
     keys='dummy',
     translated='コードが途中までしか書かれていません. ',
     reason='たぶん、括弧やクオートの閉じ忘れの可能性が高いです.',
@@ -460,12 +465,9 @@ def parse_error_message(code, emsg, lines):
         _, _, data = emsg.partition(':')
         return json.loads(data)
     for defined in DEFINED_ERRORS:
-        if isinstance(defined['pattern'], str):
-            defined['pattern'] = re.compile(defined['pattern'])
-            defined['keys'] = tuple(defined['keys'].split(
-                ',')) if ',' in defined['keys'] else (defined['keys'],)
         print(defined)
         matched_result = defined['pattern'].search(emsg)
+        print(matched_result)
         if matched_result:
             matched = {}
             slots = dict(emsg=emsg, keys=defined['keys'], matched=matched)
