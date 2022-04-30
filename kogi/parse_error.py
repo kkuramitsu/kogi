@@ -1,3 +1,4 @@
+import json
 import linecache
 import re
 import sys
@@ -455,21 +456,27 @@ def _copy_and_format(defined, key, slots):
 
 
 def parse_error_message(code, emsg, lines):
+    if emsg.startswith('Kogi:'):
+        _, _, data = emsg.partition(':')
+        return json.loads(data)
     for defined in DEFINED_ERRORS:
         if isinstance(defined['pattern'], str):
             defined['pattern'] = re.compile(defined['pattern'])
             defined['keys'] = tuple(defined['keys'].split(
                 ',')) if ',' in defined['keys'] else (defined['keys'],)
+        print(defined)
         matched_result = defined['pattern'].search(emsg)
         if matched_result:
             matched = {}
             slots = dict(emsg=emsg, keys=defined['keys'], matched=matched)
-            for i, key in enumerate(defined['keys']):
-                matched[key] = matched_result.group(i+1)
-            _copy_and_format(defined, 'translated', slots)
-            _copy_and_format(defined, 'reason', slots)
-            _copy_and_format(defined, 'solution', slots)
-            _copy_and_format(defined, 'hint', slots)
+            try:
+                for i, key in enumerate(defined['keys']):
+                    matched[key] = matched_result.group(i+1)
+            finally:
+                _copy_and_format(defined, 'translated', slots)
+                _copy_and_format(defined, 'reason', slots)
+                _copy_and_format(defined, 'hint', slots)
+                _copy_and_format(defined, 'solution', slots)
             if 'check' in defined:
                 defined['check'](slots, lines)
             slots['code'] = code

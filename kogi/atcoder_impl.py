@@ -1,9 +1,10 @@
+from IPython.display import display, HTML
 import difflib
 import requests
 from bs4 import BeautifulSoup
 import builtins
-from IPython.display import display, HTML
-from .logger import kogi_print, log, send_log
+import json
+from .logger import log
 
 _lines = None
 _outputs = None
@@ -199,14 +200,20 @@ AtCoderでACを取るためには、<b>制約条件</b>を満たす全ての入�
 
 
 class KogiError(Exception):
-    pass
+    def __init__(self, **kw):
+        Exception.__init__(self, json.dumps(kw))
 
 
 def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
     if len(d) == 0:
-        raise KogiError('問題データが読み込めません。')
+        raise KogiError(
+            translated='問題データが読み込めません。',
+            reason='問題の指定方法が間違っています',
+            hint='問題ページのURLをコピーしてください',
+            solution='%%atcoder 問題ページのURL'
+        )
     try:
         ac = 0
         display(HTML(JUDGE_CSS))
