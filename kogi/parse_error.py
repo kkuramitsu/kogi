@@ -428,6 +428,18 @@ KOGI_ERR(
     solution='セルの本文を書きましょう',
 )
 
+
+# ValueError: too many values to unpack (expected 2)
+
+KOGI_ERR(
+    pattern='ValueError: too many values to unpack \\(expected (\\d.)\\)',
+    keys='num',
+    translated='値エラー: {num}個の値を変数に展開しようとしたが、個数が不一致です。',
+    reason='リストやタプルなどの値の数が、想定通りではない',
+    hint='入力データも確認してみてください',
+)
+
+
 # error
 
 
