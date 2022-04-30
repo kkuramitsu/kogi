@@ -199,7 +199,9 @@ def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
     if len(d) == 0:
-        kogi_print('問題データが読み込めません')
+        kogi_print('問題データが読み込めません。自分で入力してください')
+        _lines = None
+        _outputs = None
         res = get_ipython().run_cell(code)
         # res.raise_error()
         return
@@ -226,6 +228,8 @@ def _run_judge(code, problem):
             display(HTML(JUDGE_HTML.format(**data)))
         display(HTML(AC_HTML.format(url=_get_url(problem))))
         log(type='atcoder', problem=_get_problemid(problem), ac=ac, code=code)
+    except:
+        pass
     finally:
         _lines = None
         _outputs = None

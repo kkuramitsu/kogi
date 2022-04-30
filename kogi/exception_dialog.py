@@ -20,6 +20,8 @@ class Chatbot(object):
     def response(self, text):
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
+        if text.startswith('ダンプ'):
+            return f'{self.slots}'
         if text.endswith('には'):
             text = text[:-2]
             return self.response_translate(text)
@@ -132,7 +134,9 @@ kogi_say = get_chatbot_webui()
 
 def exception_dialog(code, emsg, stacks):
     lines = [stack['line'].strip() for stack in stacks]
+    print(lines)
     slots = parse_error_message(code, emsg, lines)
+    print(slots)
     chatbot = Chatbot(slots=slots)
     if 'translated' in slots:
         kogi_say(slots['translated'], chatbot)
