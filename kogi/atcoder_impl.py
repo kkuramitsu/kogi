@@ -79,7 +79,7 @@ def _get_sample(problem):
                 d[key] = value
         SAMPLE[pid] = d
         return d
-    finally:
+    except:
         return {}
 
 
