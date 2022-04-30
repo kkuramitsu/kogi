@@ -16,9 +16,10 @@ def KOGI_ERR(**kw):
     defined = dict(**kw)
     if isinstance(defined['pattern'], str):
         defined['pattern'] = re.compile(defined['pattern'])
+    if 'keys' in defined:
         defined['keys'] = tuple(defined['keys'].split(
             ',')) if ',' in defined['keys'] else (defined['keys'],)
-    DEFINED_ERRORS.append(dict(**kw))
+    DEFINED_ERRORS.append(defined)
 
 
 # KOGI 定義
