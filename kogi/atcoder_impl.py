@@ -201,7 +201,7 @@ def _run_judge(code, problem):
     if len(d) == 0:
         kogi_print('問題データが読み込めません')
         res = get_ipython().run_cell(code)
-        res.raise_error()
+        # res.raise_error()
         return
     try:
         ac = 0

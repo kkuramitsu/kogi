@@ -51,7 +51,8 @@ def exception_hook(raw_cell, emsg, stacks):
         traceback=traceback
     )
     kogi_print(stacks)
-    KOGI_FN(raw_cell, emsg, stacks)
+    if len(stacks) > 0:
+        KOGI_FN(raw_cell, emsg, stacks)
     # try:
     #     KOGI_FN(raw_cell, emsg, stacks)
     # except Exception as e:
