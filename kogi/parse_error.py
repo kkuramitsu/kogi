@@ -266,33 +266,33 @@ KOGI_ERR(
 
 KOGI_ERR(
     pattern='invalid syntax',
-    keys='',
+    keys='dummy',
     translated='構文エラーです',
     reason='Pythonは構文規則通りに書かなければなりません',
 )
 
 KOGI_ERR(
     pattern='expected an indented block',
-    keys='',
+    keys='dummy',
     translated='インデントが足りません',
 )
 
 KOGI_ERR(
     pattern='unexpected indent',
-    keys='',
+    keys='dummy',
     translated='インデントが余分です',
 )
 
 KOGI_ERR(
     pattern='unindent does not match any outer indentation level',
-    keys='',
+    keys='dummy',
     translated='インデントの深さが変で、どのブロックに属すのかわかりません',
     solution='インデントの深さを揃えます',
 )
 
 KOGI_ERR(
     pattern='invalid character in identifier',
-    keys='',
+    keys='dummy',
     translated='半角文字を使うべきところで、全角文字が混ざって使われています',
     solution='日本語入力をオフにして、打ち直そう',
     hint='先生やTAさんに質問する案件ではありません.',
@@ -300,7 +300,7 @@ KOGI_ERR(
 
 KOGI_ERR(
     pattern='unexpected EOF while parsing',
-    keys='',
+    keys='dummy',
     translated='コードが途中までしか書かれていません. ',
     reason='たぶん、括弧やクオートの閉じ忘れの可能性が高いです.',
     solution='エラーの発生した行の前後を含めて、構文エラーを探して！',
@@ -456,7 +456,7 @@ def _copy_and_format(defined, key, slots):
 
 
 def parse_error_message(code, emsg, lines):
-    if emsg.startswith('Kogi:'):
+    if emsg.startswith('Kogi'):
         _, _, data = emsg.partition(':')
         return json.loads(data)
     for defined in DEFINED_ERRORS:
