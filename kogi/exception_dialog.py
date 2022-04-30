@@ -73,6 +73,7 @@ class Chatbot(object):
                     ss.append(render_value(n, vars[n]))
             elif name in vars:
                 ss.append(render_value(name, vars[name]))
+        print(ss)
         return ss
 
     def response_code(self, text):
@@ -131,8 +132,11 @@ def get_chatbot_webui():
             if 'ありがとう' in your_text or 'バイバイ' in your_text:
                 _display_bot('バイバイ')
             else:
-                bot_text = chatbot.response(your_text)
                 _display_you(your_text, chatbot)
+                try:
+                    bot_text = chatbot.response(your_text)
+                except Exception as e:
+                    print(e)
                 if bot_text is not None:
                     _display_bot(bot_text, chatbot)
 
