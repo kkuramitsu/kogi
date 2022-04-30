@@ -67,7 +67,7 @@ class Chatbot(object):
                 continue
             vars = stack['vars']
             if name is None:
-                for n in vars.key():
+                for n in vars.keys():
                     if n.startswith('_'):
                         continue
                     ss.append(render_value(n, vars[n]))
