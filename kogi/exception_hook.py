@@ -19,11 +19,12 @@ def stack_traceback(etype, emsg, tb):
             name = tb.tb_frame.f_code.co_name
             lineno = tb.tb_lineno
             line = linecache.getline(filename, lineno, tb.tb_frame.f_globals)
-            #local_vars = tb.tb_frame.f_locals
+            local_vars = tb.tb_frame.f_locals
             stacks.append(dict(filename=filename,
                                etype=f'{etype.__name__}',
                                emsg=emsg,
-                               name=name, lineno=lineno, line=line))
+                               name=name, lineno=lineno, line=line
+                               vars=local_vars))
         tb = tb.tb_next
     return list(stacks[::-1])
 
@@ -38,15 +39,22 @@ KOGI_FN = dummy_kogi_fn
 
 
 def exception_hook(raw_cell, emsg, stacks):
+    traceback = []
+    for stack in stacks:
+        d = stack.copy()
+        del d['vars']
+        traceback.append(d)
+    kogi_print(traceback)
     log(
         type='exception_hook',
         code=raw_cell, emsg=emsg,
-        traceback=stacks
+        traceback=traceback
     )
-    try:
-        KOGI_FN(raw_cell, emsg, stacks)
-    except Exception as e:
-        kogi_print(e)
+    KOGI_FN(raw_cell, emsg, stacks)
+    # try:
+    #     KOGI_FN(raw_cell, emsg, stacks)
+    # except Exception as e:
+    #     kogi_print(e)
 
 
 def change_run_cell(func):

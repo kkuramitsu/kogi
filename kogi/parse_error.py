@@ -409,6 +409,26 @@ KOGI_ERR(
     test=test_FileNotFoundError,
 )
 
+# UsageError: Cell magic `%%kogi2` not found.
+
+KOGI_ERR(
+    pattern='UsageError: Cell magic `(.*)` not found',
+    keys='name',
+    translated='セルマジック{name}は、まだ使えません. ',
+    reason='セルマチックをインポートし忘れています。',
+    hint='何をインポートすべきか、{name}をググって探しましょう.',
+)
+
+# UsageError: %%kogi is a cell magic, but the cell body is empty.
+
+KOGI_ERR(
+    pattern='UsageError: (\\S.) is a cell magic, but the cell body is empty',
+    keys='name',
+    translated='{name}はセルマジックなので、本体が必要です',
+    reason='セルマジックに続くべき、コードが空です',
+    solution='セルの本文を書きましょう',
+)
+
 # error
 
 
@@ -459,7 +479,7 @@ def exception_stack(etype, evalue, tb):
                                etype=f'{etype.__name__}',
                                emsg=f'{etype.__name__}: {evalue}',
                                name=name, lineno=lineno,
-                               line=line, localvars=local_vars))
+                               line=line, vars=local_vars))
         tb = tb.tb_next
     return list(stacks[::-1])
 

@@ -116,7 +116,9 @@ def get_chatbot_webui():
         output.register_callback('notebook.ask', ask)
         #output.register_callback('notebook.log', debug_log)
 
-    def kogi_say(msg, chatbot):
+    def kogi_say(msg, chatbot=None):
+        if chatbot is None:
+            chatbot = Chatbot()
         _display_chat(chatbot)
         _display_bot(msg, chatbot)
 
