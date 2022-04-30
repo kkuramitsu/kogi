@@ -37,7 +37,6 @@ MODULE_NAME = {
 
 
 def check_name(slots, line):
-    print(slots)
     name = slots['matched']['name']
     slots['line'] = line
     if name in LANG_NAME:

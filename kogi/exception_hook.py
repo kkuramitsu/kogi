@@ -23,7 +23,7 @@ def stack_traceback(etype, emsg, tb):
             stacks.append(dict(filename=filename,
                                etype=f'{etype.__name__}',
                                emsg=emsg,
-                               name=name, lineno=lineno, line=line
+                               name=name, lineno=lineno, line=line,
                                vars=local_vars))
         tb = tb.tb_next
     return list(stacks[::-1])
