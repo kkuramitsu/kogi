@@ -4,11 +4,9 @@ try:
 except ModuleNotFoundError:
     pass
 
-from .runner import kogi, corgi
+#from .runner import kogi, corgi
 
 try:
-    from .exception_hook import enable_exception_hook as enable_kogi
-    from .exception_hook import disable_exception_hook as disable_kogi
-    from .exception_dialog import kogi_say
+    from .exception_hook import enable_kogi, disable_kogi
 except ModuleNotFoundError:
     pass

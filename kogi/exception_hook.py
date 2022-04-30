@@ -4,6 +4,7 @@ import sys
 #import traceback
 import linecache
 
+from .exception_dialog import exception_dialog
 from .logger import kogi_print, log
 
 RUN_CELL = InteractiveShell.run_cell
@@ -35,7 +36,7 @@ def dummy_kogi_fn(raw_cell, emsg, stacks):
     kogi_print(stacks)
 
 
-KOGI_FN = dummy_kogi_fn
+KOGI_FN = exception_dialog
 
 
 def exception_hook(raw_cell, emsg, stacks):
@@ -83,7 +84,7 @@ def change_showtraceback(func):
     return showtraceback
 
 
-def enable_exception_hook(kogi_fn=dummy_kogi_fn):
+def enable_exception_hook(kogi_fn=exception_dialog):
     global KOGI_FN
     KOGI_FN = kogi_fn
     InteractiveShell.run_cell = change_run_cell(RUN_CELL)
