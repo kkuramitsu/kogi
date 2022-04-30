@@ -22,6 +22,8 @@ class Chatbot(object):
         text = remove_suffixes(text, REMOVED_SUFFIXES)
         if text.startswith('ダンプ'):
             return f'{self.slots}'
+        if text.startswith('助けて') or text.startswith('たすけて'):
+            return self.response_variables()
         if text.endswith('には'):
             text = text[:-2]
             return self.response_translate(text)
@@ -58,6 +60,21 @@ class Chatbot(object):
     def response_desc(self, text):
         return response_desc(text)
 
+    def response_variables(self, name=None):
+        ss = ['変数を全部、表示するよ']
+        for stack in self.get('stacks'):
+            if 'vars' not in stack:
+                continue
+            vars = stack['vars']
+            if name is None:
+                for n in vars.key():
+                    if n.startswith('_'):
+                        continue
+                    ss.append(render_value(n, vars[n]))
+            elif name in vars:
+                ss.append(render_value(name, vars[name]))
+        return ss
+
     def response_code(self, text):
         # try:
         #     v = get_ipython().ev(text)
@@ -72,6 +89,10 @@ class Chatbot(object):
         # value = render_value(v, render_html=self.render_html)
         # return [f'{code}の型は{tyname}。値は', value]
         return self.response_vow(text)
+
+
+def render_value(name, value):
+    return f'{name}: {type(value).__name__}型'
 
 
 def get_chatbot_webui():
@@ -134,9 +155,8 @@ kogi_say = get_chatbot_webui()
 
 def exception_dialog(code, emsg, stacks):
     lines = [stack['line'].strip() for stack in stacks]
-    print(lines)
     slots = parse_error_message(code, emsg, lines)
-    print(slots)
+    slots['stacks'] = stacks
     chatbot = Chatbot(slots=slots)
     if 'translated' in slots:
         kogi_say(slots['translated'], chatbot)

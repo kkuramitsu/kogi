@@ -50,13 +50,10 @@ def exception_hook(raw_cell, emsg, stacks):
         code=raw_cell, emsg=emsg,
         traceback=traceback
     )
-    KOGI_FN(raw_cell, emsg, stacks)
-    # if len(stacks) > 0:
-    #     KOGI_FN(raw_cell, emsg, stacks)
-    # try:
-    #     KOGI_FN(raw_cell, emsg, stacks)
-    # except Exception as e:
-    #     kogi_print(e)
+    try:
+        KOGI_FN(raw_cell, emsg, stacks)
+    except Exception as e:
+        kogi_print(e)
 
 
 def change_run_cell(func):
