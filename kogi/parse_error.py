@@ -271,46 +271,54 @@ KOGI_ERR(
 
 
 KOGI_ERR(
-    pattern='invalid syntax',
+    pattern='invalid (syntax)',
     keys='dummy',
     translated='構文エラーです',
     reason='Pythonは構文規則通りに書かなければなりません',
+    hint='エラーの発生した前の行に問題があるかも',
 )
 
 KOGI_ERR(
-    pattern='expected an indented block',
+    pattern='expected (an) indented block',
     keys='dummy',
-    translated='インデントが足りません',
+    translated='構文エラー: インデントが足りません',
+    reason='空白とタブが混ざっているかも',
+    hint='エラーの発生した前の行に問題があるかも',
 )
 
 KOGI_ERR(
-    pattern='unexpected indent',
+    pattern='unexpected (indent)',
     keys='dummy',
-    translated='インデントが余分です',
+    translated='構文エラー: インデントが余分です',
+    reason='空白とタブが混ざっているかも',
+    hint='エラーの発生した前の行に問題があるかも',
 )
 
 KOGI_ERR(
-    pattern='unindent does not match any outer indentation level',
+    pattern='unindent does (not) match any outer indentation level',
     keys='dummy',
-    translated='インデントの深さが変で、どのブロックに属すのかわかりません',
+    translated='構文エラー: インデントの深さが変で、どのブロックに属すのかわかりません',
+    reason='空白とタブが混ざっているかも',
+    hint='エラーの発生した前の行に問題があるかも',
     solution='インデントの深さを揃えます',
 )
 
 KOGI_ERR(
-    pattern='invalid character in identifier',
+    pattern='invalid (character) in identifier',
     keys='dummy',
-    translated='半角文字を使うべきところで、全角文字が混ざって使われています',
-    solution='日本語入力をオフにして、打ち直そう',
+    translated='構文エラー: 使用できない文字が使われています',
+    reason='全角文字が混ざっている可能性が高いです',
     hint='先生やTAさんに質問する案件ではありません.',
+    solution='落ち着いて打ち直そう',
 )
 
 KOGI_ERR(
     pattern='unexpected (EOF) while parsing',
     keys='dummy',
-    translated='コードが途中までしか書かれていません. ',
-    reason='たぶん、括弧やクオートの閉じ忘れの可能性が高いです.',
-    solution='エラーの発生した行の前後を含めて、構文エラーを探して！',
+    translated='構文エラー: コードが途中までしか書かれていません. ',
+    reason='たぶん、括弧やクオートを閉じ忘れている可能性が高いです.',
     hint='友達にチェックしてもらうとエラーが見つかるかも',
+    solution='エラーの発生した行の前後を含めて、構文エラーを探して！',
 )
 
 
@@ -466,9 +474,7 @@ def parse_error_message(code, emsg, lines):
         _, _, data = emsg.partition(':')
         return json.loads(data)
     for defined in DEFINED_ERRORS:
-        print(defined)
         matched_result = defined['pattern'].search(emsg)
-        print(matched_result)
         if matched_result:
             matched = {}
             slots = dict(emsg=emsg, keys=defined['keys'], matched=matched)
