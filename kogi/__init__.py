@@ -1,9 +1,14 @@
 
 try:
-    from .webui import kogi_login, kogi_help, kogi_translate
+    from .webui import kogi_login, kogi_help, kogi_translate, kogi_print
 except ModuleNotFoundError:
     pass
 
 from .runner import kogi, corgi
-#from .atcoder import input, print, _check_atcoder, _run_judge
-#kogi_add_option(_check_atcoder, _run_judge)
+
+try:
+    from .exception_hook import enable_exception_hook as enable_kogi
+    from .exception_hook import disable_exception_hook as disable_kogi
+    from .exception_dialog import kogi_say
+except ModuleNotFoundError:
+    pass

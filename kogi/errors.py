@@ -39,7 +39,7 @@ def _formatting(defined, key, ext, results):
 
 def _check_error(errtype, errmsg, code=None, errlines=None, render_html=True):
     s = f'{errtype}: {errmsg}'
-    results = {'error_type': errtype, 'error': s}
+    results = {'error_type': errtype, 'error_orig': s}
     for defined in DEFINED_ERRORS:
         if isinstance(defined['pattern'], str):
             defined['pattern'] = re.compile(defined['pattern'])
@@ -49,14 +49,12 @@ def _check_error(errtype, errmsg, code=None, errlines=None, render_html=True):
             for i, key in enumerate(defined['keys']):
                 if key == '':
                     break
-                results[key] = render(matched.group(
-                    i+1), key, render_html=render_html)
+                results[key] = render(matched.group(i+1), key, render_html=render_html)
             _ext = ''
             if 'inspect' in defined:
                 _ext = defined['inspect'](code, errlines, results)
             if 'error_type' in defined:
                 results['error_type'] = defined['error_type']
-            results['error_orig'] = results['error']
             _formatting(defined, 'error', _ext, results)
             _formatting(defined, 'reason', _ext, results)
             _formatting(defined, 'solution', _ext, results)
@@ -94,11 +92,15 @@ def _show_verbose(results):
 
 
 def kogi_check_error(code=None, show=_show_verbose, render_html=False):
-    exc_type, exc_value, _ = sys.exc_info()
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    tb = traceback.format_exception(exc_type, exc_value, exc_tb)
     error_lines = _get_error_lines()
     results = _check_error(
         f'{exc_type.__name__}', exc_value, code, error_lines, render_html=render_html)
     show(results)
+    if code is not None:
+        results['code'] = code
+    results['traceback'] = tb
     return results
 
 

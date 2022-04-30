@@ -1,6 +1,6 @@
 import pegtree as pg
 import pandas as pd
-from .logger import kogi_print
+from .logger import kogi_print, print_nop
 from .utils import zen2han
 
 
@@ -172,7 +172,7 @@ def _translate(s: str) -> str:
 
 
 def compose(translate=_translate):
-    def replace_around(s, always_policy=False, print=kogi_print):
+    def replace_around(s, always_policy=False, print=print_nop):
         s = zen2han(s)
         if s.startswith('trans'):
             s, vars = _replace_expression(s, always_policy=always_policy)

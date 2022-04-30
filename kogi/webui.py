@@ -6,7 +6,15 @@ from .logger import load_slack, kogi_print, log, send_log, print_nop, record_log
 from .nmt import get_nmt, kogi_enable_ai
 from .dialog import get_chatbot
 
+
+def debug_log():
+    try:
+        send_log()
+    except Exception as e:
+        kogi_print(e)
+
 # https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
+
 
 BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
 #BOT_ICON = 'https://kohacu.com/wp-content/uploads/2021/05/kohacu.com_samune_003370-768x768.png'
@@ -204,7 +212,7 @@ def _display_chat(chatbot=None):
                 _display_bot(bot_text, **kogi_frame)
 
     output.register_callback('notebook.ask', ask)
-    output.register_callback('notebook.log', send_log)
+    output.register_callback('notebook.log', debug_log)
 
 
 def kogi_say(msg, chatbot=None):
@@ -326,7 +334,7 @@ TRANSLATE_SCRIPT = '''
 cached = {}
 
 
-def kogi_translate(delay=600, print=print_nop):
+def kogi_translate(delay=600, always_policy=False, print=print_nop):
     nmt = get_nmt()
 
     def convert(text):
@@ -334,7 +342,8 @@ def kogi_translate(delay=600, print=print_nop):
             ss = []
             for line in text.split('\n'):
                 if line not in cached:
-                    translated = nmt(line)
+                    translated = nmt(
+                        line, always_policy=always_policy, print=print)
                     print(line, '=>', translated)
                     cached[line] = translated
                     log(
@@ -350,7 +359,7 @@ def kogi_translate(delay=600, print=print_nop):
             print(e)
         return e
     output.register_callback('notebook.Convert', convert)
-    output.register_callback('notebook.Logger', send_log)
+    output.register_callback('notebook.Logger', debug_log)
     display(IPython.display.HTML(TRANSLATE_CSS_HTML))
     SCRIPT = TRANSLATE_SCRIPT.replace('600', str(delay))
     display(IPython.display.HTML(SCRIPT))
@@ -375,20 +384,14 @@ textarea {
   outline: none;           /* ※ブラウザが標準で付加する線を消したいとき */
   resize: none;
 }
-.box18{
-  //padding: 0.2em 0.5em;
-  //margin: 2em 0;
-  color: #565656;
-  background: #ffeaea;
-  //box-shadow: 0px 0px 0px 10px #ffeaea;
-  border: dashed 2px #ffc3c3;
-  //border-radius: 8px;
-}
 .box16{
-    //padding: 0.5em 1em;
-    //margin: 2em 0;
     background: -webkit-repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
     background: repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+}
+.box18{
+  color: #565656;
+  background: #ffeaea;
+  border: dashed 2px #ffc3c3;
 }
 .box24 {
     position: relative;
@@ -399,12 +402,8 @@ textarea {
     font-weight: bold;
 }
 .button02 {
-  //justify-content: space-between;
-  //margin: 0 auto;
-  //padding: 1em 2em;
   width: 300px;
   color: #333;
-  //font-size: 18px;
   font-weight: 700;
   background-color: #cccccc;
   border-radius: 50vh;
@@ -414,10 +413,6 @@ textarea {
 <span class="button02" id="ok">Ready</span>
 <div class="parent">
 <div style="float: left; width: 48%; text-align: right;">
-<label class="box24" for="input">Type In</label>
-<textarea id="input" class="box16"></textarea>
-</div>
-<div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="outout">Code</label>
 <textarea id="output" class="box18 python" readonly>print(math.sin(math.pi/2))
 print(["oranges", "tables"])
@@ -425,6 +420,10 @@ print(weight / (height * height))
 print(x if x >= y else y)
 print(s[0].upper() for s in "abcdefg")
 </textarea>
+</div>
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="input">Type In</label>
+<textarea id="input" class="box16"></textarea>
 </div>
 </div>
 '''
@@ -438,18 +437,15 @@ LOGIN_SCRIPT = '''
     const inputPane = document.getElementById('input');
     var submitted = false;
     var buttonClick = () => {
-        if(!submitted) {
-            var name = idPane.value;
-            var value = inputPane.value;
-            var text = buffers.join(' ');
-            //google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
-            submitted = true;
-            (async function() {
-                const result = await google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
-                const data = result.data['application/json'];
-                document.getElementById('ok').innerText = `出席 平均: ${data.time}ms, 正確さ: ${data.acc}`;
-            })();
-        }
+        var name = idPane.value;
+        var value = inputPane.value;
+        var text = buffers.join(' ');
+        google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
+        (async function() {
+            const result = await google.colab.kernel.invokeFunction('notebook.login', [name, value, dict, text, window.navigator.userAgent], {});
+            const data = result.data['application/json'];
+            document.getElementById('ok').innerText = `出席 平均: ${data.time}ms, 正確さ: ${data.acc}`;
+        })();
     };
     var before = new Date().getTime();
     idPane.addEventListener('keydown', (e) => {
@@ -475,8 +471,11 @@ LOGIN_SCRIPT = '''
       dict[e.key] = (dict[e.key] || 0) + 1;
       var size = inputPane.value.length;
       if(size > 10 && dict[')'] >= 8 && dict['i'] >= 10 && dict['t'] >= 10) {
-        document.getElementById('ok').innerText = '出席';
-        setTimeout(buttonClick, 5000);
+        if(!submitted) {
+            submitted = true;
+            document.getElementById('ok').innerText = '出席 (計測中)';
+            setTimeout(buttonClick, 3000);
+        }
       }
       else{
         document.getElementById('ok').innerText = `${size}`;
@@ -503,17 +502,22 @@ def _accuracy(code):
     return difflib.SequenceMatcher(None, code.strip(), CODE).ratio()
 
 
-def kogi_login(ai_key=None, slack_key=None, print=kogi_print):
+def kogi_login(ai_key=None, class_name='unknown', slack_key=None, print=print_nop):
     def login(name, code, counts, keys, useragent):
-        code = code.strip()
-        acc = _accuracy(code)
-        time = _time(keys)
-        keys = keys.split('\n')[-1]
-        print(keys)
-        record_login(uid=name, code=code, keys=keys,
-                     mean_time=time, accuracy=acc,
-                     counts=counts, browser=useragent)
-        return IPython.display.JSON({'acc': acc, 'time': time})
+        try:
+            code = code.strip()
+            acc = round(_accuracy(code), 3)
+            time = round(_time(keys), 3)
+            keys = keys.split('\n')[-1]
+            print(keys)
+            record_login(type='typing',
+                         uid=name, class_name=class_name,
+                         code=code, keys=keys,
+                         mean_time=time, accuracy=acc,
+                         counts=counts, browser=useragent)
+            return IPython.display.JSON({'acc': acc, 'time': time})
+        except Exception as e:
+            kogi_print(e)
 
     output.register_callback('notebook.login', login)
     display(IPython.display.HTML(LOGIN_HTML))

@@ -3,21 +3,6 @@ from .render_html import render, render_value, render_astype
 from .dialog_desc import response_desc
 from .nmt import get_nmt
 
-# VOCAB = {
-#     '型': 'クラス',
-#     'クラス': '型',
-#     'オブジェクト': '値',
-#     'for文などで': '',
-# }
-
-
-# def simplify(s):
-#     ss = [x.split('}')[0] for x in s.split('{') if '}' in x]
-#     for x in ss:
-#         if x not in VOCAB:
-#             VOCAB[x] = x
-#     return s.format(**VOCAB)
-
 REMOVED = [
     '.', '。', '?', '？', '！',
     '何', '何ですか', '何でしょうか',
@@ -55,7 +40,7 @@ class Chatbot(object):
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
             return self.response_desc(text)
-        if text.startswith('原因') or text.startswith('理由'):
+        if text.startswith('原因') or text.startswith('理由') or text.startswith('なぜ') or text.startswith('なんで'):
             if 'reason' in self.frame:
                 return self.frame['reason']
             else:

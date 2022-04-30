@@ -177,11 +177,11 @@ JUDGE_HTML = '''
 <pre>{input}</pre>
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="input">実行結果</label>
-<textarea id="input" class="{box}" style="height:{height}" readonly>{output}</textarea>
+<textarea class="box18" style="height:{height}" readonly>{output}</textarea>
 </div>
 <div style="float: left; width: 48%">
 <label class="box24" for="outout">正解例</label>
-<textarea id="output" class="box18" style="height:{height}" readonly>{sample}</textarea>
+<textarea class="box18" style="height:{height}" readonly>{sample}</textarea>
 </div>
 </div>
 <p style="clear:both;"></p>
@@ -224,10 +224,8 @@ def _run_judge(code, problem):
                         data['sample'].count('\n'))+1
             data['height'] = '240px' if lines > 10 else f'{lines*24}px'
             display(HTML(JUDGE_HTML.format(**data)))
-        if ac == 3:
-            display(HTML(AC_HTML.format(url=_get_url(problem))))
+        display(HTML(AC_HTML.format(url=_get_url(problem))))
         log(type='atcoder', problem=_get_problemid(problem), ac=ac, code=code)
-        send_log(right_now=True)
     finally:
         _lines = None
         _outputs = None

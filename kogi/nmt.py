@@ -11,7 +11,7 @@ tokenizer = None
 cached = {}
 
 
-def _load_gdown(model_path, model_id, quiet=False):
+def _load_gdown(model_path, model_id, quiet=True):
     kogi_print('Downloading Kogi Programming AI Model...')
     os.system('pip install --upgrade gdown')
     import gdown

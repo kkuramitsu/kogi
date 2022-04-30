@@ -1,2 +1,2 @@
-# corgi
-Corgi Programming AI
+# kogi
+Kogi Programming AI
