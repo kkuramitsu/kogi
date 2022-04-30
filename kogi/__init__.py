@@ -7,6 +7,6 @@ except ModuleNotFoundError:
 #from .runner import kogi, corgi
 
 try:
-    from .exception_hook import enable_kogi, disable_kogi
+    from .exception_hook import enable_kogi_hook, disable_kogi_hook
 except ModuleNotFoundError:
     pass

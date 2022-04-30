@@ -84,7 +84,7 @@ def change_showtraceback(func):
     return showtraceback
 
 
-def enable_exception_hook(kogi_fn=exception_dialog):
+def enable_kogi_hook(kogi_fn=exception_dialog):
     global KOGI_FN
     KOGI_FN = kogi_fn
     InteractiveShell.run_cell = change_run_cell(RUN_CELL)
@@ -92,7 +92,7 @@ def enable_exception_hook(kogi_fn=exception_dialog):
     InteractiveShell.showsyntaxerror = change_showtraceback(SHOW_SYNTAXERROR)
 
 
-def disable_exception_hook():
+def disable_kogi_hook():
     InteractiveShell.run_cell = RUN_CELL
     InteractiveShell.showtraceback = SHOW_TRACEBACK
     InteractiveShell.showsyntaxerror = SHOW_SYNTAXERROR
