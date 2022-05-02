@@ -27,7 +27,7 @@ class Chatbot(object):
         text = remove_suffixes(text, REMOVED_SUFFIXES)
         if text.startswith('ダンプ'):
             return f'{self.slots}'
-        if text.startswith('助けて') or text.startswith('たすけて'):
+        if startswith(text, ('変数', '助けて', 'たすけて')):
             return self.response_variables()
         if text.endswith('には'):
             text = text[:-2]
@@ -107,9 +107,17 @@ SKIP_IDS = set([
     'In', 'Out', 'get_ipython', 'exit', 'quit'
 ])
 
-
-def render_value(name, value):
-    return f'{name}: {type(value).__name__}型'
+def render_value(name, typename, value):
+    head = f'{name}: {typename}型'
+    if hasattr(value, '__len__'):
+        v = len(value)
+        head += f' len({name})={v}'
+    body = f'<pre>{repr(value)}</pre>'
+    if hasattr(value, '_repr_html_'):
+        body = value._repr_html_()
+    elif hasattr(value, '__len__') and len(value) > 8:
+        body = str(value[:8])+ '...(以下、省略)'
+    return f'<h4>{head}</h4>{body}'
 
 
 def get_chatbot_webui():
@@ -122,6 +130,7 @@ def get_chatbot_webui():
             bot_name = chatbot.get('bot_name', 'コギー')
             bot_icon = chatbot.get('bot_icon', BOT_ICON)
             for text in listfy(bot_text):
+                text = text.replace('\n', '<br/>')
                 display(HTML(BOT_HTML.format(bot_icon, bot_name, text)))
         if 'バイバイ' in bot_text:
             display(HTML(CLEAR_HTML))
@@ -131,6 +140,7 @@ def get_chatbot_webui():
             your_name = chatbot.get('your_name', 'あなた')
             your_icon = chatbot.get('your_icon', YOUR_ICON)
             for text in listfy(your_text):
+                text = text.replace('\n', '<br/>')
                 display(HTML(USER_HTML.format(your_icon, your_name, text)))
 
     # def debug_log():
@@ -153,8 +163,8 @@ def get_chatbot_webui():
                 if bot_text is not None:
                     _display_bot(bot_text, chatbot)
             except Exception as e:
-                print(e)
-                _display_bot('コギー内部でエラーが発生しました。<br/>エラーレポートを頂けると助かります', chatbot)
+                print('[内部エラー]', e)
+                _display_bot('コギー内部で深刻なエラーが発生しました。\nエラーレポートを頂けると助かります', chatbot)
 
         output.register_callback('notebook.ask', ask)
         #output.register_callback('notebook.log', debug_log)
