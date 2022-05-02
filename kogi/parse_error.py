@@ -3,6 +3,7 @@ import linecache
 import re
 import sys
 import re
+import traceback
 
 # from .render_html import render
 
@@ -20,6 +21,16 @@ def KOGI_ERR(**kw):
         defined['keys'] = tuple(defined['keys'].split(
             ',')) if ',' in defined['keys'] else (defined['keys'],)
     DEFINED_ERRORS.append(defined)
+
+def DEBUG_ERR(**kw):
+    global DEFINED_ERRORS
+    defined = dict(**kw)
+    if isinstance(defined['pattern'], str):
+        defined['pattern'] = re.compile(defined['pattern'])
+    if 'keys' in defined:
+        defined['keys'] = tuple(defined['keys'].split(
+            ',')) if ',' in defined['keys'] else (defined['keys'],)
+    DEFINED_ERRORS = [defined] + DEFINED_ERRORS
 
 
 # KOGI 定義
@@ -198,6 +209,7 @@ def check_callable(slots, lines):
     import builtins
     type = slots['matched']['type']
     ss = parse_find_app(lines)
+    print(ss)
     if len(ss) == 1:
         name = ss[0]['name']
         slots['translated'] = f'{name}の値は{type}型で、関数ではありません'
@@ -508,7 +520,10 @@ def parse_error_message(code, emsg, lines):
                 _copy_and_format(defined, 'hint', slots)
                 _copy_and_format(defined, 'solution', slots)
             if 'check' in defined:
-                defined['check'](slots, lines)
+                try:
+                    defined['check'](slots, lines)
+                except:
+                    traceback.print_exc()
             slots['code'] = code
             return slots
     return {'code': code, 'emsg': emsg}
