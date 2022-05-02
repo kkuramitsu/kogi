@@ -6,7 +6,7 @@ import re
 
 # from .render_html import render
 
-from .parse_code import parse_find_name, parse_find_index, parse_find_infix
+from .parse_code import parse_find_name, parse_find_app, parse_find_index, parse_find_infix
 
 DEFINED_ERRORS = []
 
@@ -73,12 +73,12 @@ def check_name(slots, line):
         slots['solution'] = f'from {module_name} import {name}'
         return
     if id.startswith('変数'):
-        slots['reason'] = f'{name}の単なる打ち間違い、もしくは値を一度も代入していない'
-        slots['hint'] = f'{name}のあるべき値を考えてみよう'
-        slots['solution'] = f'{name} = ...'
+        slots['reason'] = f'{name}の単なる打ち間違い\nもしくは値を一度も代入していない'
+        slots['hint'] = f'{name}の値は何ですか？考えてみよう'
+        slots['solution'] = f'{name} = ... のように定義する'
     elif id.startswith('関数'):
-        slots['reason'] = f'{name}の単なる打ち間違い、もしくは関数やクラスが未定義かも'
-        slots['hint'] = f'実行忘れのセルがないか確認しよう'
+        slots['reason'] = f'{name}の単なる打ち間違い\nもしくは関数やクラスを定義していない'
+        slots['hint'] = f'実行忘れのセルがないか、確認してみよう'
     else:
         slots['hint'] = f'{name}の種類（変数、関数名、クラス名、モジュール名）を確認しましょう',
 
@@ -194,6 +194,18 @@ KOGI_ERR(
 )
 
 
+def check_callable(slots, lines):
+    import builtins
+    type = slots['matched']['type']
+    ss = parse_find_app(lines)
+    if len(ss) == 1:
+        name = ss[0]['name']
+        slots['translated'] = f'{name}の値は{type}型で、関数ではありません'
+        slots['reason'] = f'{name}を変数名として代入してしまうと、関数として使えなくなります'
+        slots['hint'] = f'{name}を何とかして関数に戻します'
+        if name in dir(builtins):
+            slots['solution'] = f'`from buitins import {name}`を実行します'
+
 def test_NotCallable():
     a = 1
     a()
@@ -203,11 +215,9 @@ KOGI_ERR(
     pattern='\'(.*?)\' object is not callable',
     keys='type',
     translated='{type}は、関数ではありません. ',
-    reason='変数名に{type}の値を間違って代入してしまうと発生することがあります.',
+    hint='関数名を変数名として使ってしまうと発生します.',
     solution='環境を初期化してみてください',
-    # inspect=inspect_funcname,
-    error_ext='{name}は、{type}型であり、関数ではありません. ',
-    reason_ext='{name}に{type}の値を代入してしまうと、発生します.',
+    check=check_callable,
     test=test_NotCallable,
 )
 
@@ -253,13 +263,13 @@ KOGI_ERR(
 #TypeError: render_value() missing 2 required positional arguments: 'typename' and 'value'
 
 KOGI_ERR(
-    pattern='(.+?)\\(\\) missing (\\d+) required positional arguments?: (.*)$',
+    pattern='(\\S+?)\\(\\) missing (\\d+) required positional arguments?: (.*)$',
     keys='name,num,arguments',
     translated='型エラーです\n{name}には、{num}個の引数が足りません',
     reason='足りない引数は、{arguments}です。',
     solution='{name}の定義をよくみてください',
+    #check=check_arguments,
 )
-
 
 def test_InvalidKeyword():
     print(color='red')
@@ -274,7 +284,7 @@ KOGI_ERR(
 )
 
 KOGI_ERR(
-    pattern='(.*?)\\(\\) got an unexpected keyword argument \'(.*?)\'',
+    pattern='(\\S+?)\\(\\) got an unexpected keyword argument \'(.*?)\'',
     keys='funcname,name',
     translated='{name}は、{funcname}の引数として使えるキーワードではありません.',
     solution='{funcname}のリファレンスを読んで確認してください.',

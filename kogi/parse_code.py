@@ -65,7 +65,7 @@ class Flatten(ParseTreeVisitor):
     def acceptApplyExpr(self, tree):
         self.bufs.append(dict(
             cname=fix2(tree.name),
-            ctype='func',
+            ctype='app',
         ))
         self.visit(tree.params)
 
@@ -124,6 +124,11 @@ def parse_find_name(lines, name, defined_key='cname'):
         ss.extend(parse_find(line, defined_key=defined_key, cname=name))
     return ss
 
+def parse_find_app(lines):
+    ss = []
+    for line in lines:
+        ss.extend(parse_find(line, ctype='app'))
+    return ss
 
 def parse_find_infix(lines, infix):
     ss = []
