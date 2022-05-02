@@ -82,9 +82,10 @@ class Chatbot(object):
                     ty = type(v).__name__
                     if ty in ('module', 'function'):
                         continue
-                    ss.append(render_value(n, vars[n]))
+                    ss.append(render_value(n, ty, vars[n]))
             elif name in vars:
-                ss.append(render_value(name, vars[name]))
+                v = vars[name]
+                ss.append(render_value(name, type(v).__name__, v))
         return ss
 
     def response_code(self, text):
