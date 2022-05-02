@@ -120,6 +120,7 @@ def render_value(name, typename, value):
 
 
 def get_chatbot_webui():
+    import traceback
     from IPython.display import display, HTML
     from google.colab import output
     from .html import BOT_ICON, BOT_HTML, CLEAR_HTML, YOUR_ICON, USER_HTML, CHAT_CSS, CHAT_HTML
@@ -162,9 +163,9 @@ def get_chatbot_webui():
                 if bot_text is not None:
                     _display_bot(bot_text, chatbot)
             except Exception as e:
-                print('[内部エラー]', e)
                 _display_bot('コギー内部で深刻なエラーが発生しました。\nエラーレポートを頂けると助かります', chatbot)
-
+                traceback.print_exc()
+                
         output.register_callback('notebook.ask', ask)
         #output.register_callback('notebook.log', debug_log)
 
