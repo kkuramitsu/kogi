@@ -115,6 +115,32 @@ class Flatten(ParseTreeVisitor):
 f = Flatten()
 
 
+def parse_find(line, type=None, name=None, defined_key=None, type_key='type', name_key='name'):
+    rs = f.parse(line.strip())
+    ss = []
+    for r in rs:
+        if defined_key is not None and defined_key not in r:
+            continue
+        if name is not None and r.get(name_key, None) != name:
+            continue
+        if type is not None and r.get(type_key, None) != type:
+            continue
+        ss.append(r)
+    return ss
+
+
+def parse_find_name(line, name):
+    return parse_find(line, defined_key=name, name=name)
+
+
+def parse_find_infix(line, infix):
+    return parse_find(line, type='infix', name=infix)
+
+
+def parse_find_callee(line, name):
+    return parse_find(line, defined_key='callee', name=name)
+
+
 def filter(results, type='sub', name=None):
     rs = []
     if name is None:
@@ -134,6 +160,9 @@ def filter2(results, name, defined='callee'):
         if defined in r and r['name'] == name:
             rs.append(r)
     return rs
+
+
+# find_infix // parse_find(line, type='infix', name='+')
 
 
 def find_infix(lines, infix='+'):

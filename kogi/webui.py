@@ -6,6 +6,7 @@ from .logger import load_slack, kogi_print, log, send_log, print_nop, record_log
 from .nmt import get_nmt, kogi_enable_ai
 from .dialog import get_chatbot
 
+
 def debug_log():
     try:
         send_log()
@@ -13,6 +14,7 @@ def debug_log():
         kogi_print(e)
 
 # https://github.com/googlecolab/colabtools/tree/0162530b8c7f76741ee3e518db34aa5c173e8ebe/google/colab
+
 
 BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
 #BOT_ICON = 'https://kohacu.com/wp-content/uploads/2021/05/kohacu.com_samune_003370-768x768.png'
@@ -181,6 +183,7 @@ kogi_frame = {  # グローバルフレーム
 
 N_GLOBALS = 0
 
+
 def _needs_new_chat():
     global N_GLOBALS
     state = get_ipython().ev('len(globals())')
@@ -339,7 +342,8 @@ def kogi_translate(delay=600, always_policy=False, print=print_nop):
             ss = []
             for line in text.split('\n'):
                 if line not in cached:
-                    translated = nmt(line, always_policy=always_policy, print=print)
+                    translated = nmt(
+                        line, always_policy=always_policy, print=print)
                     print(line, '=>', translated)
                     cached[line] = translated
                     log(
@@ -483,7 +487,7 @@ LOGIN_SCRIPT = '''
 
 def _time(keys):
     times = [int(t) for t in keys.split() if t.isdigit()]
-    return (sum(times) - max(times)) / (len(times) - 1)
+    return (sum(times) - max(times)) // (len(times) - 1)
 
 
 CODE = '''print(math.sin(math.pi/2))
@@ -506,11 +510,11 @@ def kogi_login(ai_key=None, class_name='unknown', slack_key=None, print=print_no
             time = round(_time(keys), 3)
             keys = keys.split('\n')[-1]
             print(keys)
-            record_login(type='typing', 
-                uid=name, class_name=class_name, 
-                code=code, keys=keys,
-                mean_time=time, accuracy=acc,
-                counts=counts, browser=useragent)
+            record_login(type='typing',
+                         uid=name, class_name=class_name,
+                         code=code, keys=keys,
+                         mean_time=time, accuracy=acc,
+                         counts=counts, browser=useragent)
             return IPython.display.JSON({'acc': acc, 'time': time})
         except Exception as e:
             kogi_print(e)

@@ -1,9 +1,11 @@
+from IPython.display import display, HTML
 import difflib
 import requests
 from bs4 import BeautifulSoup
 import builtins
-from IPython.display import display, HTML
-from .logger import kogi_print, log, send_log
+from .logger import log
+from .exception_hook import KogiError
+
 
 _lines = None
 _outputs = None
@@ -54,29 +56,32 @@ SAMPLE = {}
 
 
 def _get_sample(problem):
-    if '/' in problem:
-        problem = problem[problem.rfind('/')+1:]
-    problem = problem.lower()
-    if '_' in problem:
-        problem, num = problem.split('_')
-    else:
-        num = problem[-1].lower()
-        problem = problem[:-1].lower()
-    pid = f'{problem}_{num}'
-    if pid in SAMPLE:
-        return SAMPLE[pid]
-    response_text = requests.get(
-        url=f"https://atcoder.jp/contests/{problem}/tasks/{problem}_{num}").text
-    html = BeautifulSoup(response_text, "lxml")
-    d = {}
-    for a in html.find_all("section"):
-        # print(a)
-        if a.h3 and a.pre:
-            key = a.h3.text.replace('\r\n', '\n')
-            value = a.pre.text.replace('\r\n', '\n')
-            d[key] = value
-    SAMPLE[pid] = d
-    return d
+    try:
+        if '/' in problem:
+            problem = problem[problem.rfind('/')+1:]
+        problem = problem.lower()
+        if '_' in problem:
+            problem, num = problem.split('_')
+        else:
+            num = problem[-1].lower()
+            problem = problem[:-1].lower()
+        pid = f'{problem}_{num}'
+        if pid in SAMPLE:
+            return SAMPLE[pid]
+        response_text = requests.get(
+            url=f"https://atcoder.jp/contests/{problem}/tasks/{problem}_{num}").text
+        html = BeautifulSoup(response_text, "lxml")
+        d = {}
+        for a in html.find_all("section"):
+            # print(a)
+            if a.h3 and a.pre:
+                key = a.h3.text.replace('\r\n', '\n')
+                value = a.pre.text.replace('\r\n', '\n')
+                d[key] = value
+        SAMPLE[pid] = d
+        return d
+    except:
+        return {}
 
 
 def _check_atcoder(option):
@@ -199,10 +204,12 @@ def _run_judge(code, problem):
     global _lines, _outputs
     d = _get_sample(problem)
     if len(d) == 0:
-        kogi_print('問題データが読み込めません')
-        res = get_ipython().run_cell(code)
-        res.raise_error()
-        return
+        raise KogiError(
+            translated='問題データが読み込めません。',
+            reason='問題の指定方法が間違っています',
+            hint='問題ページのURLをコピーしてください',
+            solution='%%atcoder 問題ページのURL'
+        )
     try:
         ac = 0
         display(HTML(JUDGE_CSS))
@@ -226,6 +233,8 @@ def _run_judge(code, problem):
             display(HTML(JUDGE_HTML.format(**data)))
         display(HTML(AC_HTML.format(url=_get_url(problem))))
         log(type='atcoder', problem=_get_problemid(problem), ac=ac, code=code)
+    except:
+        pass
     finally:
         _lines = None
         _outputs = None

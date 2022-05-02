@@ -12,6 +12,13 @@ def listfy(s: str) -> tuple:
     return s
 
 
+def remove_suffixes(s, removed_suffixes):
+    for suffix in removed_suffixes:
+        if s.endswith(suffix):
+            return remove_suffixes(s[:-len(suffix)])
+    return s
+
+
 def _ZEN():
     _ZA = ''.join(chr(ord('Ａ')+c) for c in range(26))
     _Za = ''.join(chr(ord('ａ')+c) for c in range(26))
