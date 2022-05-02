@@ -210,13 +210,13 @@ def check_callable(slots, lines):
     type = slots['matched']['type']
     ss = parse_find_app(lines)
     print(ss)
-    if len(ss) == 1:
-        name = ss[0]['name']
-        slots['translated'] = f'{name}の値は{type}型で、関数ではありません'
+    if len(ss) == 1 and 'cname' in ss[0]:
+        name = ss[0]['cname']
+        slots['translated'] = f'{name}の値は{type}型の値が代入されています。\n関数ではありません'
         slots['reason'] = f'{name}を変数名として代入してしまうと、関数として使えなくなります'
         slots['hint'] = f'{name}を何とかして関数に戻します'
         if name in dir(builtins):
-            slots['solution'] = f'`from buitins import {name}`を実行します'
+            slots['solution'] = f'`from buitins import {name}`を試して'
 
 def test_NotCallable():
     a = 1
