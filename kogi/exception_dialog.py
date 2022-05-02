@@ -109,14 +109,14 @@ SKIP_IDS = set([
 ])
 
 def render_value(name, typename, value):
-    head = f'{name}: {typename}型'
+    head = f'<b>{name}: {typename}型</b>'
     if hasattr(value, '__len__'):
         v = len(value)
-        head += f' len({name})={v}'
+        head += f' <tt>len({name})={v}</tt>'
     body = f'<pre>{repr(value)}</pre>'
     if hasattr(value, '_repr_html_'):
         body = value._repr_html_()
-    return f'<h4>{head}</h4>{body}'
+    return f'{head}<br/>{body}'
 
 
 def get_chatbot_webui():
