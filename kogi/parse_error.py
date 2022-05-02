@@ -250,6 +250,18 @@ KOGI_ERR(
 )
 
 
+#TypeError: render_value() missing 2 required positional arguments: 'typename' and 'value'
+
+KOGI_ERR(
+    pattern='(.*?)\\(\\) missing (\\d+) required positional arguments: (.*)$',
+    keys='name,num,arguments',
+    translated='型エラーです\n{name}には、{num}個の引数が足りません',
+    reason='足りない引数は、{arguments}です。',
+    solution='{name}の定義をよくみてください',
+)
+
+
+
 def test_InvalidKeyword():
     print(color='red')
 

@@ -116,8 +116,6 @@ def render_value(name, typename, value):
     body = f'<pre>{repr(value)}</pre>'
     if hasattr(value, '_repr_html_'):
         body = value._repr_html_()
-    elif hasattr(value, '__len__') and len(value) > 8:
-        body = str(value[:8])+ '...(以下、省略)'
     return f'<h4>{head}</h4>{body}'
 
 
