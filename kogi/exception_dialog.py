@@ -25,9 +25,9 @@ class Chatbot(object):
     def response(self, text):
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
-        if text.startswith('ダンプ'):
+        if startswith(text, ('ダンプ', 'わん')):
             return f'{self.slots}'
-        if startswith(text, ('変数', '助けて', 'たすけて')):
+        if startswith(text, ('変数', '困った')):
             return self.response_variables()
         if text.endswith('には'):
             text = text[:-2]
@@ -40,21 +40,23 @@ class Chatbot(object):
                 return self.slots['reason']
             else:
                 return self.response_vow(text)
-        if startswith(text, ('解決', 'どう')):
+        if startswith(text, ('ヒント', '助けて', 'たすけて')):
+            if 'hint' in self.slots:
+                return self.slots['hint']
+            elif 'solution' in self.slots:
+                return self.slots['solution']
+            elif 'reason' in self.slots:
+                return self.slots['reason']
+            else:
+                return 'ノー ヒント！'
+        if startswith(text, ('解決', 'どう', 'お手上げ')):
             if 'solution' in self.slots:
                 return self.slots['solution']
             elif 'hint' in self.slots:
                 return self.slots['hint']
             elif 'reason' in self.slots:
-                return self.slots['hint']
+                return self.slots['reason']
             return self.response_vow(text)
-        if text.startswith('ヒント'):
-            if 'hint' in self.slots:
-                return self.slots['hint']
-            elif 'solution' in self.slots:
-                return self.slots['solution']
-            else:
-                return 'ノー ヒント！'
         return self.response_code(text)
 
     def response_vow(self, text):
@@ -163,7 +165,7 @@ def get_chatbot_webui():
                 if bot_text is not None:
                     _display_bot(bot_text, chatbot)
             except Exception as e:
-                _display_bot('コギー内部で深刻なエラーが発生しました。\nエラーレポートを頂けると助かります', chatbot)
+                _display_bot('バグりました。\nエラーレポートを頂けると早く回復できます', chatbot)
                 traceback.print_exc()
                 
         output.register_callback('notebook.ask', ask)
@@ -191,4 +193,4 @@ def exception_dialog(code, emsg, stacks):
     if 'translated' in slots:
         kogi_say(slots['translated'], chatbot)
     else:
-        kogi_say('く〜ん', chatbot)
+        kogi_say('報告いただけると賢くなりますよ。', chatbot)

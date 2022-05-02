@@ -53,7 +53,6 @@ MODULE_NAME = {
     'cos': 'math',
 }
 
-
 def check_name(slots, line):
     name = slots['matched']['name']
     slots['line'] = line
