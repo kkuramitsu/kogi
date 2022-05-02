@@ -3,8 +3,9 @@ import difflib
 import requests
 from bs4 import BeautifulSoup
 import builtins
-import json
 from .logger import log
+from .exception_hook import KogiError
+
 
 _lines = None
 _outputs = None
@@ -197,11 +198,6 @@ AtCoderでACを取るためには、<b>制約条件</b>を満たす全ての入�
 もう一度、確認してから<a href="{url}" target="atcoder">提出</a>しましょう。
 </div>
 '''
-
-
-class KogiError(Exception):
-    def __init__(self, **kw):
-        Exception.__init__(self, json.dumps(kw))
 
 
 def _run_judge(code, problem):

@@ -68,12 +68,15 @@ class Chatbot(object):
             vars = stack['vars']
             if name is None:
                 for n in vars.keys():
-                    if n.startswith('_'):
+                    if n.startswith('_') or n in SKIP_IDS:
+                        continue
+                    v = vars[n]
+                    ty = type(v).__name__
+                    if ty in ('module', 'function'):
                         continue
                     ss.append(render_value(n, vars[n]))
             elif name in vars:
                 ss.append(render_value(name, vars[name]))
-        print(ss)
         return ss
 
     def response_code(self, text):
@@ -90,6 +93,11 @@ class Chatbot(object):
         # value = render_value(v, render_html=self.render_html)
         # return [f'{code}の型は{tyname}。値は', value]
         return self.response_vow(text)
+
+
+SKIP_IDS = set([
+    'In', 'Out', 'get_ipython', 'exit', 'quit'
+])
 
 
 def render_value(name, value):

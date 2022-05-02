@@ -3,6 +3,7 @@ from functools import wraps
 import sys
 #import traceback
 import linecache
+import json
 
 from .exception_dialog import exception_dialog
 from .logger import kogi_print, log
@@ -28,6 +29,11 @@ def stack_traceback(etype, emsg, tb):
                                vars=local_vars))
         tb = tb.tb_next
     return list(stacks[::-1])
+
+
+class KogiError(Exception):
+    def __init__(self, **kw):
+        Exception.__init__(self, json.dumps(kw))
 
 
 def dummy_kogi_fn(raw_cell, emsg, stacks):
@@ -72,10 +78,13 @@ def change_showtraceback(func):
     @wraps(func)
     def showtraceback(*args, **kwargs):
         etype, evalue, tb = sys.exc_info()
-        value = func(*args, **kwargs)
+        emsg = f"{etype.__name__}: {evalue}"
+        if not emsg.startswith('KogiError'):
+            value = func(*args, **kwargs)
+        else:
+            value = None
         ipyshell = args[0]
         raw_cell = ipyshell.run_cell_raw_cell
-        emsg = f"{etype.__name__}: {evalue}"
         stacks = stack_traceback(etype, emsg, tb)
         exception_hook(raw_cell, emsg, stacks)
         return value
