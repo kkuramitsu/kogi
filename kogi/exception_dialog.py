@@ -7,6 +7,11 @@ REMOVED_SUFFIXES = [
     'が知りたい', 'がしりたい', 'がわからない', 'が分からない',
 ]
 
+def startswith(text, prefixes):
+    for prefix in prefixes:
+        if text.startswith(prefix):
+            return True
+    return False
 
 class Chatbot(object):
     slots: dict
@@ -30,21 +35,24 @@ class Chatbot(object):
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
             return self.response_desc(text)
-        if text.startswith('原因') or text.startswith('理由') or text.startswith('なぜ') or text.startswith('なんで'):
+        if startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どうして')):
             if 'reason' in self.slots:
                 return self.slots['reason']
             else:
                 return self.response_vow(text)
-        if text.startswith('解決') or text.startswith('どう'):
+        if startswith(text, ('解決', 'どう')):
             if 'solution' in self.slots:
                 return self.slots['solution']
-            else:
-                if 'reason' in self.slots:
-                    return '原因を特定してみてね'
-                return 'ググってみたら'
+            elif 'hint' in self.slots:
+                return self.slots['hint']
+            elif 'reason' in self.slots:
+                return self.slots['hint']
+            return self.response_vow(text)
         if text.startswith('ヒント'):
             if 'hint' in self.slots:
                 return self.slots['hint']
+            elif 'solution' in self.slots:
+                return self.slots['solution']
             else:
                 return 'ノー ヒント！'
         return self.response_code(text)
@@ -138,15 +146,15 @@ def get_chatbot_webui():
         def ask(your_text):
             your_text = your_text.strip()
             if 'ありがとう' in your_text or 'バイバイ' in your_text:
-                _display_bot('バイバイ')
-            else:
+                display(HTML(CLEAR_HTML))
+            try:
                 _display_you(your_text, chatbot)
-                try:
-                    bot_text = chatbot.response(your_text)
-                except Exception as e:
-                    print(e)
+                bot_text = chatbot.response(your_text)
                 if bot_text is not None:
                     _display_bot(bot_text, chatbot)
+            except Exception as e:
+                print(e)
+                _display_bot('コギー内部でエラーが発生しました。<br/>エラーレポートを頂けると助かります', chatbot)
 
         output.register_callback('notebook.ask', ask)
         #output.register_callback('notebook.log', debug_log)

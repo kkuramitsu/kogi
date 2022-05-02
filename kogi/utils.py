@@ -15,7 +15,7 @@ def listfy(s: str) -> tuple:
 def remove_suffixes(s, removed_suffixes):
     for suffix in removed_suffixes:
         if s.endswith(suffix):
-            return remove_suffixes(s[:-len(suffix)])
+            return remove_suffixes(s[:-len(suffix)], removed_suffixes)
     return s
 
 
