@@ -116,7 +116,7 @@ CLEAR_HTML = '''
 setTimeout(()=>{
     const element = document.getElementById('main'); 
     element.remove();
-}, 8000);
+}, 2000);
 </script>
 '''
 

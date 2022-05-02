@@ -79,7 +79,7 @@ def check_name(slots, line):
         id = '変数もしくは定数' if ss[0]['ctype'] == 'var' else '関数'
     if name in MODULE_NAME:
         slots['reason'] = f'{id}がインポートされていない'
-        module_name = MODULE_ALIAS[name]
+        module_name = MODULE_NAME[name]
         slots['hint'] = f'モジュール名はたぶん {module_name}'
         slots['solution'] = f'from {module_name} import {name}'
         return
@@ -209,7 +209,7 @@ def check_callable(slots, lines):
     import builtins
     type = slots['matched']['type']
     ss = parse_find_app(lines)
-    print(ss)
+    #print(ss)
     if len(ss) == 1 and 'cname' in ss[0]:
         name = ss[0]['cname']
         slots['translated'] = f'{name}の値は{type}型の値が代入されています。\n関数ではありません'
