@@ -1,5 +1,6 @@
 from .parse_error import parse_error_message
 from .utils import listfy, zen2han, remove_suffixes
+from .logger import send_log
 
 REMOVED_SUFFIXES = [
     '.', '。', '?', '？', '！',
@@ -145,11 +146,11 @@ def get_chatbot_webui():
                 text = text.replace('\n', '<br/>')
                 display(HTML(USER_HTML.format(your_icon, your_name, text)))
 
-    # def debug_log():
-    #     try:
-    #         send_log()
-    #     except Exception as e:
-    #         kogi_print(e)
+    def debug_log():
+        try:
+            send_log()
+        except Exception as e:
+            print(e)
 
     def _display_chat(chatbot):
         display(HTML(CHAT_CSS))
@@ -169,9 +170,10 @@ def get_chatbot_webui():
                 traceback.print_exc()
                 
         output.register_callback('notebook.ask', ask)
-        #output.register_callback('notebook.log', debug_log)
+        output.register_callback('notebook.log', debug_log)
 
     def kogi_say(msg, chatbot=None):
+        send_log(right_now=True)
         if chatbot is None:
             chatbot = Chatbot()
         _display_chat(chatbot)
