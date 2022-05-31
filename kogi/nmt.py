@@ -68,59 +68,8 @@ textarea {
     width: 0;
     height: 0;
 }
-// loader
-.loader {
-  align-items: center;
-  background: #fff;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  left: 0;
-  position: fixed;
-  right: 0;
-  top: 0;
-  z-index: 999;
-  &::after {
-    animation: loader 0.5s linear infinite;
-    border: 1px solid orange;
-    border-radius: 50%;
-    border-right: 1px solid rgba(orange, 0.2);
-    border-top: 1px solid rgba(orange, 0.2);
-    content: "";
-    height: 70px;
-    width: 70px;
-  }
-}
-
-@keyframes loader {
-  0% {
-    transform: rotate(0);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-body {
-  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-}
-
-main{
-  line-height: 1.6;
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 25px;
-  h1{
-    font-size: 32px;
-    font-weight: bold;
-  }
-  p{
-    font-size: 16px;
-    margin-top: 30px;
-  }
-}
 </style>
+
 <div class="parent">
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="input">INPUT</label>
@@ -132,25 +81,6 @@ main{
 </div>
 </div>
 <div id="js-loader" class="loader"></div>
-<script>
-const loader = document.getElementById('js-loader');
-window.addEventListener('load', () => {
-  const ms = 4000;
-  loader.style.transition = 'opacity ' + ms + 'ms';
-  
-  const loaderOpacity = function(){
-    loader.style.opacity = 0;
-  }
-  const loaderDisplay = function(){
-    loader.style.display = "none";
-  }
-  // setTimeout(loaderOpacity, 1);
-  // setTimeout(loaderDisplay, ms);
-  // デモ用
-  setTimeout(loaderOpacity, 1000);
-  setTimeout(loaderDisplay, 1000 + ms);
-});
-</script>
 '''
 
 TRANSLATE_SCRIPT = '''
@@ -214,7 +144,7 @@ def load_mt5(model_id, qint8=True, device='cpu', print=print):
 
     return gready_search
 
-def translate(model_id, load_nmt=load_mt5, beam=1, device='cpu', qint8=True, input='日本語', output='Python', print = print):
+def translate(model_id, load_nmt=load_mt5, class_name='unknown', beam=1, device='cpu', qint8=True, input='日本語', output='Python', print = print):
     display(HTML(TRANSLATE_CSS_HTML.replace('INPUT', input).replace('OUTPUT', output)))
     nmt = load_nmt(model_id, qint8=qint8, device=device, print=print)
     cached = {'':''}
@@ -222,14 +152,16 @@ def translate(model_id, load_nmt=load_mt5, beam=1, device='cpu', qint8=True, inp
     def convert(text):
         try:
             ss = []
-            for line in text.split('\n'):
+            for line in text.splitlines():
                 if line not in cached:
                     translated = nmt(line, beam=beam)
-                    print(line, '=>', translated)
+                    print(len(line), line, '=>', translated)
                     cached[line] = translated
                     log(
                         type='realtime-nmt',
-                        input=line, output=translated,
+                        class_name=class_name,
+                        input=line, 
+                        output=translated,
                     )
                 else:
                     translated = cached[line]
