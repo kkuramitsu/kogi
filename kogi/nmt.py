@@ -110,12 +110,13 @@ TRANSLATE_SCRIPT = '''
 </script>
 '''
 
-def load_mt5(file_id, qint8=True, device='cpu', print=print):
+def load_mt5(model_id, qint8=True, device='cpu', print=print):
+    print('loading kogi ai')
     os.system('pip install -q sentencepiece transformers')
     import torch
     from transformers import MT5ForConditionalGeneration, MT5Tokenizer
-    model = MT5ForConditionalGeneration.from_pretrained(file_id)
-    tokenizer = MT5Tokenizer.from_pretrained(file_id, is_fast=True)
+    model = MT5ForConditionalGeneration.from_pretrained(model_id)
+    tokenizer = MT5Tokenizer.from_pretrained(model_id, is_fast=True)
 
     if qint8:
         model = torch.quantization.quantize_dynamic(
@@ -140,6 +141,7 @@ def load_mt5(file_id, qint8=True, device='cpu', print=print):
     return gready_search
 
 def translate(model_id, load_nmt=load_mt5, beam=1, device='cpu', qint8=True, print = print):
+    display(HTML(TRANSLATE_CSS_HTML))
     nmt = load_nmt(model_id, qint8=qint8, device=device, print=print)
     cached = {}
 
@@ -148,7 +150,7 @@ def translate(model_id, load_nmt=load_mt5, beam=1, device='cpu', qint8=True, pri
             ss = []
             for line in text.split('\n'):
                 if line not in cached:
-                    translated = nmt(line, beam=beam, print=print)
+                    translated = nmt(line, beam=beam)
                     print(line, '=>', translated)
                     cached[line] = translated
                     log(
@@ -162,7 +164,6 @@ def translate(model_id, load_nmt=load_mt5, beam=1, device='cpu', qint8=True, pri
             return IPython.display.JSON({'result': text})
         except Exception as e:
             print(e)
-    display(HTML(TRANSLATE_CSS_HTML))
     display(HTML(TRANSLATE_SCRIPT))
 
     try:
