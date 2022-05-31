@@ -135,7 +135,10 @@ def response_translate(text):
         return 'ぐるるるる'
     payload = {"inputs": text}
     response = requests.post(API_URL, headers=headers, json=payload)
-    output = response.json()[0]
+    output = response.json()
+    print(type(output), output)
+    if isinstance(output, [list, tuple]):
+        output = output[0]
     if 'generated_text' in output:
         return output['generated_text']
     return 'ねむねむ。まだ、起きられない！'
@@ -222,7 +225,7 @@ PAT = re.compile('(abc\d\d\d_\w)')
 
 def check_context(code, slots):
     matched = PAT.search(code.replace('\n', ' '))
-    print('debug', matched)
+    print('@debug', matched, code)
     if matched:
         slots['context'] = matched.group()
 
@@ -242,4 +245,4 @@ def exception_dialog(code, emsg, stacks):
     if 'translated' in slots:
         kogi_say(slots['translated'], chatbot)
     else:
-        kogi_say('にゃん（猫のふり）', chatbot)
+        kogi_say('にゃん', chatbot)
