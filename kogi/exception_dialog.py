@@ -60,9 +60,9 @@ class Chatbot(object):
     def response(self, text):
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
-        if startswith(text, ('ダンプ', 'わん')):
+        if startswith(text, ('デバッグ', 'わん')):
             return f'{self.slots}'
-        if startswith(text, ('変数', '困った')):
+        if startswith(text, ('変数', '困った', 'デバッグ')):
             return self.response_variables()
         if text.endswith('には'):
             text = text[:-2]
@@ -136,8 +136,8 @@ def response_translate(text):
     payload = {"inputs": text}
     response = requests.post(API_URL, headers=headers, json=payload)
     output = response.json()
-    print(type(output), output)
-    if isinstance(output, [list, tuple]):
+    print(text, type(output), output)
+    if isinstance(output, (list, tuple)):
         output = output[0]
     if 'generated_text' in output:
         return output['generated_text']
@@ -220,27 +220,18 @@ def get_chatbot_webui():
     return kogi_say
 
 
-PAT = re.compile('(abc\d\d\d_\w)')
-
-
-def check_context(code, slots):
-    matched = PAT.search(code.replace('\n', ' '))
-    print('@debug', matched, code)
-    if matched:
-        slots['context'] = matched.group()
-
-
-##
-
-
 kogi_say = get_chatbot_webui()
 
 
 def exception_dialog(code, emsg, stacks):
     lines = [stack['line'].strip() for stack in stacks]
     slots = parse_error_message(code, emsg, lines)
+    slots['lines'] = lines
     slots['stacks'] = stacks
-    check_context(code, slots)
+    if hasattr(get_ipython(), '_run_cell_context'):
+        context = get_ipython()._run_cell_context
+        if context is not None:
+            slots['context'] = context
     chatbot = Chatbot(slots=slots)
     if 'translated' in slots:
         kogi_say(slots['translated'], chatbot)

@@ -56,6 +56,7 @@ SAMPLE = {}
 
 
 def _get_sample(problem):
+    pid = None
     try:
         if '/' in problem:
             problem = problem[problem.rfind('/')+1:]
@@ -79,50 +80,50 @@ def _get_sample(problem):
                 value = a.pre.text.replace('\r\n', '\n')
                 d[key] = value
         SAMPLE[pid] = d
-        return d
+        return d, pid
     except:
-        return {}
+        return {}, pid
 
 
-def _check_atcoder(option):
-    try:
-        if 'atcoder' in option:
-            d = _get_sample(option)
-            return True
-    except Exception as e:
-        print('問題が読み込めません', e)
-    return False
+# def _check_atcoder(option):
+#     try:
+#         if 'atcoder' in option:
+#             d = _get_sample(option)
+#             return True
+#     except Exception as e:
+#         print('問題が読み込めません', e)
+#     return False
 
 
-_COLOR_HTML_DIC = {
-    'yellow': '<span style="background: pink">',
-    'red': '<span style="background: lightblue">',
-    'end': '</span>'
-}
+# _COLOR_HTML_DIC = {
+#     'yellow': '<span style="background: pink">',
+#     'red': '<span style="background: lightblue">',
+#     'end': '</span>'
+# }
 
 
-def _display_diff(ground_truth, target):
-    _CDIC = _COLOR_HTML_DIC
+# def _display_diff(ground_truth, target):
+#     _CDIC = _COLOR_HTML_DIC
 
-    if ground_truth == target:
-        return
+#     if ground_truth == target:
+#         return
 
-    d = difflib.Differ()
-    diffs = d.compare(ground_truth, target)
+#     d = difflib.Differ()
+#     diffs = d.compare(ground_truth, target)
 
-    result = ''
-    for diff in diffs:
-        status, _, character = list(diff)
-        if status == '-':
-            character = _CDIC['red'] + character + _CDIC['end']
-        elif status == '+':
-            character = _CDIC['yellow'] + character + _CDIC['end']
-        else:
-            pass
-        result += character
+#     result = ''
+#     for diff in diffs:
+#         status, _, character = list(diff)
+#         if status == '-':
+#             character = _CDIC['red'] + character + _CDIC['end']
+#         elif status == '+':
+#             character = _CDIC['yellow'] + character + _CDIC['end']
+#         else:
+#             pass
+#         result += character
 
-    display(
-        HTML(f'<h4>差分</h4><div style="white-space: pre-wrap;">{result}</div>'))
+#     display(
+#         HTML(f'<h4>差分</h4><div style="white-space: pre-wrap;">{result}</div>'))
 
 
 JUDGE_CSS = '''
@@ -202,7 +203,7 @@ AtCoderでACを取るためには、<b>制約条件</b>を満たす全ての入�
 
 def _run_judge(code, problem):
     global _lines, _outputs
-    d = _get_sample(problem)
+    d, problem_id = _get_sample(problem)
     if len(d) == 0:
         raise KogiError(
             translated='問題データが読み込めません。',
@@ -210,6 +211,7 @@ def _run_judge(code, problem):
             hint='問題ページのURLをコピーしてください',
             solution='%%atcoder 問題ページのURL'
         )
+    get_ipython()._run_cell_context = problem_id
     try:
         ac = 0
         display(HTML(JUDGE_CSS))
@@ -217,7 +219,6 @@ def _run_judge(code, problem):
             if key not in d:
                 continue
             data = {'title': key, 'input': d[key]}
-            # display(HTML(sample_html))
             _lines = [s for s in d[key].split('\n') if len(s) > 0]
             _outputs = []
             res = get_ipython().run_cell(code)
@@ -232,7 +233,8 @@ def _run_judge(code, problem):
             data['height'] = '240px' if lines > 10 else f'{lines*24}px'
             display(HTML(JUDGE_HTML.format(**data)))
         display(HTML(AC_HTML.format(url=_get_url(problem))))
-        log(type='atcoder', problem=_get_problemid(problem), ac=ac, code=code)
+        get_ipython()._run_cell_context = None
+        log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except:
         pass
     finally:
