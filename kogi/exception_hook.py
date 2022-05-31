@@ -1,9 +1,8 @@
-from IPython.core.interactiveshell import InteractiveShell
-from functools import wraps
 import sys
-#import traceback
 import linecache
 import json
+from IPython.core.interactiveshell import InteractiveShell
+from functools import wraps
 
 from .exception_dialog import exception_dialog
 from .logger import kogi_print, log
@@ -44,7 +43,6 @@ def dummy_kogi_fn(raw_cell, emsg, stacks):
 
 KOGI_FN = exception_dialog
 
-
 def exception_hook(raw_cell, emsg, stacks):
     traceback = []
     for stack in stacks:
@@ -53,7 +51,8 @@ def exception_hook(raw_cell, emsg, stacks):
         traceback.append(d)
     log(
         type='exception_hook',
-        code=raw_cell, emsg=emsg,
+        code=raw_cell, 
+        emsg=emsg,
         traceback=traceback
     )
     try:

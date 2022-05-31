@@ -1,6 +1,11 @@
-from .parse_error import parse_error_message
+import re
+import json
+import requests
 from .utils import listfy, zen2han, remove_suffixes
+from .parse_error import parse_error_message
 from .logger import send_log
+
+DUMMY = 'rhOcswxkXzMbhlkKQJfytbfxAPVsblhRHX'
 
 REMOVED_SUFFIXES = [
     '.', '。', '?', '？', '！',
@@ -8,11 +13,40 @@ REMOVED_SUFFIXES = [
     'が知りたい', 'がしりたい', 'がわからない', 'が分からない',
 ]
 
+
 def startswith(text, prefixes):
     for prefix in prefixes:
         if text.startswith(prefix):
             return True
     return False
+
+
+def remove_tai(s):
+    if s.endswith('したい'):
+        return s[:-3]+'する'
+    if s.endswith('きたい'):
+        return s[:-3]+'く'
+    if s.endswith('ちたい'):
+        return s[:-3]+'つ'
+    if s.endswith('にたい'):
+        return s[:-3]+'ぬ'
+    if s.endswith('りたい'):
+        return s[:-3]+'る'
+    if s.endswith('みたい'):
+        return s[:-3]+'む'
+    if s.endswith('いたい'):
+        return s[:-3]+'う'
+    if s.endswith('ぎたい'):
+        return s[:-3]+'ぐ'
+    if s.endswith('びたい'):
+        return s[:-3]+'ぶ'
+    return s[:-2]+'る'
+
+
+HINT = {
+    'abc231_a': '難しいことはありません.'
+}
+
 
 class Chatbot(object):
     slots: dict
@@ -33,6 +67,9 @@ class Chatbot(object):
         if text.endswith('には'):
             text = text[:-2]
             return self.response_translate(text)
+        if text.endswith('たい'):
+            text = remove_tai(text)
+            return self.response_translate(text)
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
             return self.response_desc(text)
@@ -42,12 +79,8 @@ class Chatbot(object):
             else:
                 return self.response_vow(text)
         if startswith(text, ('ヒント', '助けて', 'たすけて')):
-            if 'hint' in self.slots:
-                return self.slots['hint']
-            elif 'solution' in self.slots:
-                return self.slots['solution']
-            elif 'reason' in self.slots:
-                return self.slots['reason']
+            if 'context' in self.slots and self.slots['context'] in HINT:
+                return HINT(self.slots['context'])
             else:
                 return 'ノー ヒント！'
         if startswith(text, ('解決', 'どう', 'お手上げ')):
@@ -62,14 +95,12 @@ class Chatbot(object):
 
     def response_vow(self, text):
         return "わん"
-        # return self.nmt(f'talk: {text}')
 
     def response_translate(self, text):
-        # return self.nmt(f'trans: {text}')
-        return self.response_vow(text)
+        return response_translate(text)
 
     def response_desc(self, text):
-        return response_desc(text)
+        return response_translate(text)
 
     def response_variables(self, name=None):
         ss = ['変数を全部、表示するよ']
@@ -92,24 +123,28 @@ class Chatbot(object):
         return ss
 
     def response_code(self, text):
-        # try:
-        #     v = get_ipython().ev(text)
-        #     self.slots['code'] = text
-        #     self.slots['value'] = v
-        # except:
-        #     pass
-        # if 'value' not in self.slots:
-        #     return self.response_vow(text)
-        # code = render(text, 'code', render_html=self.render_html)
-        # tyname = render_astype(v, render_html=self.render_html)
-        # value = render_value(v, render_html=self.render_html)
-        # return [f'{code}の型は{tyname}。値は', value]
         return self.response_vow(text)
+
+
+API_URL = "https://api-inference.huggingface.co/models/kkuramitsu/kogi-mt5-test"
+headers = {"Authorization": f"Bearer hf_{DUMMY}"}
+
+
+def response_translate(text):
+    if len(text) > 80:
+        return 'ぐるるるる'
+    payload = {"inputs": text}
+    response = requests.post(API_URL, headers=headers, json=payload)
+    output = response.json()[0]
+    if 'generated_text' in output:
+        return output['generated_text']
+    return 'ねむねむ。まだ、起きられない！'
 
 
 SKIP_IDS = set([
     'In', 'Out', 'get_ipython', 'exit', 'quit'
 ])
+
 
 def render_value(name, typename, value):
     head = f'<b>{name}: {typename}型</b>'
@@ -168,7 +203,7 @@ def get_chatbot_webui():
             except Exception as e:
                 _display_bot('バグりました。\nエラーレポートを頂けると早く回復できます', chatbot)
                 traceback.print_exc()
-                
+
         output.register_callback('notebook.ask', ask)
         output.register_callback('notebook.log', debug_log)
 
@@ -181,6 +216,17 @@ def get_chatbot_webui():
 
     return kogi_say
 
+
+PAT = re.compile('(abc\d\d\d_\w)')
+
+
+def check_context(code, slots):
+    matched = PAT.search(code.replace('\n', ' '))
+    print('debug', matched)
+    if matched:
+        slots['context'] = matched.group()
+
+
 ##
 
 
@@ -191,8 +237,9 @@ def exception_dialog(code, emsg, stacks):
     lines = [stack['line'].strip() for stack in stacks]
     slots = parse_error_message(code, emsg, lines)
     slots['stacks'] = stacks
+    check_context(code, slots)
     chatbot = Chatbot(slots=slots)
     if 'translated' in slots:
         kogi_say(slots['translated'], chatbot)
     else:
-        kogi_say('報告いただけると賢くなりますよ。', chatbot)
+        kogi_say('にゃん（猫のふり）', chatbot)
