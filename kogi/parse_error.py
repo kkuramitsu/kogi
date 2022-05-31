@@ -7,7 +7,7 @@ import traceback
 
 # from .render_html import render
 
-from parse_code import parse_find_name, parse_find_app, parse_find_index, parse_find_infix
+from .parse_code import parse_find_name, parse_find_app, parse_find_index, parse_find_infix
 
 DEFINED_ERRORS = []
 
