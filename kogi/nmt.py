@@ -1,136 +1,173 @@
+# translate
+import IPython
+from IPython.display import display, HTML
 import os
-from re import M
 
-import sys
-from .logger import kogi_print
-from .nmt_compose import compose
+#from kogi.libnmt.transformer import load_transformer_nmt
+from .logger import log, send_log, print_nop
 
-DEVICE = None
-model = None
-tokenizer = None
-cached = {}
+TRANSLATE_CSS_HTML = '''
+<style>
+.parent {
+  background-color: #edebeb;
+  width: 100%;
+  height: 150px;
+}
+textarea {
+  width: 100%; 
+  box-sizing: border-box;  /* ※これがないと横にはみ出る */
+  height:120px; 
+  font-size: large;
+  outline: none;           /* ※ブラウザが標準で付加する線を消したいとき */
+  resize: none;
+}
+.box11{
+//    padding: 0.5em 1em;
+//    margin: 2em 0;
+    color: #5d627b;
+    background: white;
+    border-top: solid 5px #5d627b;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.22);
+}
+.box18{
+  //padding: 0.2em 0.5em;
+  //margin: 2em 0;
+  color: #565656;
+  background: #ffeaea;
+  //background-image: url(https://2.bp.blogspot.com/-u7NQvQSgyAY/Ur1HXta5W7I/AAAAAAAAcfE/omW7_szrzao/s800/dog_corgi.png);
+  background-size: 150%;
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-color:rgba(255,255,255,0.8);
+  background-blend-mode:lighten;
+  //box-shadow: 0px 0px 0px 10px #ffeaea;
+  border: dashed 2px #ffc3c3;
+  //border-radius: 8px;
+}
+.box16{
+    //padding: 0.5em 1em;
+    //margin: 2em 0;
+    background: -webkit-repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+    background: repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+}
+.box24 {
+    position: relative;
+    padding: 0.5em 0.7em;
+    margin: 2em 0;
+    background: #6f4b3e;
+    color: white;
+    font-weight: bold;
+}
+.box24:after {
+    position: absolute;
+    content: '';
+    top: 100%;
+    left: 30px;
+    border: 15px solid transparent;
+    border-top: 15px solid #6f4b3e;
+    width: 0;
+    height: 0;
+}
+</style>
+<div class="parent">
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="input">日本語</label>
+<textarea id="input" class="box16"></textarea>
+</div>
+<div style="float: left; width: 48%; text-align: right;">
+<label class="box24" for="outout">Python</label>
+<textarea id="output" class="box18 python" readonly></textarea>
+</div>
+</div>
+'''
 
+TRANSLATE_SCRIPT = '''
+<script>
+    var timer = null;
+    var logtimer = null;
+    document.getElementById('input').addEventListener('input', (e) => {
+        var text = e.srcElement.value;
+        if(timer !== null) {
+            clearTimeout(timer);
+        }
+        if(logtimer !== null) {
+            clearTimeout(logtimer);
+        }
+        timer = setTimeout(() => {
+            timer = null;
+            (async function() {
+                const result = await google.colab.kernel.invokeFunction('notebook.Convert', [text], {});
+                const data = result.data['application/json'];
+                const textarea = document.getElementById('output');
+                textarea.textContent = data.result;
+            })();
+        }, 600);  // 何も打たななかったら600ms秒後に送信
+        logtimer = setTimeout(() => {
+            // logtimer = null;
+            google.colab.kernel.invokeFunction('notebook.Logger', [], {});
+        }, 60*1000*5); // 5分に１回まとめて送信
+    });
+</script>
+'''
 
-def _load_gdown(model_path, model_id, quiet=True):
-    kogi_print('Downloading Kogi Programming AI Model...')
-    os.system('pip install --upgrade gdown')
-    import gdown
-    url = f'https://drive.google.com/uc?id={model_id}'
+def load_mt5(file_id, qint8=True, device='cpu', print=print):
+    os.system('pip install -q sentencepiece transformers')
+    import torch
+    from transformers import MT5ForConditionalGeneration, MT5Tokenizer
+    model = MT5ForConditionalGeneration.from_pretrained(file_id)
+    tokenizer = MT5Tokenizer.from_pretrained(file_id, is_fast=True)
 
-    gdown.download(url, 'model.zip', quiet=quiet)
-    os.system(f'rm -rf {model_path}')
-    os.system(f'unzip -d {model_path} -j model.zip')
+    if qint8:
+        model = torch.quantization.quantize_dynamic(
+            model, {torch.nn.Linear}, dtype=torch.qint8
+        )
 
+    if isinstance(device, str):
+        device = torch.device(device)
+    model.to(device)
 
-def load_model(model_id, model_path='./kogi_model'):
-    global model, tokenizer, cached, DEVICE
-    if not os.path.exists(model_path):
-        _load_gdown(model_path=model_path, model_id=model_id)
+    def gready_search(s: str, max_length=128, beam=1) -> str:
+        input_ids = tokenizer.encode_plus(
+            s,
+            add_special_tokens=True,
+            max_length=max_length,
+            padding="do_not_pad",
+            truncation=True,
+            return_tensors='pt').input_ids.to(device)
+        greedy_output = model.generate(input_ids, max_length=max_length)
+        return tokenizer.decode(greedy_output[0], skip_special_tokens=True)
 
-    if os.path.exists(model_path):
-        kogi_print('Initializing Transormers and T5 ...')
+    return gready_search
+
+def translate(model_id, load_nmt=load_mt5, beam=1, device='cpu', qint8=True, print = print):
+    nmt = load_nmt(model_id, qint8=qint8, device=device, print=print)
+    cached = {}
+
+    def convert(text):
         try:
-            import sentencepiece
-        except ModuleNotFoundError:
-            os.system('pip install sentencepiece')
-        import torch
-        try:
-            from transformers import T5ForConditionalGeneration, MT5Tokenizer
-        except ModuleNotFoundError:
-            os.system('pip install transformers')
-            from transformers import T5ForConditionalGeneration, MT5Tokenizer
+            ss = []
+            for line in text.split('\n'):
+                if line not in cached:
+                    translated = nmt(line, beam=beam, print=print)
+                    print(line, '=>', translated)
+                    cached[line] = translated
+                    log(
+                        type='realtime-nmt',
+                        input=line, output=translated,
+                    )
+                else:
+                    translated = cached[line]
+                ss.append(translated)
+            text = '\n'.join(ss)
+            return IPython.display.JSON({'result': text})
+        except Exception as e:
+            print(e)
+    display(HTML(TRANSLATE_CSS_HTML))
+    display(HTML(TRANSLATE_SCRIPT))
 
-        USE_GPU = torch.cuda.is_available()
-        DEVICE = torch.device('cuda:0' if USE_GPU else 'cpu')
-        kogi_print('DEVICE :', DEVICE)
-
-        model = T5ForConditionalGeneration.from_pretrained(model_path)
-        tokenizer = MT5Tokenizer.from_pretrained(model_path, is_fast=True)
-        cached = {}
-
-
-def greedy_search(s: str, max_length=128, beam=1) -> str:
-    input_ids = tokenizer.encode_plus(
-        s,
-        add_special_tokens=True,
-        max_length=max_length,
-        padding="do_not_pad",
-        truncation=True,
-        return_tensors='pt').input_ids.to(DEVICE)
-    greedy_output = model.generate(input_ids, max_length=max_length)
-    return tokenizer.decode(greedy_output[0], skip_special_tokens=True)
-
-
-# def beam_search(s, max_length=128, beams=5):
-#     input_ids = tokenizer.encode_plus(
-#         s,
-#         add_special_tokens=True,
-#         max_length=max_length,
-#         padding="do_not_pad",
-#         truncation=True,
-#         return_tensors='pt').input_ids.to(DEVICE)
-#     beam_outputs = model.generate(
-#         input_ids,
-#         max_length=max_length,
-#         num_beams=beams,
-#         no_repeat_ngram_size=2,
-#         num_return_sequences=beams,
-#         early_stopping=True
-#     )
-#     return [tokenizer.decode(beam_output, skip_special_tokens=True) for beam_output in beam_outputs]
-
-
-# def _translate_beam(s: str, beams: int, max_length=64):
-#     global model, tokenizer, DEVICE
-#     model.config.update({"num_beams": beams})
-#     input_ids = tokenizer.encode_plus(s,
-#                                       add_special_tokens=True,
-#                                       max_length=max_length,
-#                                       # padding="max_length",
-#                                       padding="do_not_pad",
-#                                       truncation=True,
-#                                       return_tensors='pt').input_ids.to(DEVICE)
-#     predict = model.generate(input_ids,
-#                              return_dict_in_generate=True,
-#                              output_scores=True,
-#                              length_penalty=8.0,
-#                              max_length=max_length,
-#                              num_return_sequences=beams,
-#                              early_stopping=True)
-#     pred_list = sorted([[tokenizer.decode(predict.sequences[i], skip_special_tokens=True),
-#                          predict.sequences_scores[i].item()] for i in range(len(predict))], key=lambda x: x[1], reverse=True)
-#     sentences_list = [i[0] for i in pred_list]
-#     scores_list = [i[1] for i in pred_list]
-#     return sentences_list, scores_list
-
-
-model_id = None
-
-
-def kogi_enable_ai(access_key: str, start_loading=False):
-    global model_id
-    model_id = access_key
-    if model_id is not None:
-        load_model(model_id)
-
-
-def get_nmt():
-    global model, cached
-    if model_id is None:
-        return compose(lambda s: 'わん')
-    if model is None:
-        load_model(model_id)
-
-    def generate(s, max_length=80):
-        if s in cached:
-            return cached[s]
-        t = greedy_search(s, max_length=max_length)
-        cached[s] = t
-        return t
-    return compose(generate)
-
-
-if __name__ == '__main__':
-    nmt = get_nmt()
-    for a in sys.argv[1:]:
-        print(a, nmt(a))
+    try:
+        from google.colab import output
+        output.register_callback('notebook.Convert', convert)
+        output.register_callback('notebook.Logger', send_log)
+    except Exception as e:
+        print(e)

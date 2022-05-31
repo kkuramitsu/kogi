@@ -1,7 +1,7 @@
 from .utils import zen2han, listfy
 from .render_html import render, render_value, render_astype
 from .dialog_desc import response_desc
-from .nmt import get_nmt
+from .OLDnmt import get_nmt
 
 REMOVED = [
     '.', '。', '?', '？', '！',
