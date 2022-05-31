@@ -68,7 +68,7 @@ def _get_sample(problem):
             problem = problem[:-1].lower()
         pid = f'{problem}_{num}'
         if pid in SAMPLE:
-            return SAMPLE[pid]
+            return SAMPLE[pid], pid
         response_text = requests.get(
             url=f"https://atcoder.jp/contests/{problem}/tasks/{problem}_{num}").text
         html = BeautifulSoup(response_text, "lxml")

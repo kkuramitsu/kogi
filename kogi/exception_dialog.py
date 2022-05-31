@@ -80,7 +80,7 @@ class Chatbot(object):
                 return self.response_vow(text)
         if startswith(text, ('ヒント', '助けて', 'たすけて')):
             if 'context' in self.slots and self.slots['context'] in HINT:
-                return HINT(self.slots['context'])
+                return HINT[self.slots['context']]
             else:
                 return 'ノー ヒント！'
         if startswith(text, ('解決', 'どう', 'お手上げ')):
