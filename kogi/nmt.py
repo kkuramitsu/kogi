@@ -73,10 +73,10 @@ textarea {
 <div class="parent">
 <div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="input">INPUT</label>
-<textarea id="input" class="box16" readonly></textarea>
+<textarea id="input" class="box16"></textarea>
 </div>
 <div style="float: left; width: 48%; text-align: right;">
-<label class="box24" for="outout">OUTOUT</label>
+<label class="box24" for="outout">OUTPUT</label>
 <textarea id="output" class="box18 python" readonly></textarea>
 </div>
 </div>
@@ -88,7 +88,6 @@ TRANSLATE_SCRIPT = '''
     var timer = null;
     var logtimer = null;
     var inputPane = document.getElementById('input');
-    inputPane.disabled = false;
     inputPane.addEventListener('input', (e) => {
         var text = e.srcElement.value;
         if(timer !== null) {
