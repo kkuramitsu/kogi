@@ -112,7 +112,10 @@ def change_showtraceback(func):
         else:
             value = None
         ipyshell = args[0]
-        raw_cell = ipyshell.run_cell_raw_cell
+        if hasattr(ipyshell, 'run_cell_raw_cell'):
+            raw_cell = ipyshell.run_cell_raw_cell
+        else:
+            raw_cell = None
         slots = catch_exception((etype, evalue, tb), code=raw_cell)
         #stacks = stack_traceback(etype, emsg, tb)
         log(
