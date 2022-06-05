@@ -212,7 +212,7 @@ def nmt(model_id, load_nmt=load_mt5, log_class=None, kogi_mode=False,
         display(HTML(TRANSLATE_SCRIPT))
         output.register_callback('notebook.Convert', convert)
         output.register_callback('notebook.Logger', send_log)
-    except Exception as e:
+    except ModuleNotFoundError as e:
         builtins.print('申し訳ありません. 現在、Colab上のみ動作します。')
         print(e)
 
