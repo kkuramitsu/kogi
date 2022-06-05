@@ -1,10 +1,10 @@
 from IPython.display import display, HTML
-import difflib
+#import difflib
 import requests
 from bs4 import BeautifulSoup
 import builtins
 from .logger import log
-from .exception_hook import KogiError
+from .liberr import KogiError
 
 
 _lines = None
