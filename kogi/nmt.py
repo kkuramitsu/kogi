@@ -1,9 +1,10 @@
 # translate
+import builtins
 import IPython
 from IPython.display import display, HTML
 import os
 
-#from kogi.libnmt.transformer import load_transformer_nmt
+# from kogi.libnmt.transformer import load_transformer_nmt
 from .logger import log, send_log, print_nop
 
 TRANSLATE_CSS_HTML = '''
@@ -14,9 +15,9 @@ TRANSLATE_CSS_HTML = '''
   height: 150px;
 }
 textarea {
-  width: 100%; 
+  width: 100%;
   box-sizing: border-box;  /* ※これがないと横にはみ出る */
-  height:120px; 
+  height:120px;
   font-size: large;
   outline: none;           /* ※ブラウザが標準で付加する線を消したいとき */
   resize: none;
@@ -113,9 +114,20 @@ TRANSLATE_SCRIPT = '''
 </script>
 '''
 
-def load_mt5(model_id, qint8=True, device='cpu', print=print):
-    print('loading kogi ai')
-    os.system('pip install -q sentencepiece transformers')
+
+def check_sentencepiece():
+    try:
+        import sentencepiece
+    except:
+        os.system('pip install -q sentencepiece')
+    try:
+        import transformers
+    except:
+        os.system('pip install -q transformers')
+
+
+def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
+    check_sentencepiece()
     import torch
     from transformers import MT5ForConditionalGeneration, MT5Tokenizer
     model = MT5ForConditionalGeneration.from_pretrained(model_id)
@@ -139,29 +151,52 @@ def load_mt5(model_id, qint8=True, device='cpu', print=print):
             truncation=True,
             return_tensors='pt').input_ids.to(device)
         greedy_output = model.generate(input_ids, max_length=max_length)
-        return tokenizer.decode(greedy_output[0], skip_special_tokens=True)
-
+        t = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
+        if log_class is not None:
+            log(
+                type='nmt',
+                mode_id=model_id,
+                log_class=log_class,
+                input=s,
+                output=t,
+            )
+        return t
     return gready_search
 
-def translate(model_id, load_nmt=load_mt5, class_name='unknown', beam=1, device='cpu', qint8=True, input='日本語', output='Python', print = print):
-    display(HTML(TRANSLATE_CSS_HTML.replace('INPUT', input).replace('OUTPUT', output)))
-    nmt = load_nmt(model_id, qint8=qint8, device=device, print=print)
-    cached = {'':''}
+
+_kogi_nmt_fn = None
+
+
+def get_kogi_nmt():
+    global _kogi_nmt_fn
+    return _kogi_nmt_fn
+
+
+def _transform_nop(text: str):
+    return text
+
+
+def nmt(model_id, load_nmt=load_mt5, log_class=None, kogi_mode=False,
+        beam=1, device='cpu', qint8=True,
+        transform_before=_transform_nop, transform_after=_transform_nop,
+        input='入力', output='予測', print=print):
+    global _kogi_nmt_fn
+    nmt_fn = load_nmt(model_id, qint8=qint8, device=device, print=print)
+    if kogi_mode:
+        _kogi_nmt_fn = nmt_fn
+
+    cached = {'': ''}
 
     def convert(text):
         try:
             ss = []
             for line in text.splitlines():
                 if line not in cached:
-                    translated = nmt(line, beam=beam)
+                    line = transform_before(line)
+                    translated = nmt_fn(line, beam=beam)
+                    translated = transform_after(translated)
                     print(len(line), line, '=>', translated)
                     cached[line] = translated
-                    log(
-                        type='realtime-nmt',
-                        class_name=class_name,
-                        input=line, 
-                        output=translated,
-                    )
                 else:
                     translated = cached[line]
                 ss.append(translated)
@@ -172,8 +207,17 @@ def translate(model_id, load_nmt=load_mt5, class_name='unknown', beam=1, device=
 
     try:
         from google.colab import output
+        display(HTML(TRANSLATE_CSS_HTML.replace(
+            'INPUT', input).replace('OUTPUT', output)))
+        display(HTML(TRANSLATE_SCRIPT))
         output.register_callback('notebook.Convert', convert)
         output.register_callback('notebook.Logger', send_log)
     except Exception as e:
+        builtins.print('申し訳ありません. 現在、Colab上のみ動作します。')
         print(e)
-    display(HTML(TRANSLATE_SCRIPT))
+
+
+def kogi_nmt(model_id, load_nmt=load_mt5, class_name='unknown',
+             beam=1, device='cpu', qint8=True, print=print_nop):
+    nmt(model_id, load_nmt=load_nmt, log_class=class_name, kogi_mode=True,
+        beam=beam, device=device, qint8=qint8, input='日本語', output='Python', print=print_nop)

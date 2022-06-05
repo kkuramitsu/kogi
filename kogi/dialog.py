@@ -1,5 +1,6 @@
 import re
 import json
+from cv2 import checkHardwareSupport
 import requests
 from .utils import listfy, zen2han, remove_suffixes
 from .parse_error import parse_error_message
@@ -69,9 +70,24 @@ HINT = {
     'abc188_b': 'ループを計算しても構いませんが、numpyを使っても良いです',
     'abc188_b': '新しいリストに追加すると簡単。もちろん。numpyを使っても良いです',
     'abc210_b': '坊主めくりをシミュレーションしましょう',
-    'abc188_c': '完全二分木において準優勝するとはどう言うことか考えましょう',
-
+    'abc188_c': '完全二分木において、準優勝するとはどう言うことか考えましょう',
 }
+
+# コード翻訳
+
+code_nmt = None
+
+
+def kogi_set_codenmt(nmt_fn):
+    global code_nmt
+    code_nmt = nmt_fn
+
+
+def response_codenmt(text: str, slots: dict):
+    global code_nmt
+    if code_nmt is None:
+        return 'わん'
+    return code_nmt(text)
 
 
 class Chatbot(object):
@@ -92,23 +108,23 @@ class Chatbot(object):
             return self.response_variables()
         if text.endswith('には'):
             text = text[:-2]
-            return self.response_translate(text)
+            return response_codenmt(text, self.slots)
         if text.endswith('たい'):
             text = remove_tai(text)
-            return self.response_translate(text)
+            return response_codenmt(text, self.slots)
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
             return self.response_desc(text)
-        if startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どうして')):
-            if 'reason' in self.slots:
-                return self.slots['reason']
-            else:
-                return self.response_vow(text)
         if startswith(text, ('ヒント', '助けて', 'たすけて')):
             if 'context' in self.slots and self.slots['context'] in HINT:
                 return HINT[self.slots['context']]
             else:
                 return 'ノー ヒント！'
+        if startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どうして')):
+            if 'reason' in self.slots:
+                return self.slots['reason']
+            else:
+                return self.response_vow(text)
         if startswith(text, ('解決', 'どう', 'お手上げ')):
             if 'solution' in self.slots:
                 return self.slots['solution']
@@ -186,37 +202,42 @@ def render_value(name, typename, value):
     return f'{head}<br/>{body}'
 
 
-def get_chatbot_webui():
-    import traceback
-    from IPython.display import display, HTML
+# コントローラ
+
+
+try:
     from google.colab import output
-    from .dialog_html import BOT_ICON, BOT_HTML, CLEAR_HTML, YOUR_ICON, USER_HTML, CHAT_CSS, CHAT_HTML
 
-    def _display_bot(bot_text, chatbot):
-        with output.redirect_to_element('#output'):
-            bot_name = chatbot.get('bot_name', 'コギー')
-            bot_icon = chatbot.get('bot_icon', BOT_ICON)
-            for text in listfy(bot_text):
-                text = text.replace('\n', '<br/>')
-                display(HTML(BOT_HTML.format(bot_icon, bot_name, text)))
-        if 'バイバイ' in bot_text:
-            display(HTML(CLEAR_HTML))
+    def _start_chat(chatbot, start_message):
+        from IPython.display import display, HTML
+        from .dialog_html import BOT_ICON, BOT_HTML, CLEAR_HTML, YOUR_ICON, USER_HTML, CHAT_CSS, CHAT_HTML
+        import traceback
 
-    def _display_you(your_text, chatbot):
-        with output.redirect_to_element('#output'):
-            your_name = chatbot.get('your_name', 'あなた')
-            your_icon = chatbot.get('your_icon', YOUR_ICON)
-            for text in listfy(your_text):
-                text = text.replace('\n', '<br/>')
-                display(HTML(USER_HTML.format(your_icon, your_name, text)))
+        def _display_bot(bot_text):
+            with output.redirect_to_element('#output'):
+                bot_name = chatbot.get('bot_name', 'コギー')
+                bot_icon = chatbot.get('bot_icon', BOT_ICON)
+                for text in listfy(bot_text):
+                    text = text.replace('\n', '<br/>')
+                    display(HTML(BOT_HTML.format(bot_icon, bot_name, text)))
+            if 'バイバイ' in bot_text:
+                display(HTML(CLEAR_HTML))
 
-    def debug_log():
-        try:
-            send_log()
-        except Exception as e:
-            print(e)
+        def _display_you(your_text):
+            with output.redirect_to_element('#output'):
+                your_name = chatbot.get('your_name', 'あなた')
+                your_icon = chatbot.get('your_icon', YOUR_ICON)
+                for text in listfy(your_text):
+                    text = text.replace('\n', '<br/>')
+                    display(HTML(USER_HTML.format(your_icon, your_name, text)))
 
-    def _display_chat(chatbot):
+        def debug_log():
+            try:
+                send_log()
+            except Exception as e:
+                print(e)
+
+        # Display main
         display(HTML(CHAT_CSS))
         display(HTML(CHAT_HTML))
 
@@ -225,41 +246,72 @@ def get_chatbot_webui():
             if 'ありがとう' in your_text or 'バイバイ' in your_text:
                 display(HTML(CLEAR_HTML))
             try:
-                _display_you(your_text, chatbot)
+                _display_you(your_text)
                 bot_text = chatbot.response(your_text)
                 if bot_text is not None:
-                    _display_bot(bot_text, chatbot)
+                    _display_bot(bot_text)
             except Exception as e:
-                _display_bot('バグりました。\nエラーレポートを頂けると早く回復できます', chatbot)
+                _display_bot('バグりました。\nエラーレポートを頂けると早く回復できます')
                 traceback.print_exc()
 
         output.register_callback('notebook.ask', ask)
         output.register_callback('notebook.log', debug_log)
 
-    def kogi_say(msg, chatbot=None):
         send_log(right_now=True)
-        if chatbot is None:
-            chatbot = Chatbot()
-        _display_chat(chatbot)
-        _display_bot(msg, chatbot)
+        _display_bot(start_message)
 
-    return kogi_say
+except:  # Colab 上ではない
+
+    def _start_chat(chatbot, start_message):
+        bot_text = start_message
+        while True:
+            bot_name = chatbot.get('bot_name', 'コギー')
+            your_name = chatbot.get('your_name', 'あなた')
+            print(f'{bot_name}: {bot_text}')
+            your_text = input(your_name)
+            your_text = your_text.strip()
+            if 'ありがとう' in your_text or 'バイバイ' in your_text:
+                print(f'{bot_name}: バイバイ')
+                break
+            bot_text = chatbot.response(your_text)
 
 
-kogi_say = get_chatbot_webui()
+# def exception_dialog(code, emsg, stacks):
+#     lines = [stack['line'].strip() for stack in stacks]
+#     slots = parse_error_message(code, emsg, lines)
+#     slots['lines'] = lines
+#     slots['stacks'] = stacks
+#     if hasattr(get_ipython(), '_run_cell_context'):
+#         context = get_ipython()._run_cell_context
+#         if context is not None:
+#             slots['context'] = context
+#     chatbot = Chatbot(slots=slots)
+#     if 'translated' in slots:
+#         kogi_say(slots['translated'], chatbot)
+#     else:
+#         kogi_say('にゃん', chatbot)
 
 
-def exception_dialog(code, emsg, stacks):
-    lines = [stack['line'].strip() for stack in stacks]
-    slots = parse_error_message(code, emsg, lines)
-    slots['lines'] = lines
-    slots['stacks'] = stacks
-    if hasattr(get_ipython(), '_run_cell_context'):
-        context = get_ipython()._run_cell_context
-        if context is not None:
-            slots['context'] = context
-    chatbot = Chatbot(slots=slots)
+global_slots = {
+    'bot_name': 'コギー',
+    'your_name': 'あなた',
+}
+
+
+def set_global_slots(**kwargs):
+    for key, value in kwargs.items():
+        global_slots[key] = value
+
+
+def start_dialog(slots: dict):
+    dialog_slots = global_slots.copy()
+    dialog_slots.update(slots)
+    chatbot = Chatbot(slots=dialog_slots)
     if 'translated' in slots:
-        kogi_say(slots['translated'], chatbot)
+        _start_chat(chatbot, slots['translated'])
     else:
-        kogi_say('にゃん', chatbot)
+        _start_chat(chatbot, 'にゃん')
+
+
+if __name__ == '__main__':
+    start_dialog({})

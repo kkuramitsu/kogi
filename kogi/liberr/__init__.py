@@ -2,12 +2,18 @@ import linecache
 import sys
 import os
 import string
+import json
 
 try:
     import pegtree as pg
 except ModuleNotFoundError:
-    os.system('pip3 install pegtree')
+    os.system('pip install pegtree')
     import pegtree as pg
+
+
+class KogiError(Exception):
+    def __init__(self, **kw):
+        Exception.__init__(self, json.dumps(kw))
 
 
 _PEG = '''
@@ -154,8 +160,11 @@ class ErrorModel(object):
 _defaultErrorModel = ErrorModel('emsg_translated_ja.txt')
 
 
-def catch_exception(include_locals=False, include_translated=True):
-    etype, evalue, tb = sys.exc_info()
+def catch_exception(exc_info=None, code=None, include_locals=False, include_translated=True):
+    if exc_info is None:
+        etype, evalue, tb = sys.exc_info()
+    else:
+        etype, evalue, tb = exc_info
     emsg = (f"{etype.__name__}: {evalue}").strip()
 
     stacks = []
@@ -173,7 +182,9 @@ def catch_exception(include_locals=False, include_translated=True):
             stack_vars.append(local_vars)
         tb = tb.tb_next
     results = dict(etype=f'{etype.__name__}',
-                   emsg=emsg, stacks=list(stacks[::-1]))
+                   emsg=emsg, traceback=list(stacks[::-1]))
+    if code is not None:
+        results['code'] = code
     if include_locals:
         results['locals'] = list(stack_vars[::-1])
     if include_translated:

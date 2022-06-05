@@ -3,16 +3,19 @@ import json
 from datetime import datetime
 import requests
 
-verbose = True
+# kogi global settings
 
-def kogi_verbose(enabled: bool):
-    global verbose
-    verbose = enabled
+kogi_globals = {}
+
+
+def kogi_set(**kwargs):
+    global kogi_globals
+    kogi_globals.update(kwargs)
 
 
 def kogi_print(*args, **kw):
-    global verbose
-    if verbose:
+    global kogi_globals
+    if kogi_globals.get('verbose', True):
         print('\033[35m[🐶]', *args, **kw)
         print('\033[0m', end='')
 
@@ -20,9 +23,11 @@ def kogi_print(*args, **kw):
 def print_nop(*x, **kw):
     pass
 
-## LOGGER
+# LOGGER
+
 
 slack = None
+
 
 def load_slack(slack_id='QNZDoUPuLo7C3lHyh9PWhZz3', update=True):
     global slack
@@ -30,11 +35,11 @@ def load_slack(slack_id='QNZDoUPuLo7C3lHyh9PWhZz3', update=True):
         slack = None
         return None
     try:
-        from slackweb import Slack     
+        from slackweb import Slack
     except ModuleNotFoundError:
         import os
         os.system('pip install slackweb')
-        from slackweb import Slack     
+        from slackweb import Slack
     HOST = 'slack.com'
     ID = 'T02NYCBFP7B'
     ID2 = 'B02QPM8HNBH'
@@ -43,29 +48,28 @@ def load_slack(slack_id='QNZDoUPuLo7C3lHyh9PWhZz3', update=True):
     else:
         url = f'https://hooks.{HOST}/services/{slack_id}'
     try:
-        local_slack =  Slack(url)
+        local_slack = Slack(url)
         if update:
             slack = local_slack
     except Exception as e:
         print('Slack Error', e)
     return local_slack
-    
+
 
 def send_slack(logs, slack_id='QNZDoUPuLo7C3lHyh9PWhZz3'):
     try:
         local_slack = load_slack(slack_id=slack_id, update=False)
         jsondata = json.dumps(logs, ensure_ascii=False)
-        local_slack.notify(text = jsondata)
+        local_slack.notify(text=jsondata)
     except Exception as e:
         print('Slack Error:', e)
-
 
 
 SESSION = str(uuid.uuid1())
 SEQ = 0
 LOGS = []
 UID = 'unknown'
-KEY='OjwoF3m0l20OFidHsRea3ptuQRfQL10ahbEtLa'
+KEY = 'OjwoF3m0l20OFidHsRea3ptuQRfQL10ahbEtLa'
 epoch = datetime.now().timestamp()
 
 
@@ -87,6 +91,7 @@ def send_log(right_now=False, print=kogi_print):
         if r.status_code != 200:
             print(data)
 
+
 def log(**kw):
     global SEQ, LOGS, epoch
     now = datetime.now()
@@ -97,6 +102,7 @@ def log(**kw):
     send_log()
     return logdata
 
+
 def record_login(uid, **kw):
     global UID
     UID = f'{uid}'
@@ -104,7 +110,7 @@ def record_login(uid, **kw):
     send_log(right_now=True)
     if slack is None:
         send_slack(logdata)
-        
+
 
 if __name__ == '__main__':
     # log(a=1, b=2)

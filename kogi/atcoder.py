@@ -4,7 +4,7 @@ from .atcoder_impl import print, input, _run_judge
 
 
 @register_cell_magic
-def ac(option, code):
+def problem(option, code):
     _run_judge(code, option)
 
 
