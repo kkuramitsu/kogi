@@ -44,7 +44,33 @@ def remove_tai(s):
 
 
 HINT = {
-    'abc231_a': '難しいことはありません.'
+    'abc231_a': '難しいことはありません.',
+    # 
+    'abc220_a': 'ここで、range()の使い方をマスターしましょう',
+    'abc165_b': '誤差が生じないように整数で計算します',
+    'abc192_b': 'for i, c in enumerate(S): のように、enumerate()を使ってみよう',
+    'abc184_b': 'シミュレーションして１問ずつ得点を計算します',
+    'abc194_b': '要するに、argmin()。優秀な人は二人分仕事しても早いので注意',
+    'abc186_c': '8進数文字に変換してみたら？',
+
+    # 関数
+    'abc183_a': 'ReLUはランプ関数と呼びます。AIでは定番の関数です。ぜひ関数定義してから計算しましょう.',
+    'abc234_a': 'Pythonの関数定義を思い出して、f(x)を定義してから計算します',
+    'abc220_b': 'K進法表記の文字列を整数に変換する方法を探してみましょう',
+    'abc083_b': '各桁の和は、文字列に変換して、数字として計算するといいですよ',
+    'abc229_b': '順序を入れ替えて１の位を数列の先頭にします。\nfor a, b in zip(A, B)のようにzipを使ってみましょう。',
+    'abc192_c': '関数g1(x), g2(x), f(x)を順番に定義し、0からkまで順番に計算します。これができたら、繰り返しと関数はマスター！',
+    'abc227_b': '変数a,bのとりうる範囲を二重ループで全探索し、全ての面積を列挙します。\nリストの代わりにセット(set)を使ってみましょう',
+
+    'abc222_b': 'リストへは、a=list(map(int, input().split()))のように読み込みます',
+    'abc204_b': 'numpyを使うとスッキリかけます',
+
+    'abc218_b': '整数値を文字コードにシフトさせて、chr()で文字に変換します',
+    'abc188_b': 'ループを計算しても構いませんが、numpyを使っても良いです',
+    'abc188_b': '新しいリストに追加すると簡単。もちろん。numpyを使っても良いです',
+    'abc210_b': '坊主めくりをシミュレーションしましょう',
+    'abc188_c': '完全二分木において準優勝するとはどう言うことか考えましょう',
+
 }
 
 
@@ -132,7 +158,7 @@ headers = {"Authorization": f"Bearer hf_{DUMMY}"}
 
 def response_translate(text):
     if len(text) > 80:
-        return 'ぐるるるる'
+        return 'ぐるるるる\n（入力が長すぎます）'
     payload = {"inputs": text}
     response = requests.post(API_URL, headers=headers, json=payload)
     output = response.json()
@@ -141,7 +167,7 @@ def response_translate(text):
         output = output[0]
     if 'generated_text' in output:
         return output['generated_text']
-    return 'ねむねむ。まだ、起きられない！'
+    return 'ねむねむ。まだ、起きられない！\n（しばらく待ってからもう一度試してください）'
 
 
 SKIP_IDS = set([
