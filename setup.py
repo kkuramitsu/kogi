@@ -14,12 +14,12 @@ def _requires_from_file(filename):
 
 
 setup(name="kogi",
-      version="0.0.4",
+      version="0.0.5",
       license='MIT',
       author='Kimio Kuramitsu',
       description="Kogi Programming AI",
       url="https://github.com/kkuramitsu/kogi",
-      packages=['kogi'],
+      packages=['kogi', 'kogi.liberr', 'kogi.libnmt'],
       #package_dir={"": "src"},
       package_data={'kogi': ['./*.pegtree', 'data/*.*', '*/*.txt']},
       install_requires=_requires_from_file('requirements.txt'),
