@@ -1,12 +1,11 @@
 from .logger import kogi_print, log
 import sys
-import linecache
-import json
 from IPython.core.interactiveshell import InteractiveShell
 from functools import wraps
 
 from kogi.dialog import start_dialog
 from kogi.liberr import catch_exception
+from kogi.problem import run_judge
 
 RUN_CELL = InteractiveShell.run_cell
 SHOW_TRACEBACK = InteractiveShell.showtraceback
