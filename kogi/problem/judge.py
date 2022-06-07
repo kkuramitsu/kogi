@@ -29,6 +29,7 @@ def judge(run_cell, code, data):
     global _lines, _outputs
     problem_id = data['problem_id']
     # try:
+    print()
     ac = 0
     for i, testcase in enumerate(data['testcases']):
         title = testcase.get('title', f'Case {i+1}')
@@ -40,7 +41,7 @@ def judge(run_cell, code, data):
         #     'print': print, 'input': input,
         # })
         print('run_cell...')
-        run_cell(code)
+        # run_cell(code)
         # res = get_ipython().run_cell(code)
         # res.raise_error()
         resultData = ''.join(_outputs)
