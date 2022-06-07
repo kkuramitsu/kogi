@@ -86,7 +86,9 @@ def _safe(s):
                 ss[i] = f'_{ss[i]}_'
     return ''.join(ss)
 
+
 UNQUOTE_FORMAT = '{}'
+
 
 def _unquote(s):
     if s[0] == s[-1] and s[0] == "'" or s[0] == '`':
@@ -96,6 +98,7 @@ def _unquote(s):
                 return s
         return UNQUOTE_FORMAT.format(s2)
     return UNQUOTE_FORMAT.format(s)
+
 
 def replace_params(t, params):
     t = _safe(t)
@@ -107,6 +110,7 @@ def replace_params(t, params):
 def abspath(file):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), file)
 
+
 class ErrorModel(object):
     def __init__(self, file=None):
         self.eDict = {}
@@ -117,7 +121,7 @@ class ErrorModel(object):
         if not os.path.exists(file):
             file = abspath(file)
         with open(file) as f:
-            ekey=None
+            ekey = None
             lines = []
             for line in f.readlines():
                 line = line.strip()
@@ -125,7 +129,7 @@ class ErrorModel(object):
                     continue
                 if line == '':
                     self.define_emsg(ekey, lines)
-                    ekey=None
+                    ekey = None
                     lines = []
                     continue
                 if ekey is None:
@@ -179,9 +183,4 @@ class ErrorModel(object):
             d = self.eDict[ekey]
             for key, value in d.items():
                 slots[key] = replace_params(value, params)
-        print(slots)
-        print(emsg, emsg in self.eDict)
         return slots
-
-
-

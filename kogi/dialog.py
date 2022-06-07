@@ -1,9 +1,5 @@
-import re
-import json
-from cv2 import checkHardwareSupport
 import requests
 from .utils import listfy, zen2han, remove_suffixes
-from .parse_error import parse_error_message
 from .logger import send_log
 
 DUMMY = 'rhOcswxkXzMbhlkKQJfytbfxAPVsblhRHX'
