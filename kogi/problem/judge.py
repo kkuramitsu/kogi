@@ -42,7 +42,7 @@ def judge(run_cell, code, data):
         #     'print': print, 'input': input,
         # })
         print('run_cell...')
-        result = run_cell(code)
+        result = run_cell(code, store_history=True, silent=False)
         # res = get_ipython().run_cell(code)
         # res.raise_error()
         resultData = ''.join(_outputs)
