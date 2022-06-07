@@ -38,9 +38,9 @@ def judge(run_cell, code, data):
         outputData = testcase['output']
         _lines = [s for s in inputData.split('\n') if len(s) > 0]
         _outputs = []
-        get_ipython().push({
-            'print': print_for_judge, 'input': input_for_judge,
-        })
+        # get_ipython().push({
+        #     'print': print_for_judge, 'input': input_for_judge,
+        # })
         print('run_cell...')
         # result = run_cell(code, store_history=True, silent=False)
         # res = get_ipython().run_cell(code)
