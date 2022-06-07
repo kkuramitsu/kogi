@@ -13,8 +13,6 @@ def run_judge(run_cell, code):
     if url is not None:
         data = download_atcoder_data(url)
         if 'problem_id' in data:
-            print('@@', url, data)
-            return judge(run_cell, code, data)
+            judge(run_cell, code, data)
         else:
-            print('**', url)
-            return run_cell(code)
+            print('問題文が読めません')
