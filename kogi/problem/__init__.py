@@ -14,7 +14,7 @@ def run_judge(run_cell, code):
         data = download_atcoder_data(url)
         if 'problem_id' in data:
             print('@@', url, data)
-            judge(run_cell, code, data)
+            return judge(run_cell, code, data)
         else:
             print('**', url)
-            run_cell(code)
+            return run_cell(code)
