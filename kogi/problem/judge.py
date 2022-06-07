@@ -56,16 +56,7 @@ def judge(code, data):
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except:
         print('error が発生しました。')
-        slots = catch_exception(code=code)
-        print(slots)
-        #stacks = stack_traceback(etype, emsg, tb)
-        # log(
-        #     type='exception_hook',
-        #     code=raw_cell,
-        #     emsg=emsg,
-        #     traceback=slots['traceback']
-        # )
-        start_dialog(slots)
+        get_ipython().showtraceback()
     finally:
         _lines = None
         _outputs = None
