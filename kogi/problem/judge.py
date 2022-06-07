@@ -154,6 +154,7 @@ def render_result(title, input, result, output):
         box='box16' if result == output else 'box17',
         height='240px' if n_lines > 10 else f'{n_lines*24}px'
     )
+    display(HTML(JUDGE_CSS))
     display(HTML(JUDGE_HTML.format(**data)))
 
 
