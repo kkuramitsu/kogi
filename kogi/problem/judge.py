@@ -6,23 +6,23 @@ _lines = None
 _outputs = None
 
 
-def input(s=''):
-    global _lines
-    if _lines is not None and len(_lines) > 0:
-        return _lines.pop(0)
-    else:
-        _lines = None
-    return builtins.input(s)
+# def input(s=''):
+#     global _lines
+#     if _lines is not None and len(_lines) > 0:
+#         return _lines.pop(0)
+#     else:
+#         _lines = None
+#     return builtins.input(s)
 
 
-def print(*a, **kw):
-    if _outputs is not None:
-        sep = kw.get('sep', ' ')
-        end = kw.get('end', '\n')
-        s = sep.join([str(s) for s in a]) + end
-        _outputs.append(s)
-    else:
-        builtins.print(*a, **kw)
+# def print(*a, **kw):
+#     if _outputs is not None:
+#         sep = kw.get('sep', ' ')
+#         end = kw.get('end', '\n')
+#         s = sep.join([str(s) for s in a]) + end
+#         _outputs.append(s)
+#     else:
+#         builtins.print(*a, **kw)
 
 
 def judge(run_cell, code, data):
@@ -30,7 +30,7 @@ def judge(run_cell, code, data):
     result = None
     problem_id = data['problem_id']
     # try:
-    print()
+    print('judge')
     ac = 0
     for i, testcase in enumerate(data['testcases']):
         title = testcase.get('title', f'Case {i+1}')
@@ -55,6 +55,7 @@ def judge(run_cell, code, data):
     # finally:
     _lines = None
     _outputs = None
+    print('result', result)
     return result
 
 
