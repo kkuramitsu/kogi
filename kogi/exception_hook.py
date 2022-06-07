@@ -33,6 +33,8 @@ def change_showtraceback(func):
     @wraps(func)
     def showtraceback(*args, **kwargs):
         etype, evalue, tb = sys.exc_info()
+        if etype is None:
+            return func(*args, **kwargs)
         emsg = f"{etype.__name__}: {evalue}"
         if not emsg.startswith('KogiError'):
             value = func(*args, **kwargs)
