@@ -1,5 +1,8 @@
 import builtins
 from IPython.display import display, HTML
+from kogi.dialog import start_dialog
+
+from kogi.liberr import catch_exception
 
 
 _lines = None
@@ -54,6 +57,7 @@ def judge(code, data):
     except:
         print('error が発生しました。')
         slots = catch_exception(code=code)
+        print(slots)
         #stacks = stack_traceback(etype, emsg, tb)
         # log(
         #     type='exception_hook',
