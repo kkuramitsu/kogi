@@ -39,7 +39,6 @@ def judge(code, data):
             # get_ipython().push({
             #     'print': print_for_judge, 'input': input_for_judge,
             # })
-            print('run_cell...')
             local_vars = {
                 'print': print_for_judge, 'input': input_for_judge,
             }
@@ -54,7 +53,15 @@ def judge(code, data):
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except:
         print('error が発生しました。')
-        pass
+        slots = catch_exception(code=code)
+        #stacks = stack_traceback(etype, emsg, tb)
+        # log(
+        #     type='exception_hook',
+        #     code=raw_cell,
+        #     emsg=emsg,
+        #     traceback=slots['traceback']
+        # )
+        start_dialog(slots)
     finally:
         _lines = None
         _outputs = None
