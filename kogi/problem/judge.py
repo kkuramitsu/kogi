@@ -28,30 +28,31 @@ def print(*a, **kw):
 def judge(run_cell, code, data):
     global _lines, _outputs
     problem_id = data['problem_id']
-    try:
-        ac = 0
-        for i, testcase in enumerate(data['testcases']):
-            title = testcase.get('title', f'Case {i+1}')
-            inputData = testcase['input']
-            outputData = testcase['output']
-            _lines = [s for s in inputData.split('\n') if len(s) > 0]
-            _outputs = []
-            # get_ipython().push({
-            #     'print': print, 'input': input,
-            # })
-            run_cell(code)
-            # res = get_ipython().run_cell(code)
-            # res.raise_error()
-            resultData = ''.join(_outputs)
-            ac += 1 if outputData == resultData else 0
-            render_result(title, inputData, resultData, outputData)
-        render_footer(data)
+    # try:
+    ac = 0
+    for i, testcase in enumerate(data['testcases']):
+        title = testcase.get('title', f'Case {i+1}')
+        inputData = testcase['input']
+        outputData = testcase['output']
+        _lines = [s for s in inputData.split('\n') if len(s) > 0]
+        _outputs = []
+        # get_ipython().push({
+        #     'print': print, 'input': input,
+        # })
+        print('run_cell...')
+        run_cell(code)
+        # res = get_ipython().run_cell(code)
+        # res.raise_error()
+        resultData = ''.join(_outputs)
+        ac += 1 if outputData == resultData else 0
+        render_result(title, inputData, resultData, outputData)
+    render_footer(data)
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     # except:
     #     pass
-    finally:
-        _lines = None
-        _outputs = None
+    # finally:
+    _lines = None
+    _outputs = None
 
 
 JUDGE_CSS = '''
