@@ -42,6 +42,10 @@ def judge(run_cell, code, data):
         #     'print': print_for_judge, 'input': input_for_judge,
         # })
         print('run_cell...')
+        local_vars = {
+            'print': print_for_judge, 'input': input_for_judge,
+        }
+        exec(code, None, local_vars)
         # result = run_cell(code, store_history=True, silent=False)
         # res = get_ipython().run_cell(code)
         # res.raise_error()
