@@ -2,7 +2,7 @@ from .judge import judge
 from .atcoder import download_atcoder_data
 
 
-def run_judge(run_cell, code):
+def run_judge(code):
     url = None
     for line in code.splitlines():
         if '#' in line and 'https://atcoder.jp/contests/' in line:
@@ -13,6 +13,8 @@ def run_judge(run_cell, code):
     if url is not None:
         data = download_atcoder_data(url)
         if 'problem_id' in data:
-            judge(run_cell, code, data)
+            judge(code, data)
+            return 'pass\n'
         else:
-            print('問題文が読めません')
+            print('URLから問題文が読めません')
+            return code

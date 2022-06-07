@@ -25,42 +25,39 @@ def print_for_judge(*a, **kw):
         builtins.print(*a, **kw)
 
 
-def judge(run_cell, code, data):
+def judge(code, data):
     global _lines, _outputs
-    result = None
     problem_id = data['problem_id']
-    # try:
-    print('judge')
-    ac = 0
-    for i, testcase in enumerate(data['testcases']):
-        title = testcase.get('title', f'Case {i+1}')
-        inputData = testcase['input']
-        outputData = testcase['output']
-        _lines = [s for s in inputData.split('\n') if len(s) > 0]
-        _outputs = []
-        # get_ipython().push({
-        #     'print': print_for_judge, 'input': input_for_judge,
-        # })
-        print('run_cell...')
-        local_vars = {
-            'print': print_for_judge, 'input': input_for_judge,
-        }
-        exec(code, None, local_vars)
-        # result = run_cell(code, store_history=True, silent=False)
-        # res = get_ipython().run_cell(code)
-        # res.raise_error()
-        resultData = ''.join(_outputs)
-        ac += 1 if outputData == resultData else 0
-        render_result(title, inputData, resultData, outputData)
-    render_footer(data)
+    try:
+        ac = 0
+        for i, testcase in enumerate(data['testcases']):
+            title = testcase.get('title', f'Case {i+1}')
+            inputData = testcase['input']
+            outputData = testcase['output']
+            _lines = [s for s in inputData.split('\n') if len(s) > 0]
+            _outputs = []
+            # get_ipython().push({
+            #     'print': print_for_judge, 'input': input_for_judge,
+            # })
+            print('run_cell...')
+            local_vars = {
+                'print': print_for_judge, 'input': input_for_judge,
+            }
+            exec(code, None, local_vars)
+            # result = run_cell(code, store_history=True, silent=False)
+            # res = get_ipython().run_cell(code)
+            # res.raise_error()
+            resultData = ''.join(_outputs)
+            ac += 1 if outputData == resultData else 0
+            render_result(title, inputData, resultData, outputData)
+        render_footer(data)
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
-    # except:
-    #     pass
-    # finally:
-    _lines = None
-    _outputs = None
-    print('result', result)
-    return result
+    except:
+        print('error が発生しました。')
+        pass
+    finally:
+        _lines = None
+        _outputs = None
 
 
 JUDGE_CSS = '''
