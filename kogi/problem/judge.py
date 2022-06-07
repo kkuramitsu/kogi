@@ -6,23 +6,23 @@ _lines = None
 _outputs = None
 
 
-# def input(s=''):
-#     global _lines
-#     if _lines is not None and len(_lines) > 0:
-#         return _lines.pop(0)
-#     else:
-#         _lines = None
-#     return builtins.input(s)
+def input_for_judge(s=''):
+    global _lines
+    if _lines is not None and len(_lines) > 0:
+        return _lines.pop(0)
+    else:
+        _lines = None
+    return builtins.input(s)
 
 
-# def print(*a, **kw):
-#     if _outputs is not None:
-#         sep = kw.get('sep', ' ')
-#         end = kw.get('end', '\n')
-#         s = sep.join([str(s) for s in a]) + end
-#         _outputs.append(s)
-#     else:
-#         builtins.print(*a, **kw)
+def print_for_judge(*a, **kw):
+    if _outputs is not None:
+        sep = kw.get('sep', ' ')
+        end = kw.get('end', '\n')
+        s = sep.join([str(s) for s in a]) + end
+        _outputs.append(s)
+    else:
+        builtins.print(*a, **kw)
 
 
 def judge(run_cell, code, data):
@@ -38,11 +38,11 @@ def judge(run_cell, code, data):
         outputData = testcase['output']
         _lines = [s for s in inputData.split('\n') if len(s) > 0]
         _outputs = []
-        # get_ipython().push({
-        #     'print': print, 'input': input,
-        # })
+        get_ipython().push({
+            'print': print_for_judge, 'input': input_for_judge,
+        })
         print('run_cell...')
-        result = run_cell(code, store_history=True, silent=False)
+        # result = run_cell(code, store_history=True, silent=False)
         # res = get_ipython().run_cell(code)
         # res.raise_error()
         resultData = ''.join(_outputs)
