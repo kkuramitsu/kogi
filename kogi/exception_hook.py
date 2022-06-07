@@ -21,6 +21,7 @@ def change_run_cell(func):
             ipyshell = args[0]
             raw_cell = args[1]
             if 'https://atcoder.jp/contests/' in raw_cell:
+                print(args, kwargs)
                 return run_judge(func, raw_cell)
             ipyshell.run_cell_raw_cell = raw_cell
         value = func(*args, **kwargs)
