@@ -1,8 +1,10 @@
 import builtins
+import sys
+import traceback
 from IPython.display import display, HTML
 from kogi.dialog import start_dialog
 
-from kogi.liberr import catch_exception
+from kogi.liberr import kogi_catch, print_exec_exception
 
 
 _lines = None
@@ -31,6 +33,9 @@ def print_for_judge(*a, **kw):
 def judge(code, data):
     global _lines, _outputs
     problem_id = data['problem_id']
+    local_vars = {
+        'print': print_for_judge, 'input': input_for_judge,
+    }
     try:
         ac = 0
         for i, testcase in enumerate(data['testcases']):
@@ -39,9 +44,6 @@ def judge(code, data):
             outputData = testcase['output']
             _lines = [s for s in inputData.split('\n') if len(s) > 0]
             _outputs = []
-            # get_ipython().push({
-            #     'print': print_for_judge, 'input': input_for_judge,
-            # })
             local_vars = {
                 'print': print_for_judge, 'input': input_for_judge,
             }
@@ -55,8 +57,14 @@ def judge(code, data):
         render_footer(data)
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except:
-        e = sys.exc_info()
-        traceback.print_exc(e)
+        print_exec_exception(code)
+        del local_vars['print']
+        del local_vars['input']
+        slots = dict(
+            problem_id=problem_id,
+            vars=local_vars
+        )
+        kogi_catch(code=code, context=slots, dialog=start_dialog)
     finally:
         _lines = None
         _outputs = None
@@ -126,7 +134,7 @@ JUDGE_HTML = '''
 <label class="box24" for="input">実行結果</label>
 <textarea class="box18" style="height:{height}" readonly>{output}</textarea>
 </div>
-<div style="float: left; width: 48%">
+<div style="float: left; width: 48%; text-align: right;">
 <label class="box24" for="outout">正解例</label>
 <textarea class="box18" style="height:{height}" readonly>{sample}</textarea>
 </div>

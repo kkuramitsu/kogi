@@ -183,4 +183,7 @@ class ErrorModel(object):
             d = self.eDict[ekey]
             for key, value in d.items():
                 slots[key] = replace_params(value, params)
+        else:
+            slots['error_key'] = ekey
+            slots['error_params'] = params
         return slots

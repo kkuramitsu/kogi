@@ -1,6 +1,6 @@
 import requests
+from requests.exceptions import Timeout
 from bs4 import BeautifulSoup
-
 SAMPLE = {}
 
 
@@ -11,7 +11,12 @@ def download_atcoder_data(url):
     if problem_id in SAMPLE:
         return SAMPLE[problem_id]
     # try:
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except Timeout:
+        kogi_print('ネットの接続ができず、データがダウンロードできませんでした.')
+        return {}
+
     if response.status_code == 404:
         return {}
     response_text = response.text

@@ -1,3 +1,4 @@
+from kogi.logger import kogi_print
 from .judge import judge
 from .atcoder import download_atcoder_data
 
@@ -12,9 +13,9 @@ def run_judge(code):
             break
     if url is not None:
         data = download_atcoder_data(url)
+        #print(url, data)
         if 'problem_id' in data:
+            kogi_print('コギーがAtCoderを探知し、テストケースを実行しました')
             judge(code, data)
-            return 'pass\n'
-        else:
-            print('URLから問題文が読めません')
-            return code
+            return True
+        return False

@@ -126,6 +126,10 @@ translated: データのトークン化に失敗しました。（エラーの�
 SyntaxError: invalid syntax (A, line B)
 translated: B行目は、不正な構文です。
 
+SyntaxError: unmatched A (B, line C)
+translated: C行目は、構文エラーです。たぶん、Aが多すぎます。
+
+
 TypeError: A() argument B must be str, not int
 translated: A()の引数Bは、intではなくstrでなければならない
 

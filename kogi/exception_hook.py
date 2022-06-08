@@ -1,12 +1,15 @@
 import logging
 from .logger import kogi_print, log
 import sys
-from IPython.core.interactiveshell import InteractiveShell
 from functools import wraps
 
 from kogi.liberr import kogi_catch
 from kogi.dialog import start_dialog
 from kogi.problem import run_judge
+
+
+#from IPython.core.interactiveshell import InteractiveShell
+InteractiveShell = get_ipython().__class__
 
 RUN_CELL = InteractiveShell.run_cell
 SHOW_TRACEBACK = InteractiveShell.showtraceback
@@ -21,11 +24,11 @@ def change_run_cell(func):
         if len(args) > 1:
             ipyshell = args[0]
             raw_cell = args[1]
-            print('running cell ...')
             if 'https://atcoder.jp/contests/' in raw_cell:
+                #print('running cell ...')
                 code = run_judge(raw_cell)
                 args = list(args)
-                args[1] = code
+                args[1] = 'pass\n'
         value = func(*args, **kwargs)
         return value
     return run_cell

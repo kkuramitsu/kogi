@@ -1,6 +1,7 @@
+import traceback
 import requests
 from .utils import listfy, zen2han, remove_suffixes
-from .logger import send_log
+from .logger import send_log, kogi_print
 
 DUMMY = 'rhOcswxkXzMbhlkKQJfytbfxAPVsblhRHX'
 
@@ -198,16 +199,68 @@ def render_value(name, typename, value):
     return f'{head}<br/>{body}'
 
 
+# 分析
+
+def dump_value(key, value):
+    ss = []
+    ss.append(key)
+    ss.append(f'{type(value).__name__}型')
+    if hasattr(value, '__len__'):
+        ss.append(f'len({key})={len(value)}')
+    ss.append(str(value))
+    return ' '.join(ss)
+
+
+def thinking(slots, print=kogi_print):
+    # print(slots)
+    if 'code' in slots and 'traceback' in slots:
+        code = slots['code']
+        lines = []
+        for data in slots['traceback']:
+            lineno = data['lineno']
+            line = data['line'].strip()
+            if line in code:
+                line = f'{line} [{lineno}行目]に変なところない？'
+                lines.append(line)
+                print(line)
+        if len(lines) > 0:
+            slots['fault_lines'] = lines
+    if 'vars' in slots:
+        if len(slots['vars']) > 0:
+            fault_vars = ['変数の値を全部、出してみるよ（変な値はないか探してごらん)']
+            print(fault_vars[0])
+            for key, value in slots['vars'].items():
+                dump = dump_value(key, value)
+                fault_vars.append(dump)
+            slots['fault_vars'] = fault_vars
+    if 'problem_id' in slots:
+        text = slots['problem_id']
+        if text in HINT:
+            text = HINT[text]
+            slots['hint'] = text
+            print(f'ヒント: {text}')
+    if 'reason' in slots:
+        text = slots['reason']
+        print(f'原因: たぶん{text}')
+    else:
+        if 'fault_lines' in slots:
+            slots['reason'] = slots['fault_lines'][0]
+        else:
+            slots['reason'] = f'原因: たぶん... わん（犬に戻りました）'
+    if 'solution' in slots:
+        text = slots['solution']
+        print(f'解決策: たぶん{text}')
+    else:
+        slots['solution'] = f'解決策は... (次のバージョン更新をお待ちください）'
+
+
 # コントローラ
-
-
 try:
     from google.colab import output
 
     def _start_chat(chatbot, start_message):
         from IPython.display import display, HTML
         from .dialog_html import BOT_ICON, BOT_HTML, CLEAR_HTML, YOUR_ICON, USER_HTML, CHAT_CSS, CHAT_HTML
-        import traceback
 
         def _display_bot(bot_text):
             with output.redirect_to_element('#output'):
@@ -259,34 +312,24 @@ try:
 except:  # Colab 上ではない
 
     def _start_chat(chatbot, start_message):
-        bot_text = start_message
-        while True:
+        try:
+            bot_text = start_message
             bot_name = chatbot.get('bot_name', 'コギー')
-            your_name = chatbot.get('your_name', 'あなた')
-            print(f'{bot_name}: {bot_text}')
-            your_text = input(your_name)
-            your_text = your_text.strip()
-            if 'ありがとう' in your_text or 'バイバイ' in your_text:
-                print(f'{bot_name}: バイバイ')
-                break
-            bot_text = chatbot.response(your_text)
-
-
-# def exception_dialog(code, emsg, stacks):
-#     lines = [stack['line'].strip() for stack in stacks]
-#     slots = parse_error_message(code, emsg, lines)
-#     slots['lines'] = lines
-#     slots['stacks'] = stacks
-#     if hasattr(get_ipython(), '_run_cell_context'):
-#         context = get_ipython()._run_cell_context
-#         if context is not None:
-#             slots['context'] = context
-#     chatbot = Chatbot(slots=slots)
-#     if 'translated' in slots:
-#         kogi_say(slots['translated'], chatbot)
-#     else:
-#         kogi_say('にゃん', chatbot)
-
+            kogi_print(bot_text)
+            thinking(chatbot.slots, print=kogi_print)
+        except Exception as e:
+            kogi_print('バグりました。ご迷惑をおかけします')
+            traceback.print_exc()
+        # while True:
+        #     bot_name = chatbot.get('bot_name', 'コギー')
+        #     your_name = chatbot.get('your_name', 'あなた')
+        #     print(f'{bot_name}: {bot_text}')
+        #     your_text = input(your_name)
+        #     your_text = your_text.strip()
+        #     if 'ありがとう' in your_text or 'バイバイ' in your_text:
+        #         print(f'{bot_name}: バイバイ')
+        #         break
+        #     bot_text = chatbot.response(your_text)
 
 global_slots = {
     'bot_name': 'コギー',

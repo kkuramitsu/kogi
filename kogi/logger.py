@@ -103,6 +103,17 @@ def log(**kw):
     return logdata
 
 
+def logging_json(**kw):
+    global SEQ, LOGS, epoch
+    now = datetime.now()
+    date = now.isoformat(timespec='seconds')
+    logdata = dict(seq=SEQ, date=date, **kw)
+    LOGS.append(logdata)
+    SEQ += 1
+    send_log()
+    return logdata
+
+
 def record_login(uid, **kw):
     global UID
     UID = f'{uid}'
