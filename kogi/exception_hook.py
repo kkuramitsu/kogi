@@ -1,10 +1,11 @@
+import logging
 from .logger import kogi_print, log
 import sys
 from IPython.core.interactiveshell import InteractiveShell
 from functools import wraps
 
+from kogi.liberr import kogi_catch
 from kogi.dialog import start_dialog
-from kogi.liberr import catch_exception
 from kogi.problem import run_judge
 
 RUN_CELL = InteractiveShell.run_cell
@@ -20,6 +21,7 @@ def change_run_cell(func):
         if len(args) > 1:
             ipyshell = args[0]
             raw_cell = args[1]
+            print('running cell ...')
             if 'https://atcoder.jp/contests/' in raw_cell:
                 code = run_judge(raw_cell)
                 args = list(args)
@@ -45,15 +47,8 @@ def change_showtraceback(func):
             raw_cell = ipyshell.run_cell_raw_cell
         else:
             raw_cell = None
-        slots = catch_exception((etype, evalue, tb), code=raw_cell)
-        #stacks = stack_traceback(etype, emsg, tb)
-        log(
-            type='exception_hook',
-            code=raw_cell,
-            emsg=emsg,
-            traceback=slots['traceback']
-        )
-        start_dialog(slots)
+        kogi_catch((etype, evalue, tb), code=raw_cell,
+                   logging_json=log, dialog=start_dialog)
         return value
 
     return showtraceback

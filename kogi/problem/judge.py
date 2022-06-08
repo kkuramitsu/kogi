@@ -55,8 +55,8 @@ def judge(code, data):
         render_footer(data)
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except:
-        print('error が発生しました。')
-        get_ipython().showtraceback()
+        e = sys.exc_info()
+        traceback.print_exc(e)
     finally:
         _lines = None
         _outputs = None

@@ -299,7 +299,7 @@ def set_global_slots(**kwargs):
         global_slots[key] = value
 
 
-def start_dialog(slots: dict):
+def start_dialog(slots: dict, logging_json=None):
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
     chatbot = Chatbot(slots=dialog_slots)

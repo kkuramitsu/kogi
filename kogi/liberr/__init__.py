@@ -1,15 +1,20 @@
 import linecache
 import sys
 import json
-from  kogi.liberr.emodel import ErrorModel, extract_params_from_error
+import traceback
+
+from kogi.liberr.emodel import ErrorModel, extract_params_from_error
+
 
 class KogiError(Exception):
     def __init__(self, **kw):
         Exception.__init__(self, json.dumps(kw))
 
+
 _defaultErrorModel = ErrorModel('emsg_ja.txt')
 
-def catch_exception(exc_info=None, code=None, include_locals=False, include_translated=True):
+
+def catch_exception(exc_info=None, code=None, include_translated=True, include_locals=False, logging_json=None):
     if exc_info is None:
         etype, evalue, tb = sys.exc_info()
     else:
@@ -38,4 +43,21 @@ def catch_exception(exc_info=None, code=None, include_locals=False, include_tran
         results['locals'] = list(stack_vars[::-1])
     if include_translated:
         results.update(_defaultErrorModel.get_slots(emsg))
+    if logging_json is not None:
+        logging_json(
+            type='exception_hook', code=code, emsg=emsg,
+            traceback=results['traceback']
+        )
     return results
+
+
+def kogi_catch(exc_info=None, code=None, include_print=True, dialog=None, logging_json=None):
+    if exc_info is None:
+        exc_info = sys.exc_info()
+    if include_print:
+        traceback.print_exc(exc_info)
+    slots = catch_exception(exc_info, code=code, logging_json=logging_json)
+    if dialog is None:
+        print(slots)
+    else:
+        dialog(slots, logging_json=logging_json)
