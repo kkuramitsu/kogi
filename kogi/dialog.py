@@ -1,7 +1,7 @@
 import traceback
 import requests
 from .utils import listfy, zen2han, remove_suffixes
-from .logger import send_log, kogi_print
+from .logger import send_log, kogi_print, send_slack, print_nop
 
 DUMMY = 'rhOcswxkXzMbhlkKQJfytbfxAPVsblhRHX'
 
@@ -99,10 +99,11 @@ class Chatbot(object):
     def response(self, text):
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
-        if startswith(text, ('デバッグ', 'わん')):
-            return f'{self.slots}'
-        if startswith(text, ('変数', '困った', 'デバッグ')):
-            return self.response_variables()
+        if startswith(text, ('デバッグ', '助けて', 'たすけて', '困った', '変数')):
+            if 'fault_vars' in self.slots:
+                return self.slots['fault_vars']
+            else:
+                return 'コギーもお手上げ..'
         if text.endswith('には'):
             text = text[:-2]
             return response_codenmt(text, self.slots)
@@ -113,10 +114,10 @@ class Chatbot(object):
             text = text[:-2]
             return self.response_desc(text)
         if startswith(text, ('ヒント', '助けて', 'たすけて')):
-            if 'context' in self.slots and self.slots['context'] in HINT:
-                return HINT[self.slots['context']]
+            if 'hint' in self.slots:
+                return self.slots['hint']
             else:
-                return 'ノー ヒント！'
+                return 'うーん'
         if startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どうして')):
             if 'reason' in self.slots:
                 return self.slots['reason']
@@ -201,10 +202,38 @@ def render_value(name, typename, value):
 
 # 分析
 
+_PYTYPE = {
+    'NoneType': 'None',
+    'bool': 'ブール値',
+    'int': '整数',
+    'float': '浮動小数点数',
+    'complex': '複素数',
+    'str': '文字列',
+    'bytes': 'バイト列',
+    'list': 'リスト',
+    'tuple': 'タプル',
+    'dict': '辞書',
+    'set': 'セット',
+    'ndarray': '配列',
+    'DataFrame': '表データ/データフレーム',
+    'module': 'モジュール',
+    'builtin_function_or_method': '関数/ビルトイン関数',
+    'function': '関数',
+    'type': '型もしくはクラス',
+}
+
+
+def _typename(value):
+    typename = type(value).__name__
+    if typename in _PYTYPE:
+        return _PYTYPE[typename] + f'({typename}型)'
+    return f'{typename}型'
+
+
 def dump_value(key, value):
     ss = []
     ss.append(key)
-    ss.append(f'{type(value).__name__}型')
+    ss.append(_typename)
     if hasattr(value, '__len__'):
         ss.append(f'len({key})={len(value)}')
     ss.append(str(value))
@@ -316,20 +345,9 @@ except:  # Colab 上ではない
             bot_text = start_message
             bot_name = chatbot.get('bot_name', 'コギー')
             kogi_print(bot_text)
-            thinking(chatbot.slots, print=kogi_print)
         except Exception as e:
             kogi_print('バグりました。ご迷惑をおかけします')
             traceback.print_exc()
-        # while True:
-        #     bot_name = chatbot.get('bot_name', 'コギー')
-        #     your_name = chatbot.get('your_name', 'あなた')
-        #     print(f'{bot_name}: {bot_text}')
-        #     your_text = input(your_name)
-        #     your_text = your_text.strip()
-        #     if 'ありがとう' in your_text or 'バイバイ' in your_text:
-        #         print(f'{bot_name}: バイバイ')
-        #         break
-        #     bot_text = chatbot.response(your_text)
 
 global_slots = {
     'bot_name': 'コギー',
@@ -345,11 +363,13 @@ def set_global_slots(**kwargs):
 def start_dialog(slots: dict, logging_json=None):
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
+    thinking(slots, print=print_nop)
     chatbot = Chatbot(slots=dialog_slots)
     if 'translated' in slots:
         _start_chat(chatbot, slots['translated'])
     else:
-        _start_chat(chatbot, 'にゃん')
+        kogi_print('コギーは、未知のエラーに驚いた（みんながいじめるので隠れた）')
+        send_slack(slots)
 
 
 if __name__ == '__main__':

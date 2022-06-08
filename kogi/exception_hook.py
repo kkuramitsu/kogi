@@ -8,8 +8,11 @@ from kogi.dialog import start_dialog
 from kogi.problem import run_judge
 
 
-#from IPython.core.interactiveshell import InteractiveShell
-InteractiveShell = get_ipython().__class__
+try:
+    InteractiveShell = get_ipython().__class__
+except NameError:
+    from IPython.core.interactiveshell import InteractiveShell
+
 
 RUN_CELL = InteractiveShell.run_cell
 SHOW_TRACEBACK = InteractiveShell.showtraceback
@@ -26,7 +29,7 @@ def change_run_cell(func):
             raw_cell = args[1]
             if 'https://atcoder.jp/contests/' in raw_cell:
                 #print('running cell ...')
-                code = run_judge(raw_cell)
+                run_judge(raw_cell)
                 args = list(args)
                 args[1] = 'pass\n'
         value = func(*args, **kwargs)

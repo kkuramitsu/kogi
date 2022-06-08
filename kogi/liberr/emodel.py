@@ -37,9 +37,14 @@ Tuple = { '[' ( Data / !']' . )* ']' #Tuple }
 FuncName = { NAME &'()' #FuncName }
 CellName = { '%' '%'? NAME  #CellName }
 VarName = { NAME ('\\'' NAME)? }  // can't
-NAME = [A-Za-z_] [A-Za-z_0-9]*
+NAME = [A-Za-z_] [A-Za-z_.0-9]*
 ClassName = { '<' [A-Za-z] (!'>' .)* '>' #ClassName }
 PathName = { '(/' (!')' .)+ ')' #Path }
+
+MaybeName = 
+    / { NAME &(' object' !NAME) #Maybe }
+    / { NAME &(' instance' !NAME) #Maybe }
+    / { NAME &(' expected' !NAME) #Maybe }
 
 
 Float = { [0-9]* '.' [0-9]+ #Number }
@@ -165,7 +170,6 @@ class ErrorModel(object):
             if len(s) < 256:
                 if s not in self.eDict:
                     print(s)
-                print(s)
         #print(len(series), '=>', len(ss))
 
     def translate(self, emsg):

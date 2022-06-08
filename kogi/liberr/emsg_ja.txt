@@ -123,12 +123,17 @@ translated: データのトークン化に失敗しました。（エラの報�
 ParserError: Error tokenizing data. C error: Expected A fields in line B, saw C
 translated: データのトークン化に失敗しました。（エラーの報告）B行に期待されたAフィールド、Cを見た
 
+SyntaxError: unexpected EOF while parsing
+translated: コードを書き切っていません。不正な構文です。
+reason: 括弧やクオートの閉じ忘れかもしれません。
+
 SyntaxError: invalid syntax (A, line B)
 translated: B行目は、不正な構文です。
+solution: 前の行で間違っていることもあります。
 
 SyntaxError: unmatched A (B, line C)
 translated: C行目は、構文エラーです。たぶん、Aが多すぎます。
-
+solution: 最後のAを取り除いたら如何でしょうか？
 
 TypeError: A() argument B must be str, not int
 translated: A()の引数Bは、intではなくstrでなければならない
@@ -157,14 +162,17 @@ translated: A は print() にとって、無効なキーワード引数です。
 TypeError: A is an invalid keyword argument for B()
 translated: A は B()にとって、無効なキーワード引数です。
 
+TypeError: A() missing required argument B (pos C)
+translated: A()は、必要な引数が足りません。
+
 TypeError: A() missing B required positional argument: C
 translated: A()にBの必須の引数がありません。C
 
 TypeError: A() missing B required positional arguments: C and D
-translated: A()にBの必須引数がない。CとD
+translated: A()には、Bの必須引数がない。CとD
 
 TypeError: A() must have at least two arguments.
-translated: A() は少なくとも2つの引数を持つ必要があります。
+translated: A()は少なくとも2つの引数を持つ必要があります。
 
 TypeError: A not supported between instances of B and C
 translated: Aは、BとCの値の間でサポートされていません。
@@ -173,16 +181,16 @@ TypeError: A object cannot be interpreted as an integer
 translated: A オブジェクトは整数として解釈できません。
 
 TypeError: A object does not support item assignment
-translated: Aオブジェクトは、配列や辞書としての代入をサポートしていません。
+translated: Aオブジェクトは、配列や辞書のように代入できません。
 
 TypeError: A object is not callable
-translated: Aオブジェクトは呼び出し可能ではありません
+translated: Aオブジェクトは関数でなく、呼び出し可能ではありません
 
 TypeError: A object is not iterable
-translated: Aオブジェクトは反復可能ではありません。
+translated: Aオブジェクトは、リストのようなイテラブル（反復可能）ではありません。
 
 TypeError: A object is not subscriptable
-translated: Aオブジェクトはインデックスをつけることができません。
+translated: Aオブジェクトは（リストのように）インデックスをつけることができません。
 
 TypeError: A() takes B positional argument but C were given
 translated: A() は Bつの引数を取りますが、Cつが与えられたました。
@@ -191,16 +199,24 @@ TypeError: A() takes B positional arguments but C were given
 translated: AはBつの引数を取りますが、Cつが与えられました。
 
 TypeError: A() takes at most B arguments (C given)
-translated: A() は最大で Bつの引数を取りますが、Cつが与えられました。
+translated: A()は最大で Bつまでの引数を取ります。
+reason: A()の引数が多すぎるか、少なすぎる。
+solution: A()の正しい引数を確認しよう。
 
 TypeError: A() takes exactly one argument (B given)
-translated: A()は正確に1つの引数を取りますが、Bつが与えられました。
+translated: A()は引数を1つだけ取ります。
+reason: A()の引数が多すぎるか、少なすぎる。
+solution: A()の正しい引数を確認しよう。
 
 TypeError: A() takes no arguments (B given)
-translated: A()はひとつも引数を取りませんが、Bつは与えられました。
+translated: A()はひとつも引数を取りません。
+reason: A()の引数が多すぎるか、少なすぎる。
+solution: A()の正しい引数を確認しよう。
 
 TypeError: A() takes no positional arguments
 translated: A()はひとつも引数を取りません。
+reason: A()の引数が多すぎるか、少なすぎる。
+solution: A()の正しい引数を確認しよう。
 
 TypeError: Could not convert A B to numeric
 translated: A B を数値に変換できませんでした。
@@ -257,7 +273,7 @@ TypeError: list indices must be integers or slices, not tuple
 translated: リストのインデックスは、整数またはスライスです。タプルではありません。
 
 TypeError: max expected A arguments, got B
-translated: 最大で期待されたAの引数が、Bになった
+translated: max()で期待されたAの引数が、Bになった
 
 TypeError: must be real number, not function
 translated: 実数でなければなりません。関数ではありません。
@@ -265,14 +281,11 @@ translated: 実数でなければなりません。関数ではありません�
 TypeError: not all arguments converted during string formatting
 translated: 文字列フォーマット中にすべての引数が変換されませんでした
 
-TypeError: object of type A has no len()
-translated: A型のオブジェクトは len()が使えません。
-
 TypeError: object of type A has no B()
 translated: A型のオブジェクトは B()が使えません。
 
 TypeError: range expected A arguments, got B
-translated: range()は、Aつの引数を取りますが、Bつも余分に与えた。
+translated: range()は、Aつの引数を取ります。
 
 TypeError: slice indices must be integers or None or have an __index__ method
 translated: スライスのインデックスは、整数かNone、もしくは __index__ メソッドを持つ必要があります。
@@ -284,7 +297,7 @@ TypeError: type str doesn't define __round__ method
 translated: str 型は __round__ メソッドを定義していません。
 
 TypeError: ufunc A not supported for the input types, and the inputs could not be safely coerced to any supported types according to the casting rule Bsafe''
-translated: ufunc A は入力型に対してサポートされておらず、入力はキャストルール Bsafe'' に従ってサポートされている型に安全に強制することができません。
+translated: 関数 A は入力された値の型に対応していません。（自動的な型変換もできないようです。）
 
 TypeError: unhashable type: A
 translated: Aはハッシュ化できない型です。
@@ -310,6 +323,9 @@ translated: -演算子は、A型とB型の間でサポートされていませ�
 TypeError: unsupported operand type(s) for /: A and B
 translated: /演算子は、A型とB型の間でサポートされていません。
 
+TypeError: unsupported operand type(s) for //: A and B
+translated: //演算子は、A型とB型の間でサポートされていません。
+
 TypeError: unsupported operand type(s) for ^: A and B
 translated: ^演算子は、A型とB型の間でサポートされていません。
 
@@ -320,7 +336,8 @@ UsageError: Cell magic A not found.
 translated: セル用のマジック A が見つかりません。
 
 UsageError: Line magic function A not found (But cell magic B exists, did you mean that instead?).
-translated: ライン用のマジック関数 A が見つかりません。ただし、セル用のBは存在するので、間違えていませんか？
+translated: ライン用のマジック関数 A が見つかりません。
+solution: セル用のBは存在するので、間違えていませんか？
 
 UsageError: Line magic function A not found.
 translated: ラインマジック関数Aが見つかりません。
@@ -469,3 +486,73 @@ translated: y_trueとy_predは出力数が(A!=B)のように異なります。
 ZeroDivisionError: division by zero
 translated: ゼロによる除算を行いました
 solution: 分母がゼロにならないように修正しましょう。
+
+
+IndexError: deque index out of range
+translated: dequeのインデックスが範囲外です。
+
+TypeError: A() argument B must be str, not builtin_function_or_method
+translated: A()の引数Bは、文字列です。組み込み関数ではありません。
+
+JSONDecodeError: Expecting property name enclosed in double quotes: line A column B (char C)
+translated: JSON形式の構文エラーが発生しました。二重引用符で囲まれたプロパティ名を期待：行A列B（char C）
+
+ValueError: list.remove(x): x not in list
+translated: xがリストにありません。そのため、removeできません。
+
+TypeError: A(): attribute name must be string
+translated: A()のプロパティ名は文字列です。
+
+ValueError: A is not in deque
+translated: Aは両端キューにありません。
+
+TypeError: cannot unpack non-iterable Missing object
+translated: Missingオブジェクトを展開できません。
+
+TypeError: can't convert expression to float
+translated: 式を float に変換できません。
+
+IndexError: pop index out of range
+translated: 範囲外のインデックスからポップしようとしました。
+
+TypeError: A() arg B must be a type or tuple of types
+translated: A()の引数　B は、型または型のタプルで与えてください。
+
+TypeError: cannot determine truth value of Relational
+translated: Relational の真理値を決定できない。
+
+ValueError: deque.remove(x): x not in deque
+translated: x が キューにありません。そのため、removeできません。
+
+IndexError: pop from empty list
+translated: 空のリストからのポップしました。
+
+ValueError: math domain error
+translated: mathライブラリの領域（ドメイン）が間違っています
+
+ValueError: invalid __array_struct__
+translated: 無効な__array_struct__。
+
+ValueError: A() base must be >= B and <= C, or D
+translated: A() のベースは >= B かつ <= C, または D でなければならない。
+
+TypeError: A() 3rd argument not allowed unless all arguments are integers
+translated: A()の第3引数は、全ての引数が整数でない限り、指定できません。
+
+SyntaxError: unexpected EOF while parsing (A, line B)
+translated: B行目で構文エラーです。コードが途中で終わっています。
+
+TypeError: Expected A arguments, got B
+translated: Aの引数が必要なところに、残念ながらBが与えられた
+
+TypeError: string argument without an encoding
+translated: 引数には、エンコーディング(encoding)が必ず必要です。
+
+ValueError: tuple.index(x): x not in tuple
+translated: xはタプルの中にありませんよ。
+
+TypeError: attribute name must be string, not A
+translated: 属性名は文字列でなければならない、Aではない
+
+IndexError: list assignment index out of range
+translated: リストへ代入しようとしたが、インデックスがリストの大きさを超えています。
