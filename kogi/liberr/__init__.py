@@ -69,7 +69,6 @@ def kogi_catch(exc_info=None, code: str = None, context: dict = None, dialog=Non
     if dialog is None:
         print(slots)
     else:
-        print('start dialog')
         dialog(slots, logging_json=logging_json)
 
 
