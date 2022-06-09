@@ -233,7 +233,7 @@ def _typename(value):
 def dump_value(key, value):
     ss = []
     ss.append(key)
-    ss.append(_typename)
+    ss.append(_typename(value))
     if hasattr(value, '__len__'):
         ss.append(f'len({key})={len(value)}')
     ss.append(str(value))
