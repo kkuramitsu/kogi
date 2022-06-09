@@ -3,7 +3,7 @@ import sys
 import traceback
 from IPython.display import display, HTML
 from kogi.dialog import start_dialog
-
+from kogi.exception_hook import SHOW_TRACEBACK
 from kogi.liberr import kogi_catch, print_exec_exception
 
 
@@ -58,6 +58,9 @@ def judge(code, data):
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except:
         print_exec_exception(code)
+        SHOW_TRACEBACK()
+        print_exec_exception(code)
+
         del local_vars['print']
         del local_vars['input']
         slots = dict(

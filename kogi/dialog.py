@@ -329,7 +329,7 @@ try:
                 if bot_text is not None:
                     _display_bot(bot_text)
             except Exception as e:
-                _display_bot('バグりました。\nエラーレポートを頂けると早く回復できます')
+                _display_bot('バグりました。\nご迷惑をおかけします。')
                 traceback.print_exc()
 
         output.register_callback('notebook.ask', ask)
@@ -363,10 +363,10 @@ def set_global_slots(**kwargs):
 def start_dialog(slots: dict, logging_json=None):
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
-    thinking(slots, print=kogi_print)
+    thinking(dialog_slots, print=kogi_print)
     chatbot = Chatbot(slots=dialog_slots)
-    if 'translated' in slots:
-        _start_chat(chatbot, slots['translated'])
+    if 'translated' in dialog_slots:
+        _start_chat(chatbot, dialog_slots['translated'])
     else:
         kogi_print('コギーは、未知のエラーに驚いた（みんながいじめるので隠れた）')
         send_slack(slots)
