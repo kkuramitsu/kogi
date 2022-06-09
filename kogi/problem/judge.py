@@ -2,9 +2,9 @@ import builtins
 import sys
 import traceback
 from IPython.display import display, HTML
-from kogi.dialog import start_dialog
 from kogi.exception_hook import SHOW_TRACEBACK
-from kogi.liberr import kogi_catch, print_exec_exception
+from kogi.dialog import kogi_catch
+#from kogi.liberr import kogi_catch, print_exec_exception
 
 
 _lines = None
@@ -48,26 +48,20 @@ def judge(code, data):
                 'print': print_for_judge, 'input': input_for_judge,
             }
             exec(code, None, local_vars)
-            # result = run_cell(code, store_history=True, silent=False)
-            # res = get_ipython().run_cell(code)
-            # res.raise_error()
             resultData = ''.join(_outputs)
             ac += 1 if outputData == resultData else 0
             render_result(title, inputData, resultData, outputData)
         render_footer(data)
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except:
-        print_exec_exception(code)
-        SHOW_TRACEBACK()
-        print_exec_exception(code)
-
+        SHOW_TRACEBACK(get_ipython())
         del local_vars['print']
         del local_vars['input']
         slots = dict(
             problem_id=problem_id,
             vars=local_vars
         )
-        kogi_catch(code=code, context=slots, dialog=start_dialog)
+        kogi_catch(code=code, context=slots)
     finally:
         _lines = None
         _outputs = None

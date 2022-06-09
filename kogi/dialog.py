@@ -1,5 +1,8 @@
+import sys
 import traceback
 import requests
+
+from kogi.liberr import catch_exception
 from .utils import listfy, zen2han, remove_suffixes
 from .logger import send_log, kogi_print, send_slack, print_nop
 
@@ -370,6 +373,16 @@ def start_dialog(slots: dict, logging_json=None):
     else:
         kogi_print('コギーは、未知のエラーに驚いた（みんながいじめるので隠れた）')
         send_slack(slots)
+
+
+def kogi_catch(exc_info=None, code: str = None, context: dict = None, enable_dialog=True, logging_json=None):
+    if exc_info is None:
+        exc_info = sys.exc_info()
+    slots = catch_exception(exc_info, code=code, logging_json=logging_json)
+    if context is not None:
+        slots.update(context)
+    if enable_dialog:
+        start_dialog(slots, logging_json=logging_json)
 
 
 if __name__ == '__main__':

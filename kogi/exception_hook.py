@@ -1,13 +1,9 @@
-import logging
 import traceback
-from .logger import kogi_print, log
 import sys
 from functools import wraps
 
-from kogi.liberr import kogi_catch
-from kogi.dialog import start_dialog
 from kogi.problem import run_judge
-
+from .logger import kogi_print, log
 
 try:
     InteractiveShell = get_ipython().__class__
@@ -25,20 +21,23 @@ SHOW_SYNTAXERROR = InteractiveShell.showsyntaxerror
 def change_run_cell(func):
     @wraps(func)
     def run_cell(*args, **kwargs):
-        if len(args) > 1:
-            ipyshell = args[0]
-            raw_cell = args[1]
-            if 'https://atcoder.jp/contests/' in raw_cell:
-                #print('running cell ...')
-                code = run_judge(raw_cell)
-                args = list(args)
-                args[1] = code
+        try:
+            if len(args) > 1:
+                ipyshell = args[0]
+                raw_cell = args[1]
+                if 'https://atcoder.jp/contests/' in raw_cell:
+                    #print('running cell ...')
+                    code = run_judge(raw_cell)
+                    args = list(args)
+                    args[1] = code
+        except:
+            traceback.print_exc()
         value = func(*args, **kwargs)
         return value
     return run_cell
 
 
-def change_showtraceback(func):
+def change_showtraceback(func, kogi_catch):
     @wraps(func)
     def showtraceback(*args, **kwargs):
         sys_exc = sys.exc_info()
@@ -49,8 +48,7 @@ def change_showtraceback(func):
                 raw_cell = ipyshell.run_cell_raw_cell
             else:
                 raw_cell = None
-            kogi_catch(sys_exc, code=raw_cell,
-                       logging_json=log, dialog=start_dialog)
+            kogi_catch(sys_exc, code=raw_cell)
         except:
             traceback.print_exc()
         return value
@@ -58,12 +56,12 @@ def change_showtraceback(func):
     return showtraceback
 
 
-def enable_kogi_hook():
-    # global KOGI_FN
-    # KOGI_FN = kogi_fn
+def enable_kogi_hook(kogi_catch):
     InteractiveShell.run_cell = change_run_cell(RUN_CELL)
-    InteractiveShell.showtraceback = change_showtraceback(SHOW_TRACEBACK)
-    InteractiveShell.showsyntaxerror = change_showtraceback(SHOW_SYNTAXERROR)
+    InteractiveShell.showtraceback = change_showtraceback(
+        SHOW_TRACEBACK, kogi_catch)
+    InteractiveShell.showsyntaxerror = change_showtraceback(
+        SHOW_SYNTAXERROR, kogi_catch)
 
 
 def disable_kogi_hook():
