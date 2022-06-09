@@ -1,4 +1,5 @@
 import logging
+import traceback
 from .logger import kogi_print, log
 import sys
 from functools import wraps
@@ -40,21 +41,18 @@ def change_run_cell(func):
 def change_showtraceback(func):
     @wraps(func)
     def showtraceback(*args, **kwargs):
-        etype, evalue, tb = sys.exc_info()
-        if etype is None:
-            return func(*args, **kwargs)
-        emsg = f"{etype.__name__}: {evalue}"
-        if not emsg.startswith('KogiError'):
-            value = func(*args, **kwargs)
-        else:
-            value = None
-        ipyshell = args[0]
-        if hasattr(ipyshell, 'run_cell_raw_cell'):
-            raw_cell = ipyshell.run_cell_raw_cell
-        else:
-            raw_cell = None
-        kogi_catch((etype, evalue, tb), code=raw_cell,
-                   logging_json=log, dialog=start_dialog)
+        sys_exc = sys.exc_info()
+        value = func(*args, **kwargs)
+        try:
+            ipyshell = args[0]
+            if hasattr(ipyshell, 'run_cell_raw_cell'):
+                raw_cell = ipyshell.run_cell_raw_cell
+            else:
+                raw_cell = None
+            kogi_catch(sys_exc, code=raw_cell,
+                       logging_json=log, dialog=start_dialog)
+        except:
+            traceback.print_exc()
         return value
 
     return showtraceback

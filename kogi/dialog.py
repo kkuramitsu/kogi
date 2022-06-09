@@ -345,7 +345,7 @@ except:  # Colab 上ではない
             bot_text = start_message
             bot_name = chatbot.get('bot_name', 'コギー')
             kogi_print(bot_text)
-        except Exception as e:
+        except:
             kogi_print('バグりました。ご迷惑をおかけします')
             traceback.print_exc()
 
