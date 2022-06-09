@@ -63,13 +63,13 @@ def catch_exception(exc_info=None, code=None, include_translated=True, include_l
 def kogi_catch(exc_info=None, code: str = None, context: dict = None, dialog=None, logging_json=None):
     if exc_info is None:
         exc_info = sys.exc_info()
-        #traceback.print_exception(*exc_info, limit=8)
     slots = catch_exception(exc_info, code=code, logging_json=logging_json)
     if context is not None:
         slots.update(context)
     if dialog is None:
         print(slots)
     else:
+        print('start dialog')
         dialog(slots, logging_json=logging_json)
 
 
