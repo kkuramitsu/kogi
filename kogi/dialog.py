@@ -363,7 +363,7 @@ def set_global_slots(**kwargs):
 def start_dialog(slots: dict, logging_json=None):
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
-    thinking(slots, print=print_nop)
+    thinking(slots, print=kogi_print)
     chatbot = Chatbot(slots=dialog_slots)
     if 'translated' in slots:
         _start_chat(chatbot, slots['translated'])
