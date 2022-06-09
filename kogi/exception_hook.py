@@ -30,9 +30,9 @@ def change_run_cell(func):
             raw_cell = args[1]
             if 'https://atcoder.jp/contests/' in raw_cell:
                 #print('running cell ...')
-                run_judge(raw_cell)
+                code = run_judge(raw_cell)
                 args = list(args)
-                args[1] = 'pass\n'
+                args[1] = code
         value = func(*args, **kwargs)
         return value
     return run_cell
