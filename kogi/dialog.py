@@ -243,7 +243,7 @@ def dump_value(key, value):
     return ' '.join(ss)
 
 
-def thinking(slots, print=kogi_print):
+def thinking(slots):
     # print(slots)
     if 'code' in slots and 'traceback' in slots:
         code = slots['code']
@@ -252,15 +252,13 @@ def thinking(slots, print=kogi_print):
             lineno = data['lineno']
             line = data['line'].strip()
             if line in code:
-                line = f'{line} [{lineno}行目]に変なところない？'
+                line = f'[{lineno}行目] {line} に変なところない？'
                 lines.append(line)
-                print(line)
         if len(lines) > 0:
             slots['fault_lines'] = lines
     if 'vars' in slots:
         if len(slots['vars']) > 0:
             fault_vars = ['変数の値を全部、出してみるよ（変な値はないか探してごらん)']
-            print(fault_vars[0])
             for key, value in slots['vars'].items():
                 dump = dump_value(key, value)
                 fault_vars.append(dump)
@@ -270,20 +268,33 @@ def thinking(slots, print=kogi_print):
         if text in HINT:
             text = HINT[text]
             slots['hint'] = text
-            print(f'ヒント: {text}')
     if 'reason' in slots:
         text = slots['reason']
-        print(f'原因: たぶん{text}')
     else:
         if 'fault_lines' in slots:
             slots['reason'] = slots['fault_lines'][0]
         else:
-            slots['reason'] = f'原因: たぶん... わん（犬に戻りました）'
+            slots['reason'] = f'原因は、たぶん... '
     if 'solution' in slots:
         text = slots['solution']
-        print(f'解決策: たぶん{text}')
     else:
         slots['solution'] = f'解決策は... (次のバージョン更新をお待ちください）'
+
+
+def show_slots(slots, print=kogi_print):
+    if 'reason' in slots:
+        print(slots['reason'])
+    if 'fault_lines' in slots:
+        for reason in slots['fault_lines']:
+            if reason != slots['reason']:
+                print(reason)
+    if 'solution' in slots:
+        print(slots['solution'])
+    if 'fault_vars' in slots:
+        for reason in slots['fault_vars']:
+            print(reason)
+    if 'hint' in slots:
+        print(slots['hint'])
 
 
 # コントローラ
@@ -345,9 +356,9 @@ except:  # Colab 上ではない
 
     def _start_chat(chatbot, start_message):
         try:
-            bot_text = start_message
-            bot_name = chatbot.get('bot_name', 'コギー')
-            kogi_print(bot_text)
+            chatbot.get('bot_name', 'コギー')
+            kogi_print(start_message)
+            show_slots(chatbot.slots)
         except:
             kogi_print('バグりました。ご迷惑をおかけします')
             traceback.print_exc()
@@ -366,7 +377,7 @@ def set_global_slots(**kwargs):
 def start_dialog(slots: dict, logging_json=None):
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
-    thinking(dialog_slots, print=kogi_print)
+    thinking(dialog_slots)  # , print=kogi_print)
     chatbot = Chatbot(slots=dialog_slots)
     if 'translated' in dialog_slots:
         _start_chat(chatbot, dialog_slots['translated'])

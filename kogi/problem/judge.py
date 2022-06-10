@@ -54,6 +54,8 @@ def judge(code, data):
             render_result(title, inputData, resultData, outputData)
         render_footer(data)
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
+    except SyntaxError:
+        SHOW_TRACEBACK(get_ipython())
     except:
         SHOW_TRACEBACK(get_ipython())
         del local_vars['print']
@@ -62,6 +64,7 @@ def judge(code, data):
             problem_id=problem_id,
             vars=local_vars
         )
+        print('kogi_catch')
         kogi_catch(code=code, context=slots)
     finally:
         _lines = None

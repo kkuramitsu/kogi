@@ -129,7 +129,7 @@ reason: 括弧やクオートの閉じ忘れかもしれません。
 
 SyntaxError: invalid syntax (A, line B)
 translated: B行目は、不正な構文です。
-solution: 前の行で間違っていることもあります。
+hint: 構文エラーは、前の行で間違っていることもあります。
 
 SyntaxError: unmatched A (B, line C)
 translated: C行目は、構文エラーです。たぶん、Aが多すぎます。
