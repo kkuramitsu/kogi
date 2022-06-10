@@ -1,4 +1,5 @@
 BOT_ICON = 'https://iconbu.com/wp-content/uploads/2021/02/コーギーのイラスト.jpg'
+BOT_ICON2 = "https://iconbu.com/wp-content/uploads/2021/09/驚きチワワちゃん.jpg"
 #BOT_ICON = 'https://kohacu.com/wp-content/uploads/2021/05/kohacu.com_samune_003370-768x768.png'
 YOUR_ICON = 'https://2.bp.blogspot.com/-VVtgu8RyEJo/VZ-QWqgI_wI/AAAAAAAAvKY/N-xnZvqeGYY/s800/girl_question.png'
 

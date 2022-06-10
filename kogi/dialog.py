@@ -100,9 +100,12 @@ class Chatbot(object):
         return self.slots.get(key, value)
 
     def response(self, text):
+        if 'user_inputs' not in self.slots:
+            self.slots['user_inputs'] = []
+        self.slots['user_inputs'].append(text)
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
-        if startswith(text, ('デバッグ', '助けて', 'たすけて', '困った', '変数')):
+        if startswith(text, ('デバッグ', '助けて', 'たすけて', '困った')):
             if 'fault_vars' in self.slots:
                 return self.slots['fault_vars']
             else:
@@ -129,11 +132,12 @@ class Chatbot(object):
         if startswith(text, ('解決', 'どう', 'お手上げ')):
             if 'solution' in self.slots:
                 return self.slots['solution']
-            elif 'hint' in self.slots:
-                return self.slots['hint']
-            elif 'reason' in self.slots:
-                return self.slots['reason']
+            elif 'fault_lines' in self.slots:
+                return self.slots['fault_lines']
             return self.response_vow(text)
+        send_slack(self.slots)
+        if startswith(text, ('コギー', 'コーギー', '変', 'おい')):
+            return 'ぐるるるる...'
         return self.response_code(text)
 
     def response_vow(self, text):

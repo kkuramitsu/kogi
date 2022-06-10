@@ -64,7 +64,6 @@ def judge(code, data):
             problem_id=problem_id,
             vars=local_vars
         )
-        print('kogi_catch')
         kogi_catch(code=code, context=slots)
     finally:
         _lines = None
