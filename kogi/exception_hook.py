@@ -2,7 +2,7 @@ import traceback
 import sys
 from functools import wraps
 
-from kogi.problem import run_judge
+#from kogi.problem import run_judge
 from .logger import kogi_print, log
 
 try:
@@ -18,7 +18,7 @@ SHOW_SYNTAXERROR = InteractiveShell.showsyntaxerror
 # newone
 
 
-def change_run_cell(func):
+def change_run_cell(func, run_judge):
     @wraps(func)
     def run_cell(*args, **kwargs):
         try:
@@ -56,8 +56,8 @@ def change_showtraceback(func, kogi_catch):
     return showtraceback
 
 
-def enable_kogi_hook(kogi_catch):
-    InteractiveShell.run_cell = change_run_cell(RUN_CELL)
+def enable_kogi_hook(run_judge, kogi_catch):
+    InteractiveShell.run_cell = change_run_cell(RUN_CELL, run_judge)
     InteractiveShell.showtraceback = change_showtraceback(
         SHOW_TRACEBACK, kogi_catch)
     InteractiveShell.showsyntaxerror = change_showtraceback(

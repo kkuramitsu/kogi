@@ -2,6 +2,7 @@ import builtins
 import sys
 import traceback
 from IPython.display import display, HTML
+from IPython import get_ipython
 from kogi.exception_hook import SHOW_TRACEBACK
 from kogi.dialog import kogi_catch
 #from kogi.liberr import kogi_catch, print_exec_exception
