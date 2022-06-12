@@ -72,9 +72,6 @@ def extract_params_from_error(emsg):
             ss.append(s)
             continue
         idx = _IDX[len(params) % 26]
-        # if t == 'Quote':
-        #     quote=s[0]
-        #     idx = f'{quote}{idx}{quote}'
         ss.append(idx)
         params.append(s)
     return ''.join(ss), params
@@ -154,7 +151,7 @@ class ErrorModel(object):
         for line in lines:
             key, _, value = line.partition(':')
             if key in d:
-                d[key] = d[key] + ' | ' + value.strip()
+                d[key] = d[key] + '\n' + value.strip()
             else:
                 d[key] = value.strip()
 

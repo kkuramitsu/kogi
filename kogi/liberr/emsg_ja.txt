@@ -3,6 +3,8 @@ translated: AオブジェクトのBプロパティは読み取り専用です。
 
 AttributeError: A object has no attribute B
 translated: AオブジェクトにはBプロパティもBメソッドもありません。
+maybe: Bのタイプミス (スペル確認して）
+maybe: オブジェクトの型が期待どうりでない
 
 AttributeError: A object has no property B
 translated: AオブジェクトはBプロパティもBメソッドもありません。

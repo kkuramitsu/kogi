@@ -5,10 +5,11 @@ from functools import wraps
 #from kogi.problem import run_judge
 from .logger import kogi_print, log
 
-try:
-    InteractiveShell = get_ipython().__class__
-except NameError:
-    from IPython.core.interactiveshell import InteractiveShell
+# try:
+#     from IPython import get_ipython
+#     InteractiveShell = get_ipython().__class__
+# except NameError:
+from IPython.core.interactiveshell import InteractiveShell
 
 
 RUN_CELL = InteractiveShell.run_cell
@@ -43,12 +44,12 @@ def change_showtraceback(func, kogi_catch):
         sys_exc = sys.exc_info()
         value = func(*args, **kwargs)
         try:
-            ipyshell = args[0]
-            if hasattr(ipyshell, 'run_cell_raw_cell'):
-                raw_cell = ipyshell.run_cell_raw_cell
-            else:
-                raw_cell = None
-            kogi_catch(sys_exc, code=raw_cell)
+            # ipyshell = args[0]
+            # if hasattr(ipyshell, 'run_cell_raw_cell'):
+            #     raw_cell = ipyshell.run_cell_raw_cell
+            # else:
+            #     raw_cell = None
+            kogi_catch(sys_exc, code=None)
         except:
             traceback.print_exc()
         return value

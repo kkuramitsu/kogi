@@ -1,6 +1,7 @@
 import sys
 import traceback
 import requests
+from kogi.dialog_ast import analyze_code
 
 from kogi.liberr import catch_exception
 from .utils import listfy, zen2han, remove_suffixes
@@ -109,7 +110,7 @@ class Chatbot(object):
             if 'fault_vars' in self.slots:
                 return self.slots['fault_vars']
             else:
-                return 'コギーもお手上げ..'
+                return 'コギーも助けて...'
         if text.endswith('には'):
             text = text[:-2]
             return response_codenmt(text, self.slots)
@@ -119,25 +120,26 @@ class Chatbot(object):
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
             return self.response_desc(text)
+        if startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どうして', 'どして')):
+            if 'reason' in self.slots:
+                return self.slots['reason']
+            if 'fault_lines' in self.slots:
+                return self.slots['fault_lines']
+            return 'エラーメッセージから考えてみよう'
+        if startswith(text, ('解決', 'どう', 'お手上げ', 'ヒント')):
+            if 'solution' in self.slots:
+                return self.slots['solution']
+            if 'maybe' in self.slots:
+                return 'ひょっとしたら、' + self.slots['maybe']
+            return 'きゅるるる...'
         if startswith(text, ('ヒント', '助けて', 'たすけて')):
             if 'hint' in self.slots:
                 return self.slots['hint']
             else:
-                return 'うーん'
-        if startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どうして')):
-            if 'reason' in self.slots:
-                return self.slots['reason']
-            else:
-                return self.response_vow(text)
-        if startswith(text, ('解決', 'どう', 'お手上げ')):
-            if 'solution' in self.slots:
-                return self.slots['solution']
-            elif 'fault_lines' in self.slots:
-                return self.slots['fault_lines']
-            return self.response_vow(text)
+                return 'ヒントなし'
         send_slack(self.slots)
         if startswith(text, ('コギー', 'コーギー', '変', 'おい')):
-            return 'ぐるるるる...'
+            return 'がるるるる...'
         return self.response_code(text)
 
     def response_vow(self, text):
@@ -148,26 +150,6 @@ class Chatbot(object):
 
     def response_desc(self, text):
         return response_translate(text)
-
-    def response_variables(self, name=None):
-        ss = ['変数を全部、表示するよ']
-        for stack in self.get('stacks'):
-            if 'vars' not in stack:
-                continue
-            vars = stack['vars']
-            if name is None:
-                for n in vars.keys():
-                    if n.startswith('_') or n in SKIP_IDS:
-                        continue
-                    v = vars[n]
-                    ty = type(v).__name__
-                    if ty in ('module', 'function'):
-                        continue
-                    ss.append(render_value(n, ty, vars[n]))
-            elif name in vars:
-                v = vars[name]
-                ss.append(render_value(name, type(v).__name__, v))
-        return ss
 
     def response_code(self, text):
         return self.response_vow(text)
@@ -191,64 +173,13 @@ def response_translate(text):
     return 'ねむねむ。まだ、起きられない！\n（しばらく待ってからもう一度試してください）'
 
 
-SKIP_IDS = set([
-    'In', 'Out', 'get_ipython', 'exit', 'quit'
-])
-
-
-def render_value(name, typename, value):
-    head = f'<b>{name}: {typename}型</b>'
-    if hasattr(value, '__len__'):
-        v = len(value)
-        head += f' <tt>len({name})={v}</tt>'
-    body = f'<pre>{repr(value)}</pre>'
-    if hasattr(value, '_repr_html_'):
-        body = value._repr_html_()
-    return f'{head}<br/>{body}'
-
-
-# 分析
-
-_PYTYPE = {
-    'NoneType': 'None',
-    'bool': 'ブール値',
-    'int': '整数',
-    'float': '浮動小数点数',
-    'complex': '複素数',
-    'str': '文字列',
-    'bytes': 'バイト列',
-    'list': 'リスト',
-    'tuple': 'タプル',
-    'dict': '辞書',
-    'set': 'セット',
-    'ndarray': '配列',
-    'DataFrame': '表データ/データフレーム',
-    'module': 'モジュール',
-    'builtin_function_or_method': '関数/ビルトイン関数',
-    'function': '関数',
-    'type': '型もしくはクラス',
-}
-
-
-def _typename(value):
-    typename = type(value).__name__
-    if typename in _PYTYPE:
-        return _PYTYPE[typename] + f'({typename}型)'
-    return f'{typename}型'
-
-
-def dump_value(key, value):
-    ss = []
-    ss.append(key)
-    ss.append(_typename(value))
-    if hasattr(value, '__len__'):
-        ss.append(f'len({key})={len(value)}')
-    ss.append(str(value))
-    return ' '.join(ss)
-
-
 def thinking(slots):
     # print(slots)
+    if 'code' not in slots:
+        try:
+            slots['code'] = get_ipython().user_global_ns['In'][-1]
+        except:
+            pass
     if 'code' in slots and 'traceback' in slots:
         code = slots['code']
         lines = []
@@ -260,29 +191,23 @@ def thinking(slots):
                 lines.append(line)
         if len(lines) > 0:
             slots['fault_lines'] = lines
-    if 'vars' in slots:
-        if len(slots['vars']) > 0:
-            fault_vars = ['変数の値を全部、出してみるよ（変な値はないか探してごらん)']
-            for key, value in slots['vars'].items():
-                dump = dump_value(key, value)
-                fault_vars.append(dump)
-            slots['fault_vars'] = fault_vars
+    analyze_code(slots)
     if 'problem_id' in slots:
         text = slots['problem_id']
         if text in HINT:
             text = HINT[text]
             slots['hint'] = text
-    if 'reason' in slots:
-        text = slots['reason']
-    else:
-        if 'fault_lines' in slots:
-            slots['reason'] = slots['fault_lines'][0]
-        else:
-            slots['reason'] = f'原因は、たぶん... '
-    if 'solution' in slots:
-        text = slots['solution']
-    else:
-        slots['solution'] = f'解決策は... (次のバージョン更新をお待ちください）'
+    # if 'reason' in slots:
+    #     text = slots['reason']
+    # else:
+    #     if 'fault_lines' in slots:
+    #         slots['reason'] = slots['fault_lines'][0]
+    #     else:
+    #         slots['reason'] = f'原因は、たぶん... '
+    # if 'solution' in slots:
+    #     text = slots['solution']
+    # else:
+    #     slots['solution'] = f'解決策は... (次のバージョン更新をお待ちください）'
 
 
 def show_slots(slots, print=kogi_print):
@@ -290,10 +215,11 @@ def show_slots(slots, print=kogi_print):
         print(slots['reason'])
     if 'fault_lines' in slots:
         for reason in slots['fault_lines']:
-            if reason != slots['reason']:
-                print(reason)
+            print(reason)
     if 'solution' in slots:
         print(slots['solution'])
+    if 'maybe' in slots:
+        print(slots['maybe'])
     if 'fault_vars' in slots:
         for reason in slots['fault_vars']:
             print(reason)
