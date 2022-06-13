@@ -1,8 +1,5 @@
-import linecache
-import sys
 import os
 import string
-import json
 
 try:
     import pegtree as pg
@@ -18,7 +15,7 @@ Start = {
 }
 
 Param = LQuote / Quote / DoubleQuote / BackQuote 
-    / Data / FuncName / CellName/ VarName 
+    / Data / FuncName / MaybeName / CellName/ VarName 
     / ClassName / PathName / UName
     / Float / Int / Hex
 
@@ -45,10 +42,18 @@ MaybeName =
     / { NAME &(' object' !NAME) #Maybe }
     / { NAME &(' instance' !NAME) #Maybe }
     / { NAME &(' expected' !NAME) #Maybe }
+    / { TYPENAME #Maybe }
 
+TYPENAME =
+    / 'list' !NAME
+    / 'tuple' !NAME
+    / 'int' !NAME
+    / 'float' !NAME
+    / 'str' !NAME
+    / 'deque' !NAME
 
-Float = { [0-9]* '.' [0-9]+ #Number }
-Int = { [0-9]+ ![A-Za-z] #Int }
+Float = { '-'? [0-9]* '.' [0-9]+ #Number }
+Int = { '-'? [0-9]+ ('.py')? ![A-Za-z] #Int }
 Hex = { '0x' [0-9A-Fa-f]+ #Hex }
 
 UName = { U (!END .)* #UName }
@@ -62,13 +67,16 @@ _parser = pg.generate(pg.grammar(_PEG))
 _IDX = string.ascii_uppercase
 
 
-def extract_params_from_error(emsg):
+def extract_params_from_error(emsg, maybe=False):
     tree = _parser(emsg)
     ss = []
     params = []
     for t in tree:
         s = str(t)
         if t == '':
+            ss.append(s)
+            continue
+        if t == 'Maybe' and not maybe:
             ss.append(s)
             continue
         idx = _IDX[len(params) % 26]
@@ -184,7 +192,14 @@ class ErrorModel(object):
             d = self.eDict[ekey]
             for key, value in d.items():
                 slots[key] = replace_params(value, params)
+            return slots
+        ekey2, params2 = extract_params_from_error(emsg, maybe=True)
+        if ekey2 in self.eDict:
+            d = self.eDict[ekey2]
+            for key, value in d.items():
+                slots[key] = replace_params(value, params2)
         else:
             slots['error_key'] = ekey
             slots['error_params'] = params
+            #print('@', slots)
         return slots
