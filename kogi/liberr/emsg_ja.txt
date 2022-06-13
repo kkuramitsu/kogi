@@ -558,3 +558,71 @@ translated: 属性名は文字列でなければならない、Aではない
 
 IndexError: list assignment index out of range
 translated: リストへ代入しようとしたが、インデックスがリストの大きさを超えています。
+
+UnboundLocalError: local variable A referenced before assignment
+translated: 代入前にローカル変数 A を使おうとした。
+maybe: global A もしくは nonlocal A (スコープ外の変数を使いたいとき)
+
+MisconfigurationException: No A method defined to run B.
+translated: Bを実行するためのAメソッドが定義されていません。
+
+SyntaxError: closing parenthesis A does not match opening parenthesis B (C, line D)
+translated: 構文エラーです。閉じ括弧Aが開き括弧Bと一致していません。
+
+ValueError: DataFrame constructor not properly called!
+translated: DataFrameのコンストラクタが正しく呼び出されていない!
+
+TypeError: A() argument B must be str, not list
+translated: A()の引数Bは文字列です。リストではありません。
+
+TypeError: argument for A() given by name (B) and position (position C)
+translated: A()の引数は、名前 B と位置 Cで与えられます。
+
+TypeError: Can only merge Series or DataFrame objects, a A was passed.
+translated: データ列とデータフレームだけ結合できます。しかし、A のオブジェクトを結合しようとしました。
+
+SyntaxError: EOL while scanning string literal (A, line B)
+translated: B行目は、文字列リテラルを閉じ忘れています。
+
+RecursionError: maximum recursion depth exceeded in comparison
+translated: 再帰呼び出しがスタックオバーフローを起こしました
+
+IndentationError: unindent does not match any outer indentation level (A, line B)
+translated: B行目で構文エラーです。インデントの深さが、どの外側のインデントの深さにもマッチしません。
+
+SyntaxError: can't assign to function call (A, line B)
+translated: B行目で構文エラーです。関数呼び出しには代入できません。
+
+IndentationError: unexpected indent (A, line B)
+translated: B行目で構文エラーです。ここにはインデントはいらないはずです。
+
+TypeError: A() takes B positional arguments but C was given
+translated: A()は引数の数が異なります。A()はBつの引数を取ります。
+
+SyntaxError: A outside function (B, line C)
+translated: C行目で構文エラーです。Aは関数の中でのみ使えます。
+
+TypeError: A() takes no keyword arguments
+translated: A()はキーワード引数を取りません。
+
+SyntaxError: unexpected character after line continuation character (A, line B)
+translated: B行目で構文エラーです。予期しない文字があります。
+
+TypeError: A object is not reversible
+translated: A オブジェクトはリバーシブルではありません。
+
+TypeError: an integer is required (got type generator)
+translated: 整数が必要です(型ジェネレータではありません)
+
+TabError: inconsistent use of tabs and spaces in indentation (A, line B)
+translated: B行目で構文エラーです。タブとスペースの使い方に一貫性がありません。
+maybe: コピペは慎重に
+
+TypeError: A() expected a character, but string of length B found
+translated: A()の引数は文字であるべきだが、長さ B の文字列が与えられた。
+
+TypeError: A() expected string of length B, but int found
+translated: A()は長さ Bの文字列を取るが、整数が与えられた。
+
+TypeError: Cannot perform A with a dtyped B array and scalar of type C
+translated: B型の配列とC型の数値では、Aを実行できません。
