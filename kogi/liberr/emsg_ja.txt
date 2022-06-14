@@ -3,8 +3,8 @@ translated: AオブジェクトのBプロパティは読み取り専用です。
 
 AttributeError: A object has no attribute B
 translated: AオブジェクトにはBプロパティもBメソッドもありません。
-maybe: Bのタイプミス (スペル確認して）
-maybe: オブジェクトの型が期待どうりでない
+hint: Bのタイプミス (スペル確認して）
+hint: オブジェクトの型が期待したものと異なる
 
 AttributeError: A object has no property B
 translated: AオブジェクトはBプロパティもBメソッドもありません。
@@ -15,17 +15,17 @@ translated: .dtアクセサは日付データでしか使えません。
 AttributeError: module A has no attribute B
 translated: AモジュールにはBはありません。
 
-AttributeError: type object A has no attribute B
-translated: タイプ・オブジェクトAはBプロパティはありません。
+AttributeError: A object B has no attribute C
+translated: オブジェクトAには、Bプロパティはありません。
 
 EOFError:
 translated: ファイルの読み込みが終端に達しました。
 reason: ファイルの終端に達したのに読み込もうとしました
-solution: try/except EOFError: を用いて、例外処理を行う
+hint: 例外処理（except EOFError）を加える
 
 FileNotFoundError: A No such file or directory: B
 translated: 入出力エラーです。Bのようなファイルやディレクトリはありません。
-solution: try/except FileNotFoundError: を用いて、例外処理を行う
+hint: 例外処理（except FileNotFoundError）を加える
 
 ImportError: cannot import name A from B C
 translated: BモジュールからAをインポートできません。
@@ -38,6 +38,9 @@ translated: B行目には、インデントされたブロックであるはず�
 IndexError: index A is out of bounds for axis B with size C
 translated: インデックスAは、軸B（サイズC）の大きさを超えています。
 
+IndexError: A index out of range
+translated: インデックスがAの大きさを超えています。
+
 IndexError: list index out of range
 translated: インデックスがリストの大きさを超えています。
 
@@ -48,7 +51,7 @@ IndexError: string index out of range
 translated: インデックスが文字列の長さを超えています。
 
 IndexError: too many indices for array: array is A-dimensional, but B were indexed
-translated: 配列のインデックスが多すぎます: 配列はA次元だが、B は既にインデックスされています。
+translated: 配列のインデックスが多すぎます。 配列はA次元です。
 
 IndexingError: Unalignable boolean Series provided as indexer (index of the boolean Series and of the indexed object do not match).
 translated: インデクサーとして提供されたブール型列が不整合です。（ブール型列のインデックスとインデックスされたオブジェクトのインデックスが一致しない）。
@@ -71,9 +74,6 @@ translated: キー -A が見つかりません。
 KeyError: A
 translated: キー A が見つかりません。
 
-KeyError: AB\CD\EF\GH\Ix\JK\L/\MN\Oc\P"\Qo\Rt\SShift\Tt\U=\Vt\WArrowRight\Xt\Yd\Zt\AB,\n      dtype=\C, length=D)] are in the E'
-translated: 大混乱です。
-
 KeyError: False
 translated: キー False が見つかりません。
 
@@ -88,6 +88,7 @@ translated: Aのいずれも、Bにありません
 
 KeyboardInterrupt:
 translated: プログラム強制終了のシグナルによって中断されました。
+hint: これはエラーではありません。
 
 KogiError: A
 translated: コギーくんの内部のエラーです。あなたは何も悪くありません。
@@ -100,6 +101,12 @@ translated: Aという名前のモジュールはありません。
 
 NameError: name A is not defined
 translated: Aは未定義です。つまり、まだ代入もインポートもされていません。
+hint: スペルミスしていませんか？
+hint: インポートし忘れていませんか？
+hint: 関数やクラスを定義したセルを実行し悪れていませんか？
+
+NotFittedError: This A instance is not fitted yet. Call B with appropriate arguments before using this estimator.
+translated: モデルAは、まだ学習されていません。予測する前に、B を使って訓練データを学習してください。
 
 NotFittedError: This DecisionTreeRegressor instance is not fitted yet. Call A with appropriate arguments before using this estimator.
 translated: この DecisionTreeRegressor インスタンスは、まだ学習されていません。予測値を用いる前に、A を使って訓練データを学習してください。
@@ -130,12 +137,12 @@ translated: コードを書き切っていません。不正な構文です。
 reason: 括弧やクオートの閉じ忘れかもしれません。
 
 SyntaxError: invalid syntax (A, line B)
-translated: B行目は、不正な構文です。
+translated: B行目は、正しくない書き方です。
 hint: 構文エラーは、前の行で間違っていることもあります。
 
 SyntaxError: unmatched A (B, line C)
 translated: C行目は、構文エラーです。たぶん、Aが多すぎます。
-solution: 最後のAを取り除いたら如何でしょうか？
+hint: 最後のAを取り除いたら如何でしょうか？
 
 TypeError: A() argument B must be str, not int
 translated: A()の引数Bは、intではなくstrでなければならない
@@ -150,7 +157,7 @@ TypeError: A() can't convert non-string with explicit base
 translated: baseを与えた場合、A()は、文字列でない値を（整数に）変換することはできません。
 
 TypeError: A() got an unexpected keyword argument B
-translated: A()は予期しないキーワード引数Bを得た
+translated: A()はおかしなキーワード引数Bで呼び出されました。
 
 TypeError: A() got multiple values for argument B
 translated: A() は引数Bとして、複数の値を得た
@@ -158,11 +165,8 @@ translated: A() は引数Bとして、複数の値を得た
 TypeError: A is an invalid key
 translated: A は無効なキーです。
 
-TypeError: A is an invalid keyword argument for print()
-translated: A は print() にとって、無効なキーワード引数です。
-
 TypeError: A is an invalid keyword argument for B()
-translated: A は B()にとって、無効なキーワード引数です。
+translated: B()では、キーワード引数Aは使えません。
 
 TypeError: A() missing required argument B (pos C)
 translated: A()は、必要な引数が足りません。
@@ -177,7 +181,7 @@ TypeError: A() must have at least two arguments.
 translated: A()は少なくとも2つの引数を持つ必要があります。
 
 TypeError: A not supported between instances of B and C
-translated: Aは、BとCの値の間でサポートされていません。
+translated: Aは、BとCの値の間では使えません。
 
 TypeError: A object cannot be interpreted as an integer
 translated: A オブジェクトは整数として解釈できません。
@@ -241,11 +245,8 @@ translated: A型の引数はイテラブル（反復可能）ではありませ�
 TypeError: bad operand type for unary +: A
 translated: 単項の+演算子の使用法が間違っています。（A型では使えません）
 
-TypeError: can only concatenate list (not A) to list
-translated: リストとリストのみ連結できます。A型はリストに連結できません。
-
-TypeError: can only concatenate str (not A) to str
-translated: 文字列と文字列のみ連結できます。A型は文字列に連結できません。
+TypeError: can only concatenate A (not B) to C
+translated: AとCのみ連結できます。B型はCに連結できません。
 
 TypeError: can't multiply sequence by non-int of type A
 translated: シーケンスを整数倍のみ可能です。A型の値を乗じることはできません。
@@ -253,29 +254,35 @@ translated: シーケンスを整数倍のみ可能です。A型の値を乗じ�
 TypeError: cannot concatenate object of type A; only Series and DataFrame objs are valid
 translated: 型 A のオブジェクトは連結できません。Series と DataFrame オブジェクトのみ有効です。
 
-TypeError: cannot unpack non-iterable int object
-translated: イテラブルでない int オブジェクトは、展開できません。
-
 TypeError: decoding to str: need a bytes-like object, type found
 translated: 文字列をコードするには、バイト列のようなオブジェクトが必要です。
 
-TypeError: float expected at most A arguments, got B
-translated: float()は高々Aつまでの引数しか取りませんが、Bつ与えました。
+TypeError: A expected at most B argument, got C
+translated: A()は最大Bつの引数しか取りません。
+reason: Cつの引数で呼び出しています。
 
-TypeError: list expected at most A arguments, got B
-translated: list()は高々Aつまでの引数しか取りませんが、Bつ与えました。
+TypeError: A expected at most B arguments, got C
+translated: A()は最大Bつの引数しか取りません。
+reason: Cつの引数で呼び出しています。
 
-TypeError: list indices must be integers or slices, not list
-translated: リストのインデックスは、整数かスライスです。リストではありません。
+TypeError: A indices must be integers or slices, not B
+translated: Aのインデックスは、整数かスライスです。Bではありません。
 
-TypeError: list indices must be integers or slices, not str
-translated: リストのインデックスは、整数またはスライスです。文字列ではありません。
+TypeError: A expected at least B argument, got C
+translated: A()の引数は少なくともBつ必要です。
+reason: Cつの引数で呼び出しています。
 
-TypeError: list indices must be integers or slices, not tuple
-translated: リストのインデックスは、整数またはスライスです。タプルではありません。
+TypeError: A expected at least B arguments, got C
+translated: A()の引数は少なくともBつ必要です。
+reason: Cつの引数で呼び出しています。
 
-TypeError: max expected A arguments, got B
-translated: max()で期待されたAの引数が、Bになった
+TypeError: A expected B argument, got C
+translated: A()の引数の個数が間違っています。
+reason: B個(以上)の引数が欲しいところ、Cでした。
+
+TypeError: A expected B arguments, got C
+translated: A()の引数の個数が間違っています。
+reason: B個(以上)の引数が欲しいところ、Cでした。
 
 TypeError: must be real number, not function
 translated: 実数でなければなりません。関数ではありません。
@@ -285,9 +292,6 @@ translated: 文字列フォーマット中にすべての引数が変換され�
 
 TypeError: object of type A has no B()
 translated: A型のオブジェクトは B()が使えません。
-
-TypeError: range expected A arguments, got B
-translated: range()は、Aつの引数を取ります。
 
 TypeError: slice indices must be integers or None or have an __index__ method
 translated: スライスのインデックスは、整数かNone、もしくは __index__ メソッドを持つ必要があります。
@@ -304,32 +308,75 @@ translated: 関数 A は入力された値の型に対応していません。�
 TypeError: unhashable type: A
 translated: Aはハッシュ化できない型です。
 
-TypeError: unsupported operand type(s) for %: A and B
-translated: %演算子は、A型とB型の間でサポートされていません。
-
-TypeError: unsupported operand type(s) for ** or A(): B and C
-translated: **演算子またはA()は、B型とC型の間でサポートされていません。
-
-TypeError: unsupported operand type(s) for *: A and B
-translated: *演算子は、A型とB型の間でサポートされていません。
 
 TypeError: unsupported operand type(s) for +: A and B
-translated: +演算子は、A型とB型の間でサポートされていません。
+translated: +演算子は、A型とB型の間では使えません。
 
 TypeError: unsupported operand type(s) for +=: A and B
-translated: +=演算子は、A型とB型の間でサポートされていません。
+translated: +=演算子は、A型とB型の間では使えません。
 
 TypeError: unsupported operand type(s) for -: A and B
-translated: -演算子は、A型とB型の間でサポートされていません。
+translated: -演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for -=: A and B
+translated: -=演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for *: A and B
+translated: *演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for *=: A and B
+translated: *=演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for ** or A(): B and C
+translated: **演算子またはA()は、B型とC型の間では使えません。
+
+TypeError: unsupported operand type(s) for %: A and B
+translated: %演算子は、A型とB型の間では使えません
+
+TypeError: unsupported operand type(s) for %=: A and B
+translated: %=演算子は、A型とB型の間では使えません
 
 TypeError: unsupported operand type(s) for /: A and B
-translated: /演算子は、A型とB型の間でサポートされていません。
+translated: /演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for /=: A and B
+translated: /=演算子は、A型とB型の間では使えません。
 
 TypeError: unsupported operand type(s) for //: A and B
-translated: //演算子は、A型とB型の間でサポートされていません。
+translated: //演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for //=: A and B
+translated: //=演算子は、A型とB型の間では使えません。
 
 TypeError: unsupported operand type(s) for ^: A and B
-translated: ^演算子は、A型とB型の間でサポートされていません。
+translated: ^演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for ^=: A and B
+translated: ^=演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for |: A and B
+translated: |演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for |=: A and B
+translated: |=演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for &: A and B
+translated: &演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for &=: A and B
+translated: &=演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for <<: A and B
+translated: <<演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for <<=: A and B
+translated: <<=演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for >>: A and B
+translated: >>演算子は、A型とB型の間では使えません。
+
+TypeError: unsupported operand type(s) for >>=: A and B
+translated: >>=演算子は、A型とB型の間では使えません。
 
 UsageError: A is a cell magic, but the cell body is empty.
 translated: A はセル用のマジックですが、セル本体は空です。
@@ -508,8 +555,9 @@ translated: A()のプロパティ名は文字列です。
 ValueError: A is not in deque
 translated: Aは両端キューにありません。
 
-TypeError: cannot unpack non-iterable Missing object
-translated: Missingオブジェクトを展開できません。
+TypeError: cannot unpack non-iterable A object
+translated: Aオブジェクトは展開できません。
+hint: Aはイテラブルでなければなりません。
 
 TypeError: can't convert expression to float
 translated: 式を float に変換できません。
@@ -561,7 +609,7 @@ translated: リストへ代入しようとしたが、インデックスがリ�
 
 UnboundLocalError: local variable A referenced before assignment
 translated: 代入前にローカル変数 A を使おうとした。
-maybe: global A もしくは nonlocal A (スコープ外の変数を使いたいとき)
+hint: (グローバル変数を使いたいなら）global A
 
 MisconfigurationException: No A method defined to run B.
 translated: Bを実行するためのAメソッドが定義されていません。
@@ -616,7 +664,7 @@ translated: 整数が必要です(型ジェネレータではありません)
 
 TabError: inconsistent use of tabs and spaces in indentation (A, line B)
 translated: B行目で構文エラーです。タブとスペースの使い方に一貫性がありません。
-maybe: コピペは慎重に
+hint: コピペは慎重に
 
 TypeError: A() expected a character, but string of length B found
 translated: A()の引数は文字であるべきだが、長さ B の文字列が与えられた。
