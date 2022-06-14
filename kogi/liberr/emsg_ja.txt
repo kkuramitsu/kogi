@@ -626,3 +626,16 @@ translated: A()は長さ Bの文字列を取るが、整数が与えられた。
 
 TypeError: Cannot perform A with a dtyped B array and scalar of type C
 translated: B型の配列とC型の数値では、Aを実行できません。
+
+ValueError: shapes (A,) and (B,) not aligned: C (dim D) != E (dim F)
+translated: 各ベクトルの次元が異なり、計算できません。
+hint: 各ベクトルの次元を揃えてください
+
+ValueError: The truth value of an array with more than one element is ambiguous. Use A() or B()
+translated: 一つ以上の要素がある配列は真なのか判定できません。
+reason: 配列には、一つ以上の要素があリます
+hint: A()かB()を加えてみましょう
+
+TypeError: cannot perform reduce with flexible type
+translated: 自由な型であるため、値を一つにまとめることができません。（何のこっちゃ？）
+hint: reduceが実行できる数値に変換してみましょう。

@@ -45,6 +45,7 @@ MaybeName =
     / { NAME &(' object' !NAME) #Maybe }
     / { NAME &(' instance' !NAME) #Maybe }
     / { NAME &(' expected' !NAME) #Maybe }
+    / { NAME &(' constructor' !NAME) #Maybe }
 
 
 Float = { [0-9]* '.' [0-9]+ #Number }
