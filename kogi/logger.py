@@ -79,7 +79,7 @@ def send_log(right_now=True, print=kogi_print):
     now = datetime.now().timestamp()
     delta = (now - prev_epoch)
     prev_epoch = now
-    if len(LOGS) > 0 and (right_now or delta > 30):
+    if len(LOGS) > 0 and (right_now or delta > 30 or len(LOGS) > 4):
         data = {
             "session": SESSION,
             "uid": UID,
@@ -91,8 +91,8 @@ def send_log(right_now=True, print=kogi_print):
         r = requests.post(url, headers=headers, json=data)
         if r.status_code != 200:
             print(r.status_code)
-            print(f'delta={delta} data={data}')
             print(r)
+            #print(f'delta={delta} data={data}')
 
 
 def log(**kw):
@@ -117,14 +117,14 @@ def logging_json(**kw):
     return logdata
 
 
-def logging_asjson(type, **kw):
+def logging_asjson(type, right_now=False, **kw):
     global SEQ, LOGS, epoch
     now = datetime.now()
     date = now.isoformat(timespec='seconds')
     logdata = dict(seq=SEQ, date=date, type=type, **kw)
     LOGS.append(logdata)
     SEQ += 1
-    send_log(right_now=False)
+    send_log(right_now=right_now)
     return logdata
 
 
@@ -133,13 +133,13 @@ def logging_atexit():
     atexit.register(send_log)
 
 
-def record_login(uid, **kw):
-    global UID
-    UID = f'{uid}'
-    logdata = log(uid=UID, **kw)
-    send_log(right_now=True)
-    if slack is None:
-        send_slack(logdata)
+# def record_login(uid, **kw):
+#     global UID
+#     UID = f'{uid}'
+#     logdata = log(uid=UID, **kw)
+#     send_log(right_now=True)
+#     if slack is None:
+#         send_slack(logdata)
 
 
 if __name__ == '__main__':

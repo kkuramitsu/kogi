@@ -5,7 +5,7 @@ from IPython.display import display, HTML
 import os
 
 # from kogi.libnmt.transformer import load_transformer_nmt
-from .logger import log, send_log, print_nop
+from .logger import logging_asjson, send_log, print_nop
 
 TRANSLATE_CSS_HTML = '''
 <style>
@@ -153,13 +153,12 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
         greedy_output = model.generate(input_ids, max_length=max_length)
         t = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
         if log_class is not None:
-            log(
-                type='nmt',
-                mode_id=model_id,
-                log_class=log_class,
-                input=s,
-                output=t,
-            )
+            logging_asjson('nmt',
+                           mode_id=model_id,
+                           log_class=log_class,
+                           input=s,
+                           output=t,
+                           )
         return t
     return gready_search
 
@@ -181,7 +180,8 @@ def nmt(model_id, load_nmt=load_mt5, log_class=None, kogi_mode=False,
         transform_before=_transform_nop, transform_after=_transform_nop,
         input='入力', output='予測', print=print):
     global _kogi_nmt_fn
-    nmt_fn = load_nmt(model_id, qint8=qint8, device=device, print=print)
+    nmt_fn = load_nmt(model_id, qint8=qint8, device=device,
+                      log_class=log_class, print=print)
     if kogi_mode:
         _kogi_nmt_fn = nmt_fn
 
