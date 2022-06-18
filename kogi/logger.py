@@ -114,6 +114,17 @@ def logging_json(**kw):
     return logdata
 
 
+def logging_asjson(type, **kw):
+    global SEQ, LOGS, epoch
+    now = datetime.now()
+    date = now.isoformat(timespec='seconds')
+    logdata = dict(seq=SEQ, date=date, type=type, **kw)
+    LOGS.append(logdata)
+    SEQ += 1
+    send_log(right_now=False)
+    return logdata
+
+
 def logging_atexit():
     import atexit
     atexit.register(send_log)
