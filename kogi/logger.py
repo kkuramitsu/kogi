@@ -70,22 +70,22 @@ SEQ = 0
 LOGS = []
 UID = 'unknown'
 KEY = 'OjwoF3m0l20OFidHsRea3ptuQRfQL10ahbEtLa'
-epoch = datetime.now().timestamp()
+prev_epoch = datetime.now().timestamp()
 
 
-def send_log(right_now=False, print=kogi_print):
-    global epoch, LOGS
-    url = 'https://ixe8peqfii.execute-api.ap-northeast-1.amazonaws.com/dev'
+def send_log(right_now=True, print=kogi_print):
+    global prev_epoch, LOGS
     now = datetime.now().timestamp()
-    delta = (now - epoch)
-    epoch = now
-    if len(LOGS) > 0 and (right_now or delta > 180):
+    delta = (now - prev_epoch)
+    prev_epoch = now
+    if len(LOGS) > 0 and (right_now or delta > 30):
         data = {
             "session": SESSION,
             "uid": UID,
             "logs": LOGS.copy(),
         }
         LOGS.clear()
+        url = 'https://ixe8peqfii.execute-api.ap-northeast-1.amazonaws.com/dev'
         headers = {'x-api-key': f'A{KEY}s'}
         r = requests.post(url, headers=headers, json=data)
         if r.status_code != 200:
@@ -99,7 +99,7 @@ def log(**kw):
     logdata = dict(seq=SEQ, date=date, **kw)
     LOGS.append(logdata)
     SEQ += 1
-    send_log()
+    send_log(right_now=False)
     return logdata
 
 
@@ -110,8 +110,13 @@ def logging_json(**kw):
     logdata = dict(seq=SEQ, date=date, **kw)
     LOGS.append(logdata)
     SEQ += 1
-    send_log()
+    send_log(right_now=False)
     return logdata
+
+
+def logging_atexit():
+    import atexit
+    atexit.register(send_log)
 
 
 def record_login(uid, **kw):
