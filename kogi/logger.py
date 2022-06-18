@@ -69,12 +69,13 @@ SESSION = str(uuid.uuid1())
 SEQ = 0
 LOGS = []
 UID = 'unknown'
+POINT = 'ixe8peqfii'
 KEY = 'OjwoF3m0l20OFidHsRea3ptuQRfQL10ahbEtLa'
 prev_epoch = datetime.now().timestamp()
 
 
 def send_log(right_now=True, print=kogi_print):
-    global prev_epoch, LOGS
+    global prev_epoch, LOGS, POINT
     now = datetime.now().timestamp()
     delta = (now - prev_epoch)
     prev_epoch = now
@@ -85,7 +86,7 @@ def send_log(right_now=True, print=kogi_print):
             "logs": LOGS.copy(),
         }
         LOGS.clear()
-        url = 'https://ixe8peqfii.execute-api.ap-northeast-1.amazonaws.com/dev'
+        url = f'https://{POINT}.execute-api.ap-northeast-1.amazonaws.com/dev'
         headers = {'x-api-key': f'A{KEY}s'}
         r = requests.post(url, headers=headers, json=data)
         if r.status_code != 200:
