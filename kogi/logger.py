@@ -89,7 +89,8 @@ def send_log(right_now=True, print=kogi_print):
         LOGS.clear()
         url = f'https://{POINT}.execute-api.ap-northeast-1.amazonaws.com/dev'
         headers = {'x-api-key': f'A{KEY}s'}
-        r = requests.post(url, headers=headers, json=data)
+        r = requests.post(url, headers=headers,
+                          json=json.dumps(data, ensure_ascii=False))
         if r.status_code != 200:
             print(r.status_code)
             print(r)
