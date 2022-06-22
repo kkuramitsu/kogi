@@ -53,6 +53,10 @@ def judge(code, data):
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except SyntaxError:
         SHOW_SYNTAXERROR(get_ipython())
+        slots = dict(
+            problem_id=problem_id,
+        )
+        kogi_catch(code=code, context=slots)
     except:
         SHOW_TRACEBACK(get_ipython())
         del local_vars['print']
