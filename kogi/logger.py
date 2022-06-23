@@ -133,7 +133,7 @@ def send_log(right_now=True, print=kogi_print):
         url = f'https://{POINT}.execute-api.ap-northeast-1.{HOST2}.com/dev'
         headers = {'x-api-key': f'A{KEY}s'}
         r = requests.post(url, headers=headers, json=data)
-        print('logging', r.status_code, data)
+        #print('logging', r.status_code, data)
         if r.status_code != 200:
             print(r.status_code)
             print(r)
