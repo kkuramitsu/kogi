@@ -1,6 +1,8 @@
 import sys
 import traceback
 import requests
+from IPython import get_ipython
+
 from kogi.dialog_ast import analyze_code
 
 from kogi.liberr import catch_exception
@@ -104,6 +106,8 @@ class Chatbot(object):
         if 'user_inputs' not in self.slots:
             self.slots['user_inputs'] = []
         self.slots['user_inputs'].append(text)
+        if startswith(text, ('質問')):
+            return 'Slackに転送したよ！返事はまってね'
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
         if startswith(text, ('デバッグ', '助けて', 'たすけて', '困った')):
@@ -307,7 +311,7 @@ def set_global_slots(**kwargs):
 def start_dialog(slots: dict, logging_json=None):
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
-    thinking(dialog_slots)  # , print=kogi_print)
+    thinking(dialog_slots)
     chatbot = Chatbot(slots=dialog_slots)
     if 'translated' in dialog_slots:
         _start_chat(chatbot, dialog_slots['translated'])

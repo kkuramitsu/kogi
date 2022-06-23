@@ -4,7 +4,6 @@ import IPython
 from IPython.display import display, HTML
 import os
 
-# from kogi.libnmt.transformer import load_transformer_nmt
 from .logger import logging_asjson, send_log, print_nop
 
 TRANSLATE_CSS_HTML = '''
@@ -153,7 +152,7 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
         greedy_output = model.generate(input_ids, max_length=max_length)
         t = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
         if log_class is not None:
-            logging_asjson('nmt',
+            logging_asjson('nmt', right_now=True,
                            mode_id=model_id,
                            log_class=log_class,
                            input=s,
