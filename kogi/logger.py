@@ -173,7 +173,7 @@ def logging_asjson(type, right_now=False, **kw):
 
 
 def _handler(signum, frame):
-    logging_asjson('term', right_now=True)
+    logging_asjson('terminal', right_now=True)
 
 
 signal.signal(signal.SIGTERM, _handler)
