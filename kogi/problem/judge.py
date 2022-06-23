@@ -1,12 +1,9 @@
 import builtins
-import sys
-import traceback
 from IPython.display import display, HTML
 from IPython import get_ipython
-from kogi.exception_hook import SHOW_TRACEBACK
+from .timeout import exec_with_timeout
+from kogi.exception_hook import SHOW_TRACEBACK, SHOW_SYNTAXERROR
 from kogi.dialog import kogi_catch
-#from kogi.liberr import kogi_catch, print_exec_exception
-
 
 _lines = None
 _outputs = None
@@ -14,10 +11,10 @@ _outputs = None
 
 def input_for_judge(s=''):
     global _lines
-    if _lines is not None and len(_lines) > 0:
-        return _lines.pop(0)
-    else:
-        _lines = None
+    if _lines is not None:
+        if len(_lines) > 0:
+            return _lines.pop(0)
+        return ''
     return builtins.input(s)
 
 
@@ -48,14 +45,18 @@ def judge(code, data):
             local_vars = {
                 'print': print_for_judge, 'input': input_for_judge,
             }
-            exec(code, None, local_vars)
+            exec_with_timeout(code, None, local_vars, 10)
             resultData = ''.join(_outputs)
             ac += 1 if outputData == resultData else 0
             render_result(title, inputData, resultData, outputData)
         render_footer(data)
     #     log(type='atcoder', problem=problem_id, ac=ac, code=code)
     except SyntaxError:
-        SHOW_TRACEBACK(get_ipython())
+        SHOW_SYNTAXERROR(get_ipython())
+        slots = dict(
+            problem_id=problem_id,
+        )
+        kogi_catch(code=code, context=slots)
     except:
         SHOW_TRACEBACK(get_ipython())
         del local_vars['print']

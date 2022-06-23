@@ -640,6 +640,7 @@ translated: B行目で構文エラーです。インデントの深さが、ど�
 
 SyntaxError: can't assign to function call (A, line B)
 translated: B行目で構文エラーです。関数呼び出しには代入できません。
+hint: ( )の代わりに、 [ ]を使ってみてください
 
 IndentationError: unexpected indent (A, line B)
 translated: B行目で構文エラーです。ここにはインデントはいらないはずです。
@@ -687,3 +688,8 @@ hint: A()かB()を加えてみましょう
 TypeError: cannot perform reduce with flexible type
 translated: 自由な型であるため、値を一つにまとめることができません。（何のこっちゃ？）
 hint: reduceが実行できる数値に変換してみましょう。
+
+TimeoutError: Time Limit Exceeded
+translated: 時間制限を超過しました
+reason: 無限ループになっている可能性もあります
+hint: ループ（繰り返し）を見直しましょう
