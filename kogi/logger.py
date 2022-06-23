@@ -1,5 +1,6 @@
 import uuid
 import json
+import signal
 from datetime import datetime
 import requests
 
@@ -171,21 +172,8 @@ def logging_asjson(type, right_now=False, **kw):
     return logdata
 
 
-def logging_atexit():
-    import atexit
-    atexit.register(send_log)
+def _handler(signum, frame):
+    logging_asjson('term', right_now=True)
 
 
-# def record_login(uid, **kw):
-#     global UID
-#     UID = f'{uid}'
-#     logdata = log(uid=UID, **kw)
-#     send_log(right_now=True)
-#     if slack is None:
-#         send_slack(logdata)
-
-
-if __name__ == '__main__':
-    # log(a=1, b=2)
-    # log_now()
-    record_login(uid='11111', test='test')
+signal.signal(signal.SIGTERM, _handler)
