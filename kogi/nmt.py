@@ -151,6 +151,7 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
             return_tensors='pt').input_ids.to(device)
         greedy_output = model.generate(input_ids, max_length=max_length)
         t = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
+        print('logging', log_class)
         if log_class is not None:
             logging_asjson('nmt', right_now=True,
                            mode_id=model_id,
@@ -219,4 +220,4 @@ def nmt(model_id, load_nmt=load_mt5, log_class=None, kogi_mode=False,
 def kogi_nmt(model_id, load_nmt=load_mt5, class_name='unknown',
              beam=1, device='cpu', qint8=True, print=print_nop):
     nmt(model_id, load_nmt=load_nmt, log_class=class_name, kogi_mode=True,
-        beam=beam, device=device, qint8=qint8, input='日本語', output='Python', print=print_nop)
+        beam=beam, device=device, qint8=qint8, input='日本語', output='Python', print=print)
