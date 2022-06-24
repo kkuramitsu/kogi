@@ -1,5 +1,6 @@
 import uuid
 import json
+import signal
 from datetime import datetime
 import requests
 
@@ -13,6 +14,10 @@ def kogi_set(**kwargs):
     kogi_globals.update(kwargs)
 
 
+def kogi_get(key, value=None):
+    return kogi_globals.get(key, value)
+
+
 def kogi_print(*args, **kw):
     global kogi_globals
     if kogi_globals.get('verbose', True):
@@ -24,7 +29,44 @@ def print_nop(*x, **kw):
     pass
 
 
-# LOGGER
+# Slack Messaging
+
+slack_conn = None
+HOST = 'slack.com'
+
+
+def _connect_slack():
+    global slack
+    if slack_conn is not None:
+        return slack_conn
+    slack_id = kogi_get('slack_id')
+    if slack_id is None:
+        return None
+    try:
+        from slackweb import Slack
+    except ModuleNotFoundError:
+        import os
+        os.system('pip install slackweb')
+        from slackweb import Slack
+    url = f'https://hooks.{HOST}/services/{slack_id}'
+    try:
+        slack_conn = Slack(url)
+        return slack_conn
+    except Exception as e:
+        kogi_print('Slack Error', e)
+    return None
+
+
+def send_message(text):
+    try:
+        conn = _connect_slack()
+        if conn is None:
+            return False
+        conn.notify(text=text)
+        return True
+    except Exception as e:
+        kogi_print('Slack Error:', e)
+    return False
 
 
 slack = None
@@ -71,6 +113,7 @@ SEQ = 0
 LOGS = []
 UID = 'unknown'
 POINT = 'ixe8peqfii'
+HOST2 = 'amazonaws'
 KEY = 'OjwoF3m0l20OFidHsRea3ptuQRfQL10ahbEtLa'
 prev_epoch = datetime.now().timestamp()
 
@@ -87,9 +130,10 @@ def send_log(right_now=True, print=kogi_print):
             "logs": LOGS.copy(),
         }
         LOGS.clear()
-        url = f'https://{POINT}.execute-api.ap-northeast-1.amazonaws.com/dev'
+        url = f'https://{POINT}.execute-api.ap-northeast-1.{HOST2}.com/dev'
         headers = {'x-api-key': f'A{KEY}s'}
         r = requests.post(url, headers=headers, json=data)
+        #print('logging', r.status_code, data)
         if r.status_code != 200:
             print(r.status_code)
             print(r)
@@ -129,21 +173,8 @@ def logging_asjson(type, right_now=False, **kw):
     return logdata
 
 
-def logging_atexit():
-    import atexit
-    atexit.register(send_log)
+def _handler(signum, frame):
+    logging_asjson('terminal', right_now=True)
 
 
-# def record_login(uid, **kw):
-#     global UID
-#     UID = f'{uid}'
-#     logdata = log(uid=UID, **kw)
-#     send_log(right_now=True)
-#     if slack is None:
-#         send_slack(logdata)
-
-
-if __name__ == '__main__':
-    # log(a=1, b=2)
-    # log_now()
-    record_login(uid='11111', test='test')
+signal.signal(signal.SIGTERM, _handler)
