@@ -6,6 +6,7 @@ from IPython import get_ipython
 from kogi.dialog_ast import analyze_code
 
 from kogi.liberr import catch_exception
+from .nmt import kogi_nmt_talk, kogi_nmt_wakeup
 from .utils import listfy, zen2han, remove_suffixes
 from .logger import send_log, kogi_print, send_slack, print_nop
 
@@ -78,19 +79,19 @@ HINT = {
 
 # コード翻訳
 
-code_nmt = None
-
-
-def kogi_set_codenmt(nmt_fn):
-    global code_nmt
-    code_nmt = nmt_fn
-
 
 def response_codenmt(text: str, slots: dict):
-    global code_nmt
-    if code_nmt is None:
-        return 'わん'
-    return code_nmt(text)
+    res = kogi_nmt_talk(text)
+    if res is not None:
+        return res
+    return 'コギーは、まだ眠む眠む..'
+
+
+def response_talknmt(text: str, slots: dict):
+    res = kogi_nmt_talk(f'talk: {text}')
+    if res is not None:
+        return res
+    return 'コギーは、まだ眠む眠む..'
 
 
 class Chatbot(object):
@@ -108,6 +109,9 @@ class Chatbot(object):
         self.slots['user_inputs'].append(text)
         if startswith(text, ('質問')):
             return 'Slackに転送したよ！返事はまってね'
+        if startswith(text, ('起き', '寝るな', '寝ない')):
+            kogi_nmt_wakeup()
+            return 'おはようございます'
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
         if startswith(text, ('デバッグ', '助けて', 'たすけて', '困った')):
@@ -144,7 +148,7 @@ class Chatbot(object):
         send_slack(self.slots)
         if startswith(text, ('コギー', 'コーギー', '変', 'おい')):
             return 'がるるるる...'
-        return self.response_code(text)
+        return response_talknmt(text, self.slots)
 
     def response_vow(self, text):
         return "わん"

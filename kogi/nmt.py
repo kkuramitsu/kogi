@@ -151,7 +151,6 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
             return_tensors='pt').input_ids.to(device)
         greedy_output = model.generate(input_ids, max_length=max_length)
         t = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
-        print('logging', log_class)
         if log_class is not None:
             logging_asjson('nmt', right_now=True,
                            mode_id=model_id,
@@ -166,9 +165,15 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
 _kogi_nmt_fn = None
 
 
-def get_kogi_nmt():
+def kogi_nmt_wakeup(model_id='kkuramitsu/kogi-mt5-test'):
     global _kogi_nmt_fn
-    return _kogi_nmt_fn
+    _kogi_nmt_fn = load_mt5(model_id, log_class='wakeup')
+
+
+def kogi_nmt_talk(s: str, beam=1):
+    if _kogi_nmt_fn is not None:
+        return _kogi_nmt_fn(s, beam=beam)
+    return None
 
 
 def _transform_nop(text: str):
@@ -182,8 +187,7 @@ def nmt(model_id, load_nmt=load_mt5, log_class=None, kogi_mode=False,
     global _kogi_nmt_fn
     nmt_fn = load_nmt(model_id, qint8=qint8, device=device,
                       log_class=log_class, print=print)
-    if kogi_mode:
-        _kogi_nmt_fn = nmt_fn
+    _kogi_nmt_fn = nmt_fn
 
     cached = {'': ''}
 
