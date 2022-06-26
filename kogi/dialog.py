@@ -108,13 +108,13 @@ class Chatbot(object):
             self.slots['user_inputs'] = []
         self.slots['user_inputs'].append(text)
         if startswith(text, ('質問')):
-            return 'Slackに転送したよ！返事はまってね'
+            return self.response_question(text)
         if startswith(text, ('起き', '寝るな', '寝ない')):
             kogi_nmt_wakeup()
             return 'おはようございます'
         text = zen2han(text)
         text = remove_suffixes(text, REMOVED_SUFFIXES)
-        if startswith(text, ('デバッグ', '助けて', 'たすけて', '困った')):
+        if startswith(text, ('デバッグ', '助けて', 'たすけて', '困った', '分析', '調べて')):
             if 'fault_vars' in self.slots:
                 return self.slots['fault_vars']
             else:
@@ -150,14 +150,24 @@ class Chatbot(object):
             return 'がるるるる...'
         return response_talknmt(text, self.slots)
 
-    def response_vow(self, text):
-        return "わん"
-
-    def response_translate(self, text):
-        return response_translate(text)
+    def response_question(self, text):
+        send_slack(dict(
+            type='dialog_question',
+            text=text,
+            context=self.slots,
+        ))
+        return 'わん！わん！わん！ 先生を呼んでみました'
 
     def response_desc(self, text):
-        return response_translate(text)
+        send_slack(dict(
+            type='dialog_desc',
+            code=self.slots.get('code', ''),
+            text=text,
+        ))
+        return 'コギーの苦手な内容だから、TAさんに質問を転送したよ'
+
+    def response_vow(self, text):
+        return "わん"
 
     def response_code(self, text):
         return self.response_vow(text)
@@ -205,17 +215,6 @@ def thinking(slots):
         if text in HINT:
             text = HINT[text]
             slots['hint'] = text
-    # if 'reason' in slots:
-    #     text = slots['reason']
-    # else:
-    #     if 'fault_lines' in slots:
-    #         slots['reason'] = slots['fault_lines'][0]
-    #     else:
-    #         slots['reason'] = f'原因は、たぶん... '
-    # if 'solution' in slots:
-    #     text = slots['solution']
-    # else:
-    #     slots['solution'] = f'解決策は... (次のバージョン更新をお待ちください）'
 
 
 def show_slots(slots, print=kogi_print):
