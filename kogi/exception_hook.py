@@ -3,7 +3,7 @@ import sys
 from functools import wraps
 
 #from kogi.problem import run_judge
-from .logger import kogi_print, log
+from .logger import kogi_print, logging_json
 
 # try:
 #     from IPython import get_ipython
@@ -44,12 +44,9 @@ def change_showtraceback(func, kogi_catch):
         sys_exc = sys.exc_info()
         value = func(*args, **kwargs)
         try:
-            # ipyshell = args[0]
-            # if hasattr(ipyshell, 'run_cell_raw_cell'):
-            #     raw_cell = ipyshell.run_cell_raw_cell
-            # else:
-            #     raw_cell = None
-            kogi_catch(sys_exc, code=None)
+            ipyshell = args[0]
+            code = ipyshell.user_global_ns['In'][-1]
+            kogi_catch(sys_exc, code=code, logging_json=logging_json)
         except:
             traceback.print_exc()
         return value

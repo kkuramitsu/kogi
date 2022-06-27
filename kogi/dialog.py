@@ -145,9 +145,6 @@ class Chatbot(object):
                 return self.slots['hint']
             else:
                 return 'ヒントなし'
-        send_slack(self.slots)
-        if startswith(text, ('コギー', 'コーギー', '変', 'おい')):
-            return 'がるるるる...'
         return response_talknmt(text, self.slots)
 
     def response_question(self, text):
@@ -320,7 +317,10 @@ def start_dialog(slots: dict, logging_json=None):
         _start_chat(chatbot, dialog_slots['translated'])
     else:
         kogi_print('コギーは、未知のエラーに驚いた（みんながいじめるので隠れた）')
-        send_slack(slots)
+        if logging_json is not None:
+            slots['type'] = 'unknown_emsg'
+            print(slots)
+            logging_json(**slots)
 
 
 def kogi_catch(exc_info=None, code: str = None, context: dict = None, enable_dialog=True, logging_json=None):

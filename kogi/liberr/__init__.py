@@ -23,16 +23,18 @@ def catch_exception(exc_info=None, code=None, include_translated=True, include_l
 
     stacks = []
     stack_vars = []
+    eline = None
+    elineno = None
     while tb:
         filename = tb.tb_frame.f_code.co_filename
         if '<string>' in filename and code is not None:
             name = tb.tb_frame.f_code.co_name
-            lineno = tb.tb_lineno
+            elineno = tb.tb_lineno
             lines = code.splitlines()
-            line = lines[lineno-1].strip()
+            eline = lines[lineno-1].strip()
             stacks.append(dict(filename=filename,
                                etype=f'{etype.__name__}', emsg=emsg,
-                               name=name, lineno=lineno, line=line))
+                               name=name, lineno=elineno, line=eline))
             stack_vars.append(local_vars)
         elif 'lib' not in filename:
             name = tb.tb_frame.f_code.co_name
@@ -43,6 +45,9 @@ def catch_exception(exc_info=None, code=None, include_translated=True, include_l
                                etype=f'{etype.__name__}', emsg=emsg,
                                name=name, lineno=lineno, line=line))
             stack_vars.append(local_vars)
+            if code is not None and line in code:
+                elineno = lineno
+                eline = line.strip()
         tb = tb.tb_next
     results = dict(etype=f'{etype.__name__}',
                    emsg=emsg, traceback=list(stacks[::-1]))
@@ -54,22 +59,24 @@ def catch_exception(exc_info=None, code=None, include_translated=True, include_l
         results.update(_defaultErrorModel.get_slots(emsg))
     if logging_json is not None:
         logging_json(
-            type='exception_hook', code=code, emsg=emsg,
-            traceback=results['traceback']
+            type='exception_hook',
+            code=code, emsg=emsg,
+            traceback=results['traceback'],
+            elineno=elineno, eline=eline
         )
     return results
 
 
-def kogi_catch(exc_info=None, code: str = None, context: dict = None, dialog=None, logging_json=None):
-    if exc_info is None:
-        exc_info = sys.exc_info()
-    slots = catch_exception(exc_info, code=code, logging_json=logging_json)
-    if context is not None:
-        slots.update(context)
-    if dialog is None:
-        print(slots)
-    else:
-        dialog(slots, logging_json=logging_json)
+# def kogi_catch(exc_info=None, code: str = None, context: dict = None, dialog=None, logging_json=None):
+#     if exc_info is None:
+#         exc_info = sys.exc_info()
+#     slots = catch_exception(exc_info, code=code, logging_json=logging_json)
+#     if context is not None:
+#         slots.update(context)
+#     if dialog is None:
+#         print(slots)
+#     else:
+#         dialog(slots, logging_json=logging_json)
 
 
 def print_exec_exception(code):
