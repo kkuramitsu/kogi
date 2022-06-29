@@ -1,8 +1,6 @@
 import builtins
-from IPython.display import display, HTML
-from IPython import get_ipython
+#from IPython import get_ipython
 from kogi.dialog import kogi_catch
-from kogi.liberr import kogi_print_exec
 from .timeout import exec_with_timeout
 from .judge import render_result, render_footer
 

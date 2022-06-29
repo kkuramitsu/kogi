@@ -1,7 +1,6 @@
-from inspect import isclass
 import sys
 import linecache
-from traceback import print_exception
+from numbers import Number
 
 
 def bold(s):
@@ -34,26 +33,36 @@ def cyan(s):
 
 dots = green('...')
 
+
+def _repr_list(value):
+    if len(value) > 1:
+        return f'[{value[0]}, {dots}]'
+    return '[]'
+
+
 REPR_VALUE = {
 
 }
 
 
-def kogi_register_repr(typename, repr_func):
-    REPR_VALUE[typename] = repr_func
+def kogi_register_repr(value_or_typename, repr_func):
+    if not isinstance(value_or_typename, str):
+        value_or_typename = type(value_or_typename).__name__
+    REPR_VALUE[kogi_register_repr] = repr_func
 
 
 def repr_value(value):
     typename = type(value).__name__
     if typename in REPR_VALUE:
         return REPR_VALUE[typename](value)
-    if hasattr(value, '__name__'):
-        return cyan(f'({typename})')+value.__name__
-    if isinstance(value, list) and len(value) > 1:
-        return f'[{value[0]}, {dots}]'
     if isinstance(value, str):
-        return red(repr(value))
-    return repr(value)
+        s = repr(value)
+        if len(s) > 32:
+            s = s[:32] + dots
+        return red(s)
+    if isinstance(value, Number) or value is None:
+        return repr(value)
+    return cyan(f'({typename})')
 
 
 def repr_vars(vars):
@@ -61,7 +70,9 @@ def repr_vars(vars):
     for key, value in vars.items():
         if key.startswith('_'):
             continue
-        ss.append(f'{bold(key)}={repr_value(value)}')
+        value = repr_value(value)
+        if value is not None:
+            ss.append(f'{bold(key)}={value}')
     return ' '.join(ss)
 
 
@@ -103,6 +114,8 @@ def print_func(filename, funcname, local_vars):
             filename = f'[{t[2]}]'
     if '/ipykernel_' in filename:
         print(f'{bold(funcname)} {repr_vars(local_vars)}')
+    elif filename.endswith('.py'):
+        print(f'"{glay(filename)}" {bold(funcname)}')
     else:
         print(f'"{glay(filename)}" {bold(funcname)} {repr_vars(local_vars)}')
 

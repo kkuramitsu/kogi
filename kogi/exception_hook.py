@@ -65,16 +65,16 @@ def kogi_run_cell(ipy, raw_cell, kwargs):
     result = None
     if '# kogi' in raw_cell:
         _, _, cmd = raw_cell.partition('# kogi')
-        directive, _, _ = cmd.partitin('\n')
+        directive, _, _ = cmd.partition('\n')
     if directive is None and '#kogi' in raw_cell:
         _, _, cmd = raw_cell.partition('#kogi')
-        directive, _, _ = cmd.partitin('\n')
+        directive, _, _ = cmd.partition('\n')
     if directive is not None:
         directive = directive.strip()
         for detector in DETECTOR:
             key = detector(directive, raw_cell)
-            if key is not None and key in RUNNER:
-                result = RUNNER[key](ipy, raw_cell, kwargs)
+            if key in RUNNER:
+                result = RUNNER[key](ipy, raw_cell, directive)
                 if not isinstance(result, ExecutionResult):
                     result = RUN_CELL(ipy, 'pass', **kwargs)
                 return result
@@ -111,7 +111,7 @@ def change_showtraceback(func):
     return showtraceback
 
 
-def enable_kogi_hook(run_judge, kogi_catch0):
+def enable_kogi_hook():
     InteractiveShell.run_cell = change_run_cell(RUN_CELL)
     InteractiveShell.showtraceback = change_showtraceback(SHOW_TRACEBACK)
     InteractiveShell.showsyntaxerror = change_showtraceback(SHOW_SYNTAXERROR)

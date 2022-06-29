@@ -16,7 +16,7 @@ def atcoder_judge(ipy, raw_cell, directive):
         kogi_print(data['error'])
     elif 'problem_id' in data:
         kogi_print('コギーがAtCoderの問題を発見し、テストケースを実行しようとしています')
-        kogi_judge(raw_cell, data, judge_cpc)
+        kogi_judge(ipy, raw_cell, data, judge_cpc)
     else:
         kogi_print('問題が見つかりません。')
     return None
