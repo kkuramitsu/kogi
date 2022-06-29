@@ -108,7 +108,7 @@ def filter_globals(vars, code):
 
 
 def print_func(filename, funcname, local_vars):
-    if funcname.startswith('<ipython-input-'):
+    if filename.startswith('<ipython-input-'):
         t = funcname.split('-')
         if len(t) > 2:
             filename = f'[{t[2]}]'
