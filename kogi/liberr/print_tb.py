@@ -70,6 +70,10 @@ def getline(filename, lines, n):
         if 0 <= n-1 < len(lines):
             return lines[n-1]
         return ''
+    if filename == '<unknown>':
+        if 0 <= n-1 < len(lines):
+            return lines[n-1]
+        return ''
     return linecache.getline(filename, n).rstrip()
 
 
@@ -119,13 +123,12 @@ def print_header(etype):
     print(bold(red(etype)))
 
 
-def print_syntax_error(code, exception, slots=''):
-    lines = code.splitlines()
+def print_syntax_error(lines, exception, slots=''):
     filename = exception.filename
     slots['lineno'] = lineno = exception.lineno
     slots['line'] = text = exception.text
-    slots['offset'] = exception.offset
-    print_func(filename, f'[lineno: {lineno}]', {})
+    slots['offset'] = offset = exception.offset
+    print_func(filename, f'[lineno: {lineno} offset: {offset}]', {})
     if lineno-2 > 0:
         print(arrow(lineno-2), getline(filename, lines, lineno-2))
     if lineno-1 > 0:
@@ -163,21 +166,22 @@ def kogi_print_exc(code='', exc_info=None, exception=None):
     repeated = 0
     while tb:
         filename = tb.tb_frame.f_code.co_filename
-        funcname = tb.tb_frame.f_code.co_name
-        lineno = tb.tb_lineno
-        local_vars = filter_globals(tb.tb_frame.f_locals, code)
-        cur = (filename, funcname, lineno)
-        if cur != prev:
-            if repeated > 10:
-                print(f'... repeated {red(str(repeated))} times ...')
-            print_func(filename, funcname, local_vars)
-            print_linecode(filename, lines, lineno)
-            repeated = 0
-        else:
-            if repeated < 10:
+        if 'site-packages' not in filename:
+            funcname = tb.tb_frame.f_code.co_name
+            lineno = tb.tb_lineno
+            local_vars = filter_globals(tb.tb_frame.f_locals, code)
+            cur = (filename, funcname, lineno)
+            if cur != prev:
+                if repeated > 10:
+                    print(f'... repeated {red(str(repeated))} times ...')
                 print_func(filename, funcname, local_vars)
-            repeated += 1
-        prev = cur
+                print_linecode(filename, lines, lineno)
+                repeated = 0
+            else:
+                if repeated < 10:
+                    print_func(filename, funcname, local_vars)
+                repeated += 1
+            prev = cur
         tb = tb.tb_next
 
     print(f"{bold(red(etype.__name__))}: {bold(evalue)}")

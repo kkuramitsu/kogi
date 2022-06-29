@@ -1,25 +1,22 @@
 import traceback
 from kogi.logger import kogi_print
-from .judge import judge
-from .atcoder import download_atcoder_data
+from .drill import kogi_judge, judge_cpc
+from .atcoder import download_atcoder_problem
 
 
-def run_judge(code):
-    try:
-        url = None
-        for line in code.splitlines():
-            if '#' in line and 'https://atcoder.jp/contests/' in line:
-                _, urlbase, problem = line.partition(
-                    'https://atcoder.jp/contests/')
-                url = urlbase + problem.strip()
-                break
-        if url is not None:
-            data = download_atcoder_data(url)
-            if 'problem_id' in data:
-                kogi_print('コギーがAtCoderを探知し、テストケースを実行しました')
-                judge(code, data)
-                return 'pass\n'
-        return code
-    except:
-        traceback.print_exc()
-    return code
+def atcoder_detector(directive, raw_cell):
+    if 'https://atcoder.jp/contests/' in directive:
+        return 'atcoder'
+    return None
+
+
+def atcoder_judge(ipy, raw_cell, directive):
+    data = download_atcoder_problem(directive)
+    if 'error' in data:
+        kogi_print(data['error'])
+    elif 'problem_id' in data:
+        kogi_print('コギーがAtCoderの問題を発見し、テストケースを実行しようとしています')
+        kogi_judge(raw_cell, data, judge_cpc)
+    else:
+        kogi_print('問題が見つかりません。')
+    return None

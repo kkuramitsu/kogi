@@ -2,7 +2,7 @@ import builtins
 from IPython.display import display, HTML
 from IPython import get_ipython
 from .timeout import exec_with_timeout
-from kogi.exception_hook import SHOW_TRACEBACK, SHOW_SYNTAXERROR
+# from kogi.exception_hook import SHOW_TRACEBACK, SHOW_SYNTAXERROR
 from kogi.dialog import kogi_catch
 
 _lines = None

@@ -6,6 +6,7 @@ from IPython import get_ipython
 from kogi.dialog_ast import analyze_code
 
 from kogi.liberr import catch_exception
+from kogi.liberr.print_tb import kogi_print_exc
 from .nmt import kogi_nmt_talk, kogi_nmt_wakeup
 from .utils import listfy, zen2han, remove_suffixes
 from .logger import send_log, kogi_print, send_slack, print_nop
@@ -323,9 +324,11 @@ def start_dialog(slots: dict, logging_json=None):
             logging_json(**slots)
 
 
-def kogi_catch(exc_info=None, code: str = None, context: dict = None, enable_dialog=True, logging_json=None):
+def kogi_catch(exc_info=None, code: str = None, context: dict = None, exception=None, print_tb=True, enable_dialog=True, logging_json=None):
     if exc_info is None:
         exc_info = sys.exc_info()
+    if print_tb:
+        kogi_print_exc(code=code, exc_info=exc_info, exception=exception)
     slots = catch_exception(exc_info, code=code, logging_json=logging_json)
     if context is not None:
         slots.update(context)

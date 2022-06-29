@@ -1,24 +1,20 @@
 import requests
 from requests.exceptions import Timeout
 from bs4 import BeautifulSoup
+
 SAMPLE = {}
 
 
-def download_atcoder_data(url):
+def download_atcoder_sample(url):
     if '?' in url:
         url, _, _ = url.rpartition('?')
     _, _, problem_id = url.rpartition('/')
     if problem_id in SAMPLE:
         return SAMPLE[problem_id]
     # try:
-    try:
-        response = requests.get(url)
-    except Timeout:
-        kogi_print('ネットの接続ができず、データがダウンロードできませんでした.')
-        return {}
-
-    if response.status_code == 404:
-        return {}
+    response = requests.get(url, timeout=(3.0, 7.5))
+    if response.status_code != 200:
+        return {'error': f'読み込めません {response.status_code} {url}'}
     response_text = response.text
     html = BeautifulSoup(response_text, "lxml")
     d = {}
@@ -41,6 +37,57 @@ def download_atcoder_data(url):
     return data
 
 
+# https://zenn.dev/hellorusk/articles/copy-from-blog-20210211
+DROPBOX = 'https://www.dropbox.com/sh/nx3tnilzqz7df8a/AABP2YNyT09nYDTLV7d9bPwka/ABC102/A/in/sample_01.txt'
+HOST = 'https://www.dropbox.com/sh/nx3tnilzqz7df8a/AACe0splFqRfbrMiRu41zmLna'
+
+
+def download_atcoder_problem(directive):
+    ss = directive.split()
+    try:
+        data = download_atcoder_sample(ss[0])
+        return data
+    except Timeout:
+        return dict(error='ネットワーク接続できません')
+    # problem_id = data['problem_id'].replace('_', '/').upper()
+    # print(problem_id, ss)
+    # for filename in ss[1:]:
+    #     if not filename.endswith('.txt'):
+    #         continue
+    #     key = f'{problem_id}/{filename}'
+    #     if key in SAMPLE:
+    #         p = SAMPLE[key]
+    #         data['testcases'].append(p)
+    #         continue
+    #     url = f'{HOST}/{problem_id}/in/{filename}?dl=0'
+    #     print(url)
+    #     response = requests.get(url, timeout=(3.0, 7.5))
+    #     print(response.status_code)
+    #     if response.status_code != 200:
+    #         print('ファイルがありません', url)
+    #         continue
+    #     history = response.history
+    #     if history:
+    #         print('history:', history)
+    #         print('history_url:', history[0].url)
+    #         print('history_status_code:', history[0].status_code)
+    #     input_text = response.text
+    #     print(input_text)
+    #     print(len(input_text))
+    #     url = f'{HOST}/{problem_id}/out/{filename}?dl=0'
+    #     print(url)
+    #     response = requests.get(url, timeout=(3.0, 7.5))
+    #     print(response.status_code)
+    #     if response.status_code != 200:
+    #         print('ファイルがありません', url)
+    #         continue
+    #     output_text = response.text
+    #     p = dict(title=filename, input=input_text, output=output_text)
+    #     SAMPLE[key] = p
+    #     data['testcases'].append(p)
+    # return data
+
+
 if __name__ == '__main__':
-    print(download_atcoder_data(
-        'https://atcoder.jp/contests/abc204/tasks/abc204_z'))
+    download_atcoder_problem(
+        'https://atcoder.jp/contests/abc204/tasks/abc204_a random00.txt')
