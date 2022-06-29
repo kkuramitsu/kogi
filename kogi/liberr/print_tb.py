@@ -1,5 +1,7 @@
+from inspect import isclass
 import sys
 import linecache
+from traceback import print_exception
 
 
 def bold(s):
@@ -91,7 +93,14 @@ def filter_globals(vars, code):
 
 
 def print_func(filename, funcname, local_vars):
-    print(f'"{glay(filename)}" {bold(funcname)} {repr_vars(local_vars)}')
+    if funcname.startswith('<ipython-input-'):
+        t = funcname.split('-')
+        if len(t) > 2:
+            filename = f'[{t[2]}]'
+    if '/ipykernel_' in filename:
+        print(f'{bold(funcname)} {repr_vars(local_vars)}')
+    else:
+        print(f'"{glay(filename)}" {bold(funcname)} {repr_vars(local_vars)}')
 
 
 def print_linecode(filename, lines, lineno):
@@ -104,12 +113,52 @@ def print_linecode(filename, lines, lineno):
     print(arrow(lineno+2), getline(filename, lines, lineno+2))
 
 
-def kogi_print_exc(code='', exc_info=None):
+def print_header(etype):
+    print(red('-'*79))
+    etype = str(etype.__name__).ljust(46) + ' Traceback(most recent call last)'
+    print(bold(red(etype)))
+
+
+def print_syntax_error(code, exception, slots=''):
+    lines = code.splitlines()
+    filename = exception.filename
+    slots['lineno'] = lineno = exception.lineno
+    slots['line'] = text = exception.text
+    slots['offset'] = exception.offset
+    print_func(filename, f'[lineno: {lineno}]', {})
+    if lineno-2 > 0:
+        print(arrow(lineno-2), getline(filename, lines, lineno-2))
+    if lineno-1 > 0:
+        print(arrow(lineno-1), getline(filename, lines, lineno-1))
+    print(arrow(lineno, here=True), getline(filename, lines, lineno))
+    offset = max(0, offset-1)
+    print(arrow(lineno), ' '*offset+bold(red('^^')))
+    print(f"{bold(red(exception.__class__.__name__))}: {bold(exception.msg)}")
+    return slots
+
+
+def kogi_print_exc(code='', exc_info=None, exception=None):
     if exc_info is None:
         etype, evalue, tb = sys.exc_info()
     else:
         etype, evalue, tb = exc_info
+    slots = dict(
+        code=code,
+        emsg=(f'{etype}: {evalue}').strip()
+    )
     lines = code.splitlines()
+
+    if isinstance(exception, SyntaxError):
+        return print_syntax_error(lines, exception, slots)
+    if exception is None and issubclass(etype, SyntaxError):
+        try:
+            raise
+        except SyntaxError as e:
+            exception = e
+        return print_syntax_error(lines, exception, slots)
+
+    print_header(etype)
+
     prev = None
     repeated = 0
     while tb:
@@ -132,3 +181,4 @@ def kogi_print_exc(code='', exc_info=None):
         tb = tb.tb_next
 
     print(f"{bold(red(etype.__name__))}: {bold(evalue)}")
+    return slots
