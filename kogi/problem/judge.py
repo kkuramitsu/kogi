@@ -31,7 +31,8 @@ def print_for_judge(*a, **kw):
 def judge(code, data):
     global _lines, _outputs
     problem_id = data['problem_id']
-    local_vars = {
+    # global_vars = get_ipython().user_global_ns.copy()
+    global_vars = {
         'print': print_for_judge, 'input': input_for_judge,
     }
     try:
@@ -42,10 +43,10 @@ def judge(code, data):
             outputData = testcase['output']
             _lines = [s for s in inputData.split('\n') if len(s) > 0]
             _outputs = []
-            local_vars = {
-                'print': print_for_judge, 'input': input_for_judge,
-            }
-            exec_with_timeout(code, None, local_vars, 10)
+            # local_vars = {
+            #     'print': print_for_judge, 'input': input_for_judge,
+            # }
+            exec_with_timeout(code, global_vars, None, 10)
             resultData = ''.join(_outputs)
             ac += 1 if outputData == resultData else 0
             render_result(title, inputData, resultData, outputData)
@@ -59,11 +60,9 @@ def judge(code, data):
         kogi_catch(code=code, context=slots)
     except:
         SHOW_TRACEBACK(get_ipython())
-        del local_vars['print']
-        del local_vars['input']
         slots = dict(
             problem_id=problem_id,
-            vars=local_vars
+            vars=global_vars,
         )
         kogi_catch(code=code, context=slots)
     finally:

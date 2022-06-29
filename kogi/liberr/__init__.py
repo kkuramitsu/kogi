@@ -31,7 +31,7 @@ def catch_exception(exc_info=None, code=None, include_translated=True, include_l
             name = tb.tb_frame.f_code.co_name
             elineno = tb.tb_lineno
             lines = code.splitlines()
-            eline = lines[lineno-1].strip()
+            eline = lines[elineno-1].strip()
             stacks.append(dict(filename=filename,
                                etype=f'{etype.__name__}', emsg=emsg,
                                name=name, lineno=elineno, line=eline))
