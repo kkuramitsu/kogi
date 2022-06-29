@@ -179,7 +179,7 @@ def kogi_print_exc(code='', exc_info=None, exception=None):
     repeated = 0
     while tb:
         filename = tb.tb_frame.f_code.co_filename
-        if 'site-packages' not in filename:
+        if '-packages/' not in filename:
             funcname = tb.tb_frame.f_code.co_name
             lineno = tb.tb_lineno
             local_vars = filter_globals(tb.tb_frame.f_locals, code)
