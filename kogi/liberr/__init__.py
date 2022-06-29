@@ -4,6 +4,7 @@ import json
 import traceback
 
 from kogi.liberr.emodel import ErrorModel, extract_params_from_error
+from kogi.liberr.print_tb import kogi_print_exc, kogi_register_repr
 
 
 class KogiError(Exception):
@@ -65,35 +66,3 @@ def catch_exception(exc_info=None, code=None, include_translated=True, include_l
             elineno=elineno, eline=eline
         )
     return results
-
-
-# def kogi_catch(exc_info=None, code: str = None, context: dict = None, dialog=None, logging_json=None):
-#     if exc_info is None:
-#         exc_info = sys.exc_info()
-#     slots = catch_exception(exc_info, code=code, logging_json=logging_json)
-#     if context is not None:
-#         slots.update(context)
-#     if dialog is None:
-#         print(slots)
-#     else:
-#         dialog(slots, logging_json=logging_json)
-
-
-def print_exec_exception(code):
-    etype, evalue, tb = sys.exc_info()
-    emsg = (f"{etype.__name__}: {evalue}").strip()
-    print(emsg)
-    print('エラーが発生した箇所')
-    lines = code.splitlines()
-    while tb:
-        filename = tb.tb_frame.f_code.co_filename
-        name = tb.tb_frame.f_code.co_name
-        lineno = tb.tb_lineno
-        if '<string>' in filename:
-            line = lines[lineno-1]
-            print(f'line {lineno}, in {name}\n\t{line.strip()}')
-            # "/Users/kimio/Git/kogi/kogi/problem/judge.py", line 47, in judge
-        # else:
-        #     line = linecache.getline(filename, lineno, tb.tb_frame.f_globals)
-        #     print(f'{filename}, line {lineno} in {name}\n\t{line.strip()}')
-        tb = tb.tb_next
