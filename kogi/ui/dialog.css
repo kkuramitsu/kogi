@@ -1,22 +1,13 @@
-/* html {
+html {
     --box-background: powderblue;
     --talk-background: #eee;
     --talk-color: #333;
 
     --button-color: #333;
     --button-text: #AAA;
-} */
-
-html[theme=dark] {
-    --box-background: midnightblue;
-    --talk-background: #333;
-    --talk-color: #eee;
-
-    --button-color: #AAA;
-    --button-text: #333;
 }
 
-html {
+html[theme=dark] {
     --box-background: midnightblue;
     --talk-background: #333;
     --talk-color: #eee;
