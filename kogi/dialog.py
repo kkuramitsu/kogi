@@ -232,6 +232,7 @@ def show_slots(slots, print=kogi_print):
         print(slots['hint'])
 
 
+
 # コントローラ
 try:
     from google.colab import output

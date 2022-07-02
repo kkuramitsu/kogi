@@ -1,0 +1,171 @@
+/* html {
+    --box-background: powderblue;
+    --talk-background: #eee;
+    --talk-color: #333;
+
+    --button-color: #333;
+    --button-text: #AAA;
+} */
+
+html[theme=dark] {
+    --box-background: midnightblue;
+    --talk-background: #333;
+    --talk-color: #eee;
+
+    --button-color: #AAA;
+    --button-text: #333;
+}
+
+html {
+    --box-background: midnightblue;
+    --talk-background: #333;
+    --talk-color: #eee;
+
+    --button-color: #AAA;
+    --button-text: #333;
+}
+
+.sb-box {
+    position: relative;
+    overflow: hidden;
+    background: var(--box-background)
+}
+
+/* アイコン画像 */
+.icon-img {
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    width: 64px;
+    height: 64px;
+}
+
+/* アイコン画像（左） */
+.icon-img-left {
+    left: 0;
+}
+
+/* アイコン画像（右） */
+.icon-img-right {
+    right: 0;
+}
+
+/* アイコン画像 */
+.icon-img img {
+    border-radius: 50%;
+    border: 2px solid var(--talk-background);
+}
+
+/* アイコンネーム */
+.icon-name {
+    position: absolute;
+    width: 64px;
+    text-align: center;
+    top: 68px;
+    color: var(--talk-color);
+    font-size: 10px;
+}
+
+/* アイコンネーム（左） */
+.icon-name-left {
+    left: 0;
+}
+
+/* アイコンネーム（右） */
+.icon-name-right {
+    right: 0;
+}
+
+/* 吹き出し */
+.sb-side {
+    position: relative;
+    float: left;
+    margin: 0 85px 20px 85px;
+}
+
+.sb-side-right {
+    float: right;
+}
+
+/* 吹き出し内のテキスト */
+.sb-txt {
+    position: relative;
+    border: 2px solid var(--talk-background);
+    border-radius: 6px;
+    background: var(--talk-background);
+    color: var(--talk-color);
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 8px;
+}
+
+.sb-txt>p:last-of-type {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+/* 吹き出しの三角 */
+.sb-txt:before {
+    content: "";
+    position: absolute;
+    border-style: solid;
+    top: 16px;
+    z-index: 3;
+}
+
+.sb-txt:after {
+    content: "";
+    position: absolute;
+    border-style: solid;
+    top: 15px;
+    z-index: 2;
+}
+
+/* 吹き出しの三角（左） */
+.sb-txt-left:before {
+    left: -7px;
+    border-width: 7px 10px 7px 0;
+    border-color: transparent var(--talk-background) transparent transparent;
+}
+
+.sb-txt-left:after {
+    left: -10px;
+    border-width: 8px 10px 8px 0;
+    border-color: transparent var(--talk-background) transparent transparent;
+}
+
+/* 吹き出しの三角（右） */
+.sb-txt-right:before {
+    right: -7px;
+    border-width: 7px 0 7px 10px;
+    border-color: transparent transparent transparent var(--talk-background);
+}
+
+.sb-txt-right:after {
+    right: -10px;
+    border-width: 8px 0 8px 10px;
+    border-color: transparent transparent transparent var(--talk-background);
+}
+
+.box {
+    background: --box-background;
+    overflow-y: scroll;
+    height: 200px
+}
+
+.scrolly {
+    overflow-y: scroll;
+}
+
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    /* ※これがないと横にはみ出る */
+    height: 30px;
+    font-size: large;
+    outline: none;
+    /* ※ブラウザが標準で付加する線を消したいとき */
+    resize: none;
+    background: var(--talk-background);
+    color: var(--talk-color);
+}
