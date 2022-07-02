@@ -151,6 +151,16 @@ def display_dialog(placeholder='質問はこちらに'):
         data.update(kwargs)
         kogi_print(user_text, **data)
 
+    def ask(user_text):
+        dialog_user(user_text)
+        dialog_bot('わん')
+
+    try:
+        from google.colab import output
+        output.register_callback('notebook.ask', ask)
+    except ModuleNotFoundError:
+        pass
+
     return dialog_bot, dialog_user
 
 
