@@ -13,5 +13,8 @@ inputPane.addEventListener('keydown', (e) => {
         }, 1000 * 60 * 5);
     }
 });
-var target = document.getElementById('output');
-target.scrollIntoView(false);
+inputPane.addEventListener('focusin', (e) => {
+    inputPane.style.height = 200;
+});
+// var target = document.getElementById('output');
+// target.scrollIntoView(false);

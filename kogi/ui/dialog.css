@@ -1,19 +1,16 @@
+/* https: //note.com/rocky_days_/n/n5ce4576abca5 */
 html {
-    --box-background: powderblue;
+    --box-background: #9CC5E6;
+    /* 勿忘草（わすれなぐさ） */
     --talk-background: #eee;
     --talk-color: #333;
 
-    --button-color: #333;
-    --button-text: #AAA;
 }
 
 html[theme=dark] {
-    --box-background: midnightblue;
+    --box-background: #324356;
     --talk-background: #333;
     --talk-color: #eee;
-
-    --button-color: #AAA;
-    --button-text: #333;
 }
 
 .sb-box {
@@ -141,7 +138,7 @@ html[theme=dark] {
 .box {
     background: var(--box-background);
     overflow-y: scroll;
-    height: 200px;
+    height: 100px;
 }
 
 .scrolly {
@@ -159,4 +156,10 @@ textarea {
     resize: none;
     background: var(--talk-background);
     color: var(--talk-color);
+}
+
+textarea:focus {
+    border-color: var(--talk-color);
+    background-color: var(--talk-background);
+    outline: none;
 }
