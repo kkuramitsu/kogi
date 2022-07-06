@@ -64,6 +64,7 @@ class Chatbot(Conversation):
         self.slots['user_inputs'].append(text)
         if nlp.startswith(text, ('質問')):
             return self.response_question(text)
+        print(text, nlp.startswith(text, ('起き', '寝るな', '寝ない')))
         if nlp.startswith(text, ('起き', '寝るな', '寝ない')):
             kogi_nmt_wakeup()
             return 'おはようございます'
