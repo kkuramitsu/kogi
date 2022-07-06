@@ -27,14 +27,14 @@ def response_codenmt(text: str, slots: dict):
     res = kogi_nmt_talk(text)
     if res is not None:
         return res
-    return 'コギーは、まだ眠む眠む..'
+    return 'コギーは、眠む眠む..'
 
 
 def response_talknmt(text: str, slots: dict):
     res = kogi_nmt_talk(f'talk: {text}')
     if res is not None:
         return res
-    return 'コギーは、まだ眠む眠む..'
+    return 'コギーは、眠む眠む..'
 
 
 API_URL = "https://api-inference.huggingface.co/models/kkuramitsu/kogi-mt5-test"
