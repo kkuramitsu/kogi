@@ -14,7 +14,7 @@ from kogi.ui import kogi_display, display_dialog, Conversation
 from kogi.liberr import kogi_print_exc
 
 from .nmt import kogi_nmt_talk, kogi_nmt_wakeup
-import kogi.nlp as nlp
+import kogi.fake_nlp as nlp
 
 from .logger import send_log, kogi_print, send_slack, print_nop
 
@@ -58,6 +58,7 @@ def response_translate(text):
 class Chatbot(Conversation):
 
     def response(self, user_input):
+        text = user_input
         if 'user_inputs' not in self.slots:
             self.slots['user_inputs'] = []
         self.slots['user_inputs'].append(text)
@@ -76,7 +77,7 @@ class Chatbot(Conversation):
             text = text[:-2]
             return response_codenmt(text, self.slots)
         if text.endswith('たい'):
-            text = remove_tai(text)
+            text = nlp.remove_tai(text)
             return response_codenmt(text, self.slots)
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
