@@ -35,7 +35,7 @@ def response_codenmt(text: str, slots: dict):
     res = kogi_nmt_talk(text, beam=5)
     if res is not None:
         results, scores = res
-        print(results, scores)
+        #print(results, scores)
         return repr_liner(results)
     return 'コギーは、眠む眠む..'
 
@@ -75,6 +75,7 @@ class Chatbot(Conversation):
         if nlp.startswith(text, ('質問')):
             return self.response_question(text)
         if nlp.startswith(text, ('起き', '寝るな', '寝ない')):
+            kogi_display('あと１分！')
             kogi_nmt_wakeup()
             return 'おはようございます'
         text = nlp.normalize(user_input)

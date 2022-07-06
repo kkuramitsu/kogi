@@ -49,6 +49,9 @@ DIALOG_USER_HTML = '''
 </div>
 '''
 
+dialog_count = 0
+dialog_target = None
+
 
 def kogi_display(*args, **kwargs):
     sep = kwargs.get('sep', ' ')
@@ -62,10 +65,8 @@ def kogi_display(*args, **kwargs):
     _HTML = kwargs.get('html', DIALOG_BOT_HTML)
     html = _HTML.format(**data)
     #print('@@', html, kwargs)
-    if 'target' in kwargs:
-        target = kwargs['target']
-        #print('target', target)
-        append_content(target, html=html)
+    if dialog_target is not None:
+        append_content(dialog_target, html=html)
     else:
         display(HTML(CSS('dialog.css') + html))
 
@@ -73,7 +74,7 @@ def kogi_display(*args, **kwargs):
 DIALOG_HTML = '''
 <div id='dialog'>
     {script}
-    <div id='output' class='box'>
+    <div id='{target}' class='box'>
     </div>
     <div style='text-align: right'>
         <textarea id='input' placeholder='{placeholder}'></textarea>
@@ -103,9 +104,13 @@ class Conversation(object):
 
 
 def display_dialog(context=None, placeholder='質問はこちらに'):
+    global dialog_target, dialog_count
+    dialog_target = f'output{dialog_count}'
+    dialog_count += 1
     data = dict(
         script=JS('dialog.js'),
-        placeholder=placeholder
+        placeholder=placeholder,
+        target=dialog_target,
     )
     display(HTML(CSS('dialog.css') + DIALOG_HTML.format(**data)))
     if context is None:
@@ -116,7 +121,6 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
         data = dict(
             icon=context.get('bot_icon', 'kogi-fs8.png'),
             name=context.get('bot_name', 'コギー'),
-            target='output'
         )
         data.update(kwargs)
         kogi_display(bot_text, **data)
@@ -127,7 +131,6 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
             icon=context.get('user_icon', 'girl_think-fs8.png'),
             name=context.get('user_name', 'あなた'),
             html=DIALOG_USER_HTML,
-            target='output'
         )
         data.update(kwargs)
         kogi_display(user_text, **data)
