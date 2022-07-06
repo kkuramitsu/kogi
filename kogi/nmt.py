@@ -118,10 +118,12 @@ def check_sentencepiece():
     try:
         import sentencepiece
     except:
+        print('Installing sentencepiece')
         os.system('pip install -q sentencepiece')
     try:
         import transformers
     except:
+        print('Installing transformers')
         os.system('pip install -q transformers')
 
 
@@ -141,7 +143,7 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
         device = torch.device(device)
     model.to(device)
 
-    def gready_search(s: str, max_length=128, beam=1) -> str:
+    def gready_search(s: str, max_length=128, beam=5) -> str:
         input_ids = tokenizer.encode_plus(
             s,
             add_special_tokens=True,
@@ -149,16 +151,35 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
             padding="do_not_pad",
             truncation=True,
             return_tensors='pt').input_ids.to(device)
-        greedy_output = model.generate(input_ids, max_length=max_length)
-        t = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
-        if log_class is not None:
-            logging_asjson('nmt', right_now=True,
-                           mode_id=model_id,
-                           log_class=log_class,
-                           input=s,
-                           output=t,
-                           )
-        return t
+        if beam == 1:  # greedy_search
+            greedy_output = model.generate(input_ids, max_length=max_length)
+            t = tokenizer.decode(greedy_output[0], skip_special_tokens=True)
+            if log_class is not None:
+                logging_asjson('nmt', right_now=True,
+                               mode_id=model_id,
+                               log_class=log_class,
+                               input=s,
+                               output=t,
+                               )
+            return t
+        # beem_search
+        outputs = model.generate(
+            input_ids,
+            # max_length=max_length,
+            return_dict_in_generate=True, output_scores=True,
+            temperature=1.0,          # 生成にランダム性を入れる温度パラメータ
+            diversity_penalty=1.0,    # 生成結果の多様性を生み出すためのペナルティ
+            num_beams=beam,
+            #            no_repeat_ngram_size=2,
+            num_beam_groups=beam,
+            num_return_sequences=beam,
+            repetition_penalty=1.5,   # 同じ文の繰り返し（モード崩壊）へのペナルティ
+            early_stopping=True
+        )
+        results = [tokenizer.decode(out, skip_special_tokens=True)
+                   for out in outputs.sequences]
+        scores = [float(x) for x in outputs.sequences_scores]
+        return results, scores
     return gready_search
 
 

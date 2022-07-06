@@ -23,15 +23,25 @@ DUMMY = 'rhOcswxkXzMbhlkKQJfytbfxAPVsblhRHX'
 
 # コード翻訳
 
+def repr_liner(ss):
+    ss2 = []
+    for s in ss:
+        if s not in ss2:
+            ss2.append(s)
+    return '<br>'.join(ss2)
+
+
 def response_codenmt(text: str, slots: dict):
-    res = kogi_nmt_talk(text)
+    res = kogi_nmt_talk(text, beam=5)
     if res is not None:
-        return res
+        results, scores = res
+        #print(results, scores)
+        return repr_liner(results)
     return 'コギーは、眠む眠む..'
 
 
 def response_talknmt(text: str, slots: dict):
-    res = kogi_nmt_talk(f'talk: {text}')
+    res = kogi_nmt_talk(f'talk: {text}', beam=1)
     if res is not None:
         return res
     return 'コギーは、眠む眠む..'
@@ -64,7 +74,6 @@ class Chatbot(Conversation):
         self.slots['user_inputs'].append(text)
         if nlp.startswith(text, ('質問')):
             return self.response_question(text)
-        print(text, nlp.startswith(text, ('起き', '寝るな', '寝ない')))
         if nlp.startswith(text, ('起き', '寝るな', '寝ない')):
             kogi_nmt_wakeup()
             return 'おはようございます'
