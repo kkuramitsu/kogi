@@ -35,7 +35,7 @@ def response_codenmt(text: str, slots: dict):
     res = kogi_nmt_talk(text, beam=5)
     if res is not None:
         results, scores = res
-        #print(results, scores)
+        print(results, scores)
         return repr_liner(results)
     return 'コギーは、眠む眠む..'
 
