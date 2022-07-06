@@ -20,6 +20,7 @@ if(target !== undefined) {{
 
 
 def append_content(target, html):
+    html = html.replace('\\', '\\\\')
     html = html.replace('`', '\\`')
     display(HTML(APPEND_JS.format(target=target, html=html)))
 
@@ -60,7 +61,7 @@ def kogi_display(*args, **kwargs):
     data['icon'] = ICON(data.get('icon', '/'))
     _HTML = kwargs.get('html', DIALOG_BOT_HTML)
     html = _HTML.format(**data)
-    print('@@', html, kwargs)
+    #print('@@', html, kwargs)
     if 'target' in kwargs:
         target = kwargs['target']
         #print('target', target)
@@ -138,7 +139,7 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
                 dialog_user(user_text)
                 bot_text = context.ask(user_text)
                 dialog_bot(bot_text)
-                print('@', bot_text)
+                #print('@', bot_text)
             except:
                 kogi_display('バグで処理に失敗しました。ごめんなさい')
                 traceback.print_exc()
