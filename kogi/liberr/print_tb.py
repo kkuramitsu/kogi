@@ -109,7 +109,7 @@ def filter_expressions(vars, exprs=None):
     return vars
 
 
-def print_func(filename, funcname, local_vars, exprs, n_args=0):
+def print_func(filename, funcname, local_vars, exprs=None, n_args=0):
     if filename.startswith('<ipython-input-'):
         t = funcname.split('-')
         if len(t) > 2:
@@ -147,8 +147,8 @@ def print_header(etype):
     print(bold(red(etype)))
 
 
-def print_syntax_error(exception, slots):
-    lines = slots['code]'].splitlines()
+def print_syntax_error(exception, slots, logging_json=None):
+    lines = slots['code'].splitlines()
     filename = exception.filename
     slots['lineno'] = lineno = exception.lineno
     slots['line'] = text = exception.text
@@ -162,13 +162,18 @@ def print_syntax_error(exception, slots):
     offset = max(0, offset-1)
     print(arrow(lineno), ' '*offset+bold(red('^^')))
     print(f"{bold(red(exception.__class__.__name__))}: {bold(exception.msg)}")
+    if logging_json is not None:
+        logging_json(
+            type='syntax_error',
+            code=slots['code'],
+            emsg=slots['emsg'],
+            lineno=lineno, line=text, offset=offset
+        )
+    translate_error(slots, logging_json=logging_json)
     return slots
 
 
-defaultErrorModel = ErrorModel('emsg_ja.txt')
-
-
-def print_tb(etype, evalue, tb, slots):
+def print_tb(etype, evalue, tb, slots, logging_json=None):
     print_header(etype)
 
     code = slots['code']
@@ -203,12 +208,33 @@ def print_tb(etype, evalue, tb, slots):
             prev = cur
         tb = tb.tb_next
     slots['traceback'] = list(stacks[::-1])
-    slots.update(defaultErrorModel.get_slots(slots['emsg']))
     print(f"{bold(red(etype.__name__))}: {bold(evalue)}")
+    if logging_json is not None:
+        logging_json(
+            type='runtime_error',
+            code=slots['code'],
+            emsg=slots['emsg'],
+            traceback=list(stacks[::-1])
+        )
+    translate_error(slots, logging_json=logging_json)
     return slots
 
 
-def kogi_print_exc(code='', exc_info=None, exception=None):
+defaultErrorModel = ErrorModel('emsg_ja.txt')
+
+
+def translate_error(slots, logging_json=None):
+    slots.update(defaultErrorModel.get_slots(slots['emsg']))
+    if logging_json is not None and 'error_key' in slots:
+        logging_json(
+            type='unknown_error',
+            emsg=slots['emsg'],
+            error_key=slots['error_key'],
+            error_params=slots['error_params']
+        )
+
+
+def kogi_print_exc(code='', exc_info=None, exception=None, logging_json=None):
     if exc_info is None:
         etype, evalue, tb = sys.exc_info()
     else:
@@ -221,11 +247,11 @@ def kogi_print_exc(code='', exc_info=None, exception=None):
         code=code,
     )
     if isinstance(exception, SyntaxError):
-        return print_syntax_error(exception, slots)
+        return print_syntax_error(exception, slots, logging_json=logging_json)
     if exception is None and issubclass(etype, SyntaxError):
         try:
             raise
         except SyntaxError as e:
             exception = e
-        return print_syntax_error(exception, slots)
-    return print_tb(etype, evalue, tb, slots)
+        return print_syntax_error(exception, slots, logging_json=logging_json)
+    return print_tb(etype, evalue, tb, slots, logging_json=logging_json)
