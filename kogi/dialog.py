@@ -27,8 +27,8 @@ def repr_liner(ss):
     ss2 = []
     for s in ss:
         if s not in ss2:
-            ss2.append(f'<code>{s}</code>')
-    return '<br>'.join(ss2)
+            ss2.append(s)
+    return '<br>'.join(f'<code>{s}</code>' for s in ss2)
 
 
 def response_codenmt(text: str, slots: dict):
