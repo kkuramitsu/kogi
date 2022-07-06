@@ -165,7 +165,7 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
             return t
         # beem_search
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore', DeprecationWarning)
+            warnings.simplefilter('ignore', UserWarning)
             outputs = model.generate(
                 input_ids,
                 # max_length=max_length,

@@ -132,9 +132,11 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
     if output is not None:
         def ask(user_text):
             try:
+                user_text = user_text.strip()
                 dialog_user(user_text)
                 bot_text = context.ask(user_text)
-                dialog_bot(bot_text.strip())
+                dialog_bot(bot_text)
+                print('@', bot_text)
             except:
                 kogi_display('バグで処理に失敗しました。ごめんなさい')
                 traceback.print_exc()
