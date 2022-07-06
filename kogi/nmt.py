@@ -1,5 +1,6 @@
 # translate
 import builtins
+import warnings
 import IPython
 from IPython.display import display, HTML
 import os
@@ -163,23 +164,25 @@ def load_mt5(model_id, qint8=True, device='cpu', log_class=None, print=print):
                                )
             return t
         # beem_search
-        outputs = model.generate(
-            input_ids,
-            # max_length=max_length,
-            return_dict_in_generate=True, output_scores=True,
-            temperature=1.0,          # 生成にランダム性を入れる温度パラメータ
-            diversity_penalty=1.0,    # 生成結果の多様性を生み出すためのペナルティ
-            num_beams=beam,
-            #            no_repeat_ngram_size=2,
-            num_beam_groups=beam,
-            num_return_sequences=beam,
-            repetition_penalty=1.5,   # 同じ文の繰り返し（モード崩壊）へのペナルティ
-            early_stopping=True
-        )
-        results = [tokenizer.decode(out, skip_special_tokens=True)
-                   for out in outputs.sequences]
-        scores = [float(x) for x in outputs.sequences_scores]
-        return results, scores
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', DeprecationWarning)
+            outputs = model.generate(
+                input_ids,
+                # max_length=max_length,
+                return_dict_in_generate=True, output_scores=True,
+                temperature=1.0,          # 生成にランダム性を入れる温度パラメータ
+                diversity_penalty=1.0,    # 生成結果の多様性を生み出すためのペナルティ
+                num_beams=beam,
+                #            no_repeat_ngram_size=2,
+                num_beam_groups=beam,
+                num_return_sequences=beam,
+                repetition_penalty=1.5,   # 同じ文の繰り返し（モード崩壊）へのペナルティ
+                early_stopping=True
+            )
+            results = [tokenizer.decode(out, skip_special_tokens=True)
+                       for out in outputs.sequences]
+            scores = [float(x) for x in outputs.sequences_scores]
+            return results, scores
     return gready_search
 
 
