@@ -27,7 +27,7 @@ def repr_liner(ss):
     ss2 = []
     for s in ss:
         if s not in ss2:
-            ss2.append(s)
+            ss2.append(f'<code>{s}</code>')
     return '<br>'.join(ss2)
 
 
@@ -200,7 +200,8 @@ def start_dialog(slots: dict, logging_json=None):
 def kogi_catch(exc_info=None, code: str = None, context: dict = None, exception=None, enable_dialog=True, logging_json=None):
     if exc_info is None:
         exc_info = sys.exc_info()
-    slots = kogi_print_exc(code=code, exc_info=exc_info, exception=exception)
+    slots = kogi_print_exc(code=code, exc_info=exc_info,
+                           exception=exception, logging_json=logging_json)
     if context is not None:
         slots.update(context)
     run_diagnosis(slots)

@@ -138,11 +138,7 @@ html[theme=dark] {
 .box {
     background: var(--box-background);
     overflow-y: scroll;
-    height: 100px;
-}
-
-.scrolly {
-    overflow-y: scroll;
+    height: 150px;
 }
 
 textarea {
@@ -158,8 +154,4 @@ textarea {
     color: var(--talk-color);
 }
 
-textarea:focus {
-    border-color: var(--talk-color);
-    background-color: var(--talk-background);
-    outline: none;
-}
+code {}

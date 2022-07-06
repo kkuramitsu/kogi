@@ -97,10 +97,10 @@ MessageError: Error: credential propagation was unsuccessful
 translated: （エラー報告）クレデンシャルの伝搬に失敗しました。
 
 ModuleNotFoundError: No module named A
-translated: Aという名前のモジュールはありません。
+translated: <code>A</code>という名前のモジュールはありません。
 
 NameError: name A is not defined
-translated: Aは未定義です。つまり、まだ代入もインポートもされていません。
+translated: <code>A</code>は未定義です。つまり、まだ代入もインポートもされていません。
 hint: スペルミスしていませんか？
 hint: インポートし忘れていませんか？
 hint: 関数やクラスを定義したセルを実行し悪れていませんか？
