@@ -60,6 +60,7 @@ def kogi_display(*args, **kwargs):
     data['icon'] = ICON(data.get('icon', '/'))
     _HTML = kwargs.get('html', DIALOG_BOT_HTML)
     html = _HTML.format(**data)
+    print('@@', html, kwargs)
     if 'target' in kwargs:
         target = kwargs['target']
         #print('target', target)
@@ -120,6 +121,7 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
         kogi_display(bot_text, **data)
 
     def dialog_user(user_text, **kwargs):
+        nonlocal context
         data = dict(
             icon=context.get('user_icon', 'girl_think-fs8.png'),
             name=context.get('user_name', 'あなた'),
