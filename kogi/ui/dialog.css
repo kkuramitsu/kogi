@@ -19,7 +19,7 @@ html[theme=dark] {
 .sb-box {
     position: relative;
     overflow: hidden;
-    background: var(--box-background)
+    /*background: var(--box-background);*/
 }
 
 /* アイコン画像 */
@@ -139,9 +139,9 @@ html[theme=dark] {
 }
 
 .box {
-    background: --box-background;
+    background: var(--box-background);
     overflow-y: scroll;
-    height: 200px
+    height: 200px;
 }
 
 .scrolly {

@@ -100,7 +100,7 @@ def change_run_cell(func):
 def change_showtraceback(func):
     @wraps(func)
     def showtraceback(*args, **kwargs):
-        # print('** new version ***')
+        print('** new version ***')
         # value = func(*args, **kwargs)
         try:
             ipyshell = args[0]

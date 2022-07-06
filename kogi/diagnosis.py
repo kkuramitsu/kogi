@@ -124,3 +124,28 @@ def analyze_code(slots):
     #print('@', ss)
     if len(ss) > 1:
         slots['fault_vars'] = ss
+
+
+def run_diagnosis(slots):
+    if 'code' not in slots:
+        try:
+            slots['code'] = get_ipython().user_global_ns['In'][-1]
+        except:
+            pass
+    if 'code' in slots and 'traceback' in slots:
+        code = slots['code']
+        lines = []
+        for data in slots['traceback']:
+            lineno = data['lineno']
+            line = data['line'].strip()
+            if line in code:
+                line = f'[{lineno}行目] {line} に変なところない？'
+                lines.append(line)
+        if len(lines) > 0:
+            slots['fault_lines'] = lines
+    analyze_code(slots)
+    # if 'problem_id' in slots:
+    #     text = slots['problem_id']
+    #     if text in HINT:
+    #         text = HINT[text]
+    #         slots['hint'] = text

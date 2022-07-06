@@ -1,3 +1,4 @@
+import traceback
 from .content import ICON, JS, CSS
 from IPython.display import display, HTML
 
@@ -6,7 +7,7 @@ try:
 except ModuleNotFoundError:
     output = None
 
-SCRIPT = '''
+APPEND_JS = '''
 <script>
 var target = document.getElementById('{target}');
 var content = `{html}`;
@@ -20,10 +21,10 @@ if(target !== undefined) {{
 
 def append_content(target, html):
     html = html.replace('`', '\\`')
-    display(HTML(SCRIPT.format(target=target, html=html)))
+    display(HTML(APPEND_JS.format(target=target, html=html)))
 
 
-_DIALOG_BOT = '''
+DIALOG_BOT_HTML = '''
 <div class="sb-box">
     <div class="icon-img icon-img-left">
         <img src="{icon}" width="60px">
@@ -35,7 +36,7 @@ _DIALOG_BOT = '''
 </div>
 '''
 
-_DIALOG_USER = '''
+DIALOG_USER_HTML = '''
 <div class="sb-box">
     <div class="icon-img icon-img-right">
         <img src="{icon}" width="60px">
@@ -48,7 +49,7 @@ _DIALOG_USER = '''
 '''
 
 
-def kogi_print(*args, **kwargs):
+def kogi_display(*args, **kwargs):
     sep = kwargs.get('sep', ' ')
     data = dict(
         text=sep.join([str(s) for s in args]),
@@ -57,7 +58,7 @@ def kogi_print(*args, **kwargs):
     )
     data.update(kwargs)
     data['icon'] = ICON(data.get('icon', '/'))
-    _HTML = kwargs.get('html', _DIALOG_BOT)
+    _HTML = kwargs.get('html', DIALOG_BOT_HTML)
     html = _HTML.format(**data)
     if 'target' in kwargs:
         target = kwargs['target']
@@ -67,7 +68,7 @@ def kogi_print(*args, **kwargs):
         display(HTML(CSS('dialog.css') + html))
 
 
-_DIALOG_MAIN = '''
+DIALOG_HTML = '''
 <div id='dialog'>
     {script}
     <div id='output' class='box'>
@@ -98,12 +99,12 @@ class Conversation(object):
         return 'わん'
 
 
-def display_dialog(placeholder='質問はこちらに', context=None):
+def display_dialog(context=None, placeholder='質問はこちらに'):
     data = dict(
         script=JS('dialog.js'),
         placeholder=placeholder
     )
-    display(HTML(CSS('dialog.css') + _DIALOG_MAIN.format(**data)))
+    display(HTML(CSS('dialog.css') + DIALOG_HTML.format(**data)))
     if context is None:
         context = Conversation()
 
@@ -115,32 +116,27 @@ def display_dialog(placeholder='質問はこちらに', context=None):
             target='output'
         )
         data.update(kwargs)
-        kogi_print(bot_text, **data)
+        kogi_display(bot_text, **data)
 
     def dialog_user(user_text, **kwargs):
         data = dict(
             icon=context.get('user_icon', 'girl_think-fs8.png'),
             name=context.get('user_name', 'あなた'),
-            html=_DIALOG_USER,
+            html=DIALOG_USER_HTML,
             target='output'
         )
         data.update(kwargs)
-        kogi_print(user_text, **data)
+        kogi_display(user_text, **data)
 
     if output is not None:
         def ask(user_text):
-            dialog_user(user_text)
-            bot_text = context.ask(user_text)
-            dialog_bot(bot_text)
+            try:
+                dialog_user(user_text)
+                bot_text = context.ask(user_text)
+                dialog_bot(bot_text)
+            except:
+                kogi_display('バグで処理に失敗しました。ごめんなさい')
+                traceback.print_exc()
         output.register_callback('notebook.ask', ask)
 
     return dialog_bot, dialog_user
-
-
-class Deco(object):
-
-    def bold(self, text):
-        return f'<b>{text}</b>'
-
-    def code(self, text):
-        return f'<code>{text}</code>'

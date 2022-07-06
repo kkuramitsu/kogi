@@ -1,6 +1,8 @@
+from kogi.liberr.emodel import ErrorModel
 import sys
 import linecache
 from numbers import Number
+from .extract_vars import extract_vars
 
 
 def bold(s):
@@ -65,9 +67,9 @@ def repr_value(value):
     return cyan(f'({typename})')
 
 
-def repr_vars(vars):
+def repr_vars(vars, start=None, end=None):
     ss = []
-    for key, value in vars.items():
+    for key, value in list(vars.items())[start:end]:
         if key.startswith('_'):
             continue
         value = repr_value(value)
@@ -97,27 +99,34 @@ def arrow(lineno, here=False):
     return red(arrow) + green(f'{s}')
 
 
-def filter_globals(vars, code):
-    if 'get_ipython' in vars:
+def filter_expressions(vars, exprs=None):
+    if exprs is not None:
         newvars = {}
         for key, value in vars.items():
-            if key in code:
+            if key in exprs:
                 newvars[key] = value
         return newvars
     return vars
 
 
-def print_func(filename, funcname, local_vars):
+def print_func(filename, funcname, local_vars, exprs, n_args=0):
     if filename.startswith('<ipython-input-'):
         t = funcname.split('-')
         if len(t) > 2:
             filename = f'[{t[2]}]'
+    arguments = repr_vars(local_vars, 0, n_args)
+    if len(arguments) > 2:
+        arguments = f'({arguments})'
+    locals = repr_vars(filter_expressions(local_vars, exprs), n_args)
     if '/ipykernel_' in filename:
-        print(f'{bold(funcname)} {repr_vars(local_vars)}')
+        print(f'{bold(funcname)}{arguments}')
     elif filename.endswith('.py'):
-        print(f'"{glay(filename)}" {bold(funcname)}')
+        print(f'"{glay(filename)}" {bold(funcname)}{arguments}')
+        return
     else:
-        print(f'"{glay(filename)}" {bold(funcname)} {repr_vars(local_vars)}')
+        print(f'"{glay(filename)}" {bold(funcname)}{arguments}')
+    if len(locals) > 2:
+        print(locals)
 
 
 def print_linecode(filename, lines, lineno):
@@ -125,9 +134,11 @@ def print_linecode(filename, lines, lineno):
         print(arrow(lineno-2), getline(filename, lines, lineno-2))
     if lineno-1 > 0:
         print(arrow(lineno-1), getline(filename, lines, lineno-1))
+    line = getline(filename, lines, lineno)
     print(arrow(lineno, here=True), getline(filename, lines, lineno))
     print(arrow(lineno+1), getline(filename, lines, lineno+1))
     print(arrow(lineno+2), getline(filename, lines, lineno+2))
+    return dict(filename=filename, lineno=lineno, line=line)
 
 
 def print_header(etype):
@@ -136,7 +147,8 @@ def print_header(etype):
     print(bold(red(etype)))
 
 
-def print_syntax_error(lines, exception, slots=''):
+def print_syntax_error(exception, slots):
+    lines = slots['code]'].splitlines()
     filename = exception.filename
     slots['lineno'] = lineno = exception.lineno
     slots['line'] = text = exception.text
@@ -153,49 +165,67 @@ def print_syntax_error(lines, exception, slots=''):
     return slots
 
 
+defaultErrorModel = ErrorModel('emsg_ja.txt')
+
+
+def print_tb(etype, evalue, tb, slots):
+    print_header(etype)
+
+    code = slots['code']
+    lines = code.splitlines()
+    if code != '':
+        exprs = extract_vars(code)
+        slots['exprs_in_code'] = exprs
+        exprs = set(exprs)
+
+    prev = None
+    repeated = 0
+    stacks = []
+    while tb:
+        filename = tb.tb_frame.f_code.co_filename
+        if '-packages/' not in filename:
+            funcname = tb.tb_frame.f_code.co_name
+            n_args = tb.tb_frame.f_code.co_argcount
+            lineno = tb.tb_lineno
+            local_vars = tb.tb_frame.f_locals
+            cur = (filename, funcname, lineno)
+            if cur != prev:
+                if repeated > 10:
+                    print(f'... repeated {red(str(repeated))} times ...')
+                print_func(filename, funcname, local_vars, exprs, n_args)
+                stack = print_linecode(filename, lines, lineno)
+                stacks.append(stack)
+                repeated = 0
+            else:
+                if repeated < 10:
+                    print_func(filename, funcname, local_vars, exprs, n_args)
+                repeated += 1
+            prev = cur
+        tb = tb.tb_next
+    slots['traceback'] = list(stacks[::-1])
+    slots.update(defaultErrorModel.get_slots(slots['emsg']))
+    print(f"{bold(red(etype.__name__))}: {bold(evalue)}")
+    return slots
+
+
 def kogi_print_exc(code='', exc_info=None, exception=None):
     if exc_info is None:
         etype, evalue, tb = sys.exc_info()
     else:
         etype, evalue, tb = exc_info
+    if etype is None:
+        return None
     slots = dict(
+        etype=f'{etype.__name__}',
+        emsg=(f'{etype.__name__}: {evalue}').strip(),
         code=code,
-        emsg=(f'{etype}: {evalue}').strip()
     )
-    lines = code.splitlines()
-
     if isinstance(exception, SyntaxError):
-        return print_syntax_error(lines, exception, slots)
+        return print_syntax_error(exception, slots)
     if exception is None and issubclass(etype, SyntaxError):
         try:
             raise
         except SyntaxError as e:
             exception = e
-        return print_syntax_error(lines, exception, slots)
-
-    print_header(etype)
-
-    prev = None
-    repeated = 0
-    while tb:
-        filename = tb.tb_frame.f_code.co_filename
-        if '-packages/' not in filename:
-            funcname = tb.tb_frame.f_code.co_name
-            lineno = tb.tb_lineno
-            local_vars = filter_globals(tb.tb_frame.f_locals, code)
-            cur = (filename, funcname, lineno)
-            if cur != prev:
-                if repeated > 10:
-                    print(f'... repeated {red(str(repeated))} times ...')
-                print_func(filename, funcname, local_vars)
-                print_linecode(filename, lines, lineno)
-                repeated = 0
-            else:
-                if repeated < 10:
-                    print_func(filename, funcname, local_vars)
-                repeated += 1
-            prev = cur
-        tb = tb.tb_next
-
-    print(f"{bold(red(etype.__name__))}: {bold(evalue)}")
-    return slots
+        return print_syntax_error(exception, slots)
+    return print_tb(etype, evalue, tb, slots)
