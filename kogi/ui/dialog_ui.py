@@ -134,7 +134,7 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
             try:
                 dialog_user(user_text)
                 bot_text = context.ask(user_text)
-                dialog_bot(bot_text)
+                dialog_bot(bot_text.strip())
             except:
                 kogi_display('バグで処理に失敗しました。ごめんなさい')
                 traceback.print_exc()
