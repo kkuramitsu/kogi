@@ -21,7 +21,42 @@ def green(s):
     return f'\033[32m{s}\033[0m'
 
 
-def yellow(s):
+    def yellow(s):
+ne
+    repeated = 0
+    stacks = []
+    while tb:
+        filename = tb.tb_frame.f_code.co_filename
+        if '-packages/' not in filename:
+            funcname = tb.tb_frame.f_code.co_name
+            n_args = tb.tb_frame.f_code.co_argcount
+            lineno = tb.tb_lineno
+            local_vars = tb.tb_frame.f_locals
+            cur = (filename, funcname, lineno)
+            if cur != prev:
+                if repeated > 10:
+                    print(f'... repeated {red(str(repeated))} times ...')
+                print_func(filename, funcname, local_vars, exprs, n_args)
+                stack = print_linecode(filename, lines, lineno)
+                stacks.append(stack)
+                repeated = 0
+            else:
+                if repeated < 10:
+                    print_func(filename, funcname, local_vars, exprs, n_args)
+                repeated += 1
+            prev = cur
+        tb = tb.tb_next
+    slots['traceback'] = list(stacks[::-1])
+    print(f"{bold(red(etype.__name__))}: {bold(evalue)}")
+    if logging_json is not None:
+        logging_json(
+            type='runtime_error',
+            code=slots['code'],
+            emsg=slots['emsg'],
+            traceback=list(stacks[::-1])
+        )
+    translate_error(slots, logging_json=logging_json)
+    return slots
     return f'\033[33m{s}\033[0m'
 
 

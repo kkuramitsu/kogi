@@ -126,7 +126,7 @@ class Chatbot(Conversation):
             code=self.slots.get('code', ''),
             text=text,
         ))
-        return 'コギーの苦手な内容だから、TAさんに質問を転送したよ'
+        return 'コギーの苦手な質問だ。TAさんに質問を転送したよ'
 
     def response_vow(self, text):
         return "わん"
