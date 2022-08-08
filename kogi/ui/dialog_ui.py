@@ -57,8 +57,10 @@ dialog_target = None
 
 def cc(text):
     n_ascii = sum(1 for c in text if ord(c) < 128)
-    if n_ascii / len(text) < 0.4:  # 日本語
+    print(text, n_ascii, len(text), n_ascii / len(text))
+    if (n_ascii / len(text)) < 0.4:  # 日本語
         t = translate_ja(text)
+        print(t)
         if t is not None:
             return f'{text}<br>{t}'
     return text

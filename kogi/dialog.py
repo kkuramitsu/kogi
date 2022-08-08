@@ -2,7 +2,11 @@ import sys
 import traceback
 from IPython import get_ipython
 
-from .settings import model_generate, translate_en, send_slack, kogi_get, kogi_log, kogi_print
+from .settings import (
+    model_generate, translate_en, translate_ja,
+    send_slack, kogi_get, kogi_log, kogi_print
+)
+
 from .diagnosis import run_diagnosis
 from .dialog_desc import get_desc
 
@@ -12,7 +16,7 @@ except ModuleNotFoundError:
     output = None
 
 from kogi.ui import kogi_display, display_dialog, Conversation
-from kogi.liberr import kogi_print_exc
+from kogi.liberr import kogi_print_exc, replace_eparams
 
 import kogi.fake_nlp as nlp
 
@@ -32,7 +36,9 @@ def response_hint(slots: dict):
         text = f'{ekey}<tab>{eparams}<tab>{eline}'
         ans = model_generate(text)
         if ans:
-            return f'{ans}<br>{translate_en(ans)}'
+            kogi_print(ans, slots['eparams'])
+            ans = replace_eparams(ans, slots['eparams'])
+            return f'{ans}<br>{translate_ja(ans)}'
     return None
 
 
