@@ -148,7 +148,7 @@ DESC = {
 }
 
 
-def get_desc(text: str, slots: dict):
+def get_desc(text: str):
     if text in DESC:
         return DESC[text]
     kogi_log(type='undefined_desc', desc=text)

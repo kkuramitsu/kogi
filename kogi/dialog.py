@@ -36,7 +36,7 @@ def response_hint(slots: dict):
         text = f'{ekey}<tab>{eparams}<tab>{eline}'
         ans = model_generate(text)
         if ans:
-            kogi_print(ans, slots['eparams'])
+            # kogi_print(ans, slots['eparams'])
             ans = replace_eparams(ans, slots['eparams'])
             return f'{ans}<br>{translate_ja(ans)}'
     return None
@@ -73,10 +73,10 @@ class Chatbot(Conversation):
         #         return 'コギーも助けて...'
         if text.endswith('には'):
             text = text[:-2]
-            return response_codegen(text, self.slots)
+            return response_codegen(text)
         if text.endswith('たい'):
             text = nlp.remove_tai(text)
-            return response_codegen(text, self.slots)
+            return response_codegen(text)
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
             return response_desc(text)
