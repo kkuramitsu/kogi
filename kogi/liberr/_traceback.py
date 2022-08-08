@@ -188,6 +188,7 @@ def print_tb(etype, evalue, tb, record, logging_json=None):
     prev = None
     repeated = 0
     stacks = []
+    eline = None
     while tb:
         filename = tb.tb_frame.f_code.co_filename
         if '-packages/' not in filename:
@@ -202,6 +203,7 @@ def print_tb(etype, evalue, tb, record, logging_json=None):
                 print_func(filename, funcname, local_vars, exprs, n_args)
                 stack = print_linecode(filename, lines, lineno)
                 stacks.append(stack)
+                eline = stack.get('line')
                 repeated = 0
             else:
                 if repeated < 10:
@@ -209,15 +211,17 @@ def print_tb(etype, evalue, tb, record, logging_json=None):
                 repeated += 1
             prev = cur
         tb = tb.tb_next
+    if eline:
+        record['eline'] = eline
     record['traceback'] = list(stacks[::-1])
     print(f"{bold(red(etype.__name__))}: {bold(evalue)}")
-    if logging_json is not None:
-        logging_json(
-            type='runtime_error',
-            code=record['code'],
-            emsg=record['emsg'],
-            traceback=list(stacks[::-1])
-        )
+    # if logging_json is not None:
+    #     logging_json(
+    #         type='runtime_error',
+    #         code=record['code'],
+    #         emsg=record['emsg'],
+    #         traceback=list(stacks[::-1])
+    #     )
     return record
 
 

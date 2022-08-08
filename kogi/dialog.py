@@ -27,10 +27,12 @@ def response_codegen(text: str):
 def response_hint(slots: dict):
     if 'ekey' in slots and 'eparams' in slots:
         ekey = slots['ekey']
-        eparams = slots['eparams']
+        eparams = ' '.join(slots['eparams'])
         eline = slots.get('eline', '')
-        text = f'{ekey}<tab>{eline}<tab>{eparams}'
-        return model_generate(text)
+        text = f'{ekey}<tab>{eparams}<tab>{eline}'
+        ans = model_generate(text)
+        if ans:
+            return f'{ans}<br>{translate_en(ans)}'
     return None
 
 
