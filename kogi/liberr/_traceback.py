@@ -2,7 +2,9 @@ from kogi.liberr.emodel import ErrorModel
 import sys
 import linecache
 from numbers import Number
+
 from .extract_vars import extract_vars
+from ._translate import translate_emsg
 
 
 def bold(s):
@@ -147,12 +149,12 @@ def print_header(etype):
     print(bold(red(etype)))
 
 
-def print_syntax_error(exception, slots, logging_json=None):
-    lines = slots['code'].splitlines()
-    filename = exception.filename
-    slots['lineno'] = lineno = exception.lineno
-    slots['line'] = text = exception.text
-    slots['offset'] = offset = exception.offset
+def print_syntax_error(caught_ex, record, logging_json=None):
+    lines = record['code'].splitlines()
+    filename = caught_ex.filename
+    record['lineno'] = lineno = caught_ex.lineno
+    record['line'] = text = caught_ex.text
+    record['offset'] = offset = caught_ex.offset
     print_func(filename, f'[lineno: {lineno} offset: {offset}]', {})
     if lineno-2 > 0:
         print(arrow(lineno-2), getline(filename, lines, lineno-2))
@@ -161,26 +163,26 @@ def print_syntax_error(exception, slots, logging_json=None):
     print(arrow(lineno, here=True), getline(filename, lines, lineno))
     offset = max(0, offset-1)
     print(arrow(lineno), ' '*offset+bold(red('^^')))
-    print(f"{bold(red(exception.__class__.__name__))}: {bold(exception.msg)}")
+    print(f"{bold(red(caught_ex.__class__.__name__))}: {bold(caught_ex.msg)}")
     if logging_json is not None:
         logging_json(
             type='syntax_error',
-            code=slots['code'],
-            emsg=slots['emsg'],
+            code=record['code'],
+            emsg=record['emsg'],
             lineno=lineno, line=text, offset=offset
         )
-    translate_error(slots, logging_json=logging_json)
-    return slots
+    return record
 
 
-def print_tb(etype, evalue, tb, slots, logging_json=None):
+def print_tb(etype, evalue, tb, record, logging_json=None):
     print_header(etype)
 
-    code = slots['code']
+    code = record['code']
     lines = code.splitlines()
+    exprs = None
     if code != '':
         exprs = extract_vars(code)
-        slots['exprs_in_code'] = exprs
+        record['exprs_in_code'] = exprs
         exprs = set(exprs)
 
     prev = None
@@ -207,51 +209,38 @@ def print_tb(etype, evalue, tb, slots, logging_json=None):
                 repeated += 1
             prev = cur
         tb = tb.tb_next
-    slots['traceback'] = list(stacks[::-1])
+    record['traceback'] = list(stacks[::-1])
     print(f"{bold(red(etype.__name__))}: {bold(evalue)}")
     if logging_json is not None:
         logging_json(
             type='runtime_error',
-            code=slots['code'],
-            emsg=slots['emsg'],
+            code=record['code'],
+            emsg=record['emsg'],
             traceback=list(stacks[::-1])
         )
-    translate_error(slots, logging_json=logging_json)
-    return slots
+    return record
 
 
-defaultErrorModel = ErrorModel('emsg_ja.txt')
-
-
-def translate_error(slots, logging_json=None):
-    slots.update(defaultErrorModel.get_slots(slots['emsg']))
-    if logging_json is not None and 'error_key' in slots:
-        logging_json(
-            type='unknown_error',
-            emsg=slots['emsg'],
-            error_key=slots['error_key'],
-            error_params=slots['error_params']
-        )
-
-
-def kogi_print_exc(code='', exc_info=None, exception=None, logging_json=None):
+def kogi_print_exc(code='', exc_info=None, caught_ex=None, translate_en=None):
     if exc_info is None:
         etype, evalue, tb = sys.exc_info()
     else:
         etype, evalue, tb = exc_info
     if etype is None:
         return None
-    slots = dict(
+    record = dict(
         etype=f'{etype.__name__}',
         emsg=(f'{etype.__name__}: {evalue}').strip(),
         code=code,
     )
-    if isinstance(exception, SyntaxError):
-        return print_syntax_error(exception, slots, logging_json=logging_json)
-    if exception is None and issubclass(etype, SyntaxError):
+    if caught_ex is None and issubclass(etype, SyntaxError):
         try:
             raise
         except SyntaxError as e:
-            exception = e
-        return print_syntax_error(exception, slots, logging_json=logging_json)
-    return print_tb(etype, evalue, tb, slots, logging_json=logging_json)
+            caught_ex = e
+    if isinstance(caught_ex, SyntaxError):
+        print_syntax_error(caught_ex, record)
+    else:
+        print_tb(etype, evalue, tb, record)
+    translate_emsg(record['emsg'], record, translate_en=translate_en)
+    return record

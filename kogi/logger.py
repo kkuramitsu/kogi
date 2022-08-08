@@ -4,25 +4,10 @@ import signal
 from datetime import datetime
 import requests
 
-# kogi global settings
-
-kogi_globals = {}
-
-
-def kogi_set(**kwargs):
-    global kogi_globals
-    kogi_globals.update(kwargs)
-
-
-def kogi_get(key, value=None):
-    return kogi_globals.get(key, value)
-
 
 def kogi_print(*args, **kw):
-    global kogi_globals
-    if kogi_globals.get('verbose', True):
-        print('\033[35m[🐶]', *args, **kw)
-        print('\033[0m', end='')
+    print('\033[34m[🐶]', *args, **kw)
+    print('\033[0m', end='')
 
 
 def print_nop(*x, **kw):
@@ -174,7 +159,15 @@ def logging_asjson(type, right_now=False, **kw):
 
 
 def _handler(signum, frame):
-    logging_asjson('terminal', right_now=True)
+    version = None
+    try:
+        import google.colab as colab
+        version = f'colab {colab.__version__}'
+    except ModuleNotFoundError:
+        pass
+    if version is None:
+        version = 'unknown'
+    logging_asjson('terminal', right_now=True, version=version)
 
 
 signal.signal(signal.SIGTERM, _handler)
