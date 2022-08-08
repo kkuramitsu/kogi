@@ -53,7 +53,7 @@ def response_desc(text: str):
     response = get_desc(text)
     if response is None:
         return response_talk(text)
-    return text
+    return response
 
 
 class Chatbot(Conversation):
