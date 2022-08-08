@@ -151,5 +151,5 @@ DESC = {
 def get_desc(text: str):
     if text in DESC:
         return DESC[text]
-    kogi_log(type='undefined_desc', desc=text)
+    kogi_log('undefined_desc', desc=text)
     return None

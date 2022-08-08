@@ -37,8 +37,8 @@ def response_hint(slots: dict):
         ans = model_generate(text)
         if ans:
             # kogi_print(ans, slots['eparams'])
-            ans = replace_eparams(ans, slots['eparams'])
-            return f'{ans}<br>{translate_ja(ans)}'
+            return replace_eparams(ans, slots['eparams'])
+            # return f'{ans}<br>{translate_ja(ans)}'
     return None
 
 
