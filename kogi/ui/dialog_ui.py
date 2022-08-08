@@ -1,6 +1,8 @@
+from re import T
 import traceback
 from .content import ICON, JS, CSS
 from IPython.display import display, HTML
+from kogi.settings import translate_ja
 
 try:
     from google.colab import output
@@ -53,10 +55,23 @@ dialog_count = 0
 dialog_target = None
 
 
-def kogi_display(*args, **kwargs):
-    sep = kwargs.get('sep', ' ')
+def cc(text):
+    n_ascii = sum(1 for c in text if ord(c) < 128)
+    if n_ascii / len(text) < 0.4:  # 日本語
+        t = translate_ja(text)
+        if t is not None:
+            return f'{text}<br>{t}'
+    return text
+
+
+def kogi_display(text, **kwargs):
+    if isinstance(text, list):
+        text = '<br>'.join(cc(line) for line in text)
+    else:
+        text = cc(text)
+
     data = dict(
-        text=sep.join([str(s) for s in args]),
+        text=text,
         icon='kogi-fs8.png',
         name='コギー',
     )
