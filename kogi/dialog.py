@@ -180,6 +180,7 @@ def start_dialog(slots: dict):
     record_dialog()
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
+    dialog_slots['your_name'] = kogi_get('name', 'あなた')
     if 'start' not in dialog_slots:
         dialog_slots['start'] = dialog_slots.get('translated', 'おはよう')
     PREV_CHAT = Chatbot(slots=dialog_slots)
