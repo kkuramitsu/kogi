@@ -26,7 +26,7 @@ def response_codegen(text: str):
     if response is None:
         return 'kogi.set(model_id=...)をセットしよう'
     print(response)
-    return f'<pre>response</pre>'
+    return f'<pre>{response}</pre>'
 
 
 def response_hint(slots: dict):
