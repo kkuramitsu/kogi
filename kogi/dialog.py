@@ -17,6 +17,7 @@ except ModuleNotFoundError:
 
 from kogi.ui import kogi_display, display_dialog, Conversation
 from kogi.liberr import kogi_print_exc, replace_eparams
+from .logger import add_lazy_logger
 
 import kogi.fake_nlp as nlp
 
@@ -176,9 +177,11 @@ def record_dialog():
     send_slack('\n'.join(lines))
 
 
+add_lazy_logger(record_dialog)
+
+
 def start_dialog(slots: dict):
     global PREV_CHAT
-    record_dialog()
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
     dialog_slots['your_name'] = kogi_get('name', 'あなた')

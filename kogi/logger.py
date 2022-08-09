@@ -1,3 +1,4 @@
+import traceback
 import uuid
 import json
 import signal
@@ -147,18 +148,35 @@ def logging_json(**kw):
     return logdata
 
 
-def logging_asjson(type, right_now=False, **kw):
+def logging_asjson(log_type, right_now=False, **kwargs):
     global SEQ, LOGS, epoch
     now = datetime.now()
     date = now.isoformat(timespec='seconds')
-    logdata = dict(seq=SEQ, date=date, type=type, **kw)
+    logdata = dict(log_type=log_type, seq=SEQ, date=date)
+    logdata.update(kwargs)
     LOGS.append(logdata)
     SEQ += 1
     send_log(right_now=right_now)
     return logdata
 
 
+LAZY_LOGGER = []
+
+
+def add_lazy_logger(func):
+    LAZY_LOGGER.append(func)
+
+
+def sync_lazy_loggger():
+    for logger in LAZY_LOGGER:
+        try:
+            logger()
+        except:
+            traceback.print_exc()
+
+
 def _handler(signum, frame):
+    sync_lazy_loggger()
     version = None
     try:
         import google.colab as colab

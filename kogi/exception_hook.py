@@ -2,7 +2,7 @@ import traceback
 import sys
 from functools import wraps
 
-from .logger import kogi_print, logging_json
+from .logger import sync_lazy_loggger
 from .dialog import kogi_catch
 from IPython.core.interactiveshell import InteractiveShell, ExecutionResult
 
@@ -85,6 +85,7 @@ def kogi_run_cell(ipy, raw_cell, kwargs):
 def change_run_cell(func):
     @wraps(func)
     def run_cell(*args, **kwargs):
+        sync_lazy_loggger()
         try:
             #args[1] is raw_cell
             return kogi_run_cell(args[0], args[1], kwargs)
