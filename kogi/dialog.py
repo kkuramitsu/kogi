@@ -182,6 +182,7 @@ add_lazy_logger(record_dialog)
 
 def start_dialog(slots: dict):
     global PREV_CHAT
+    record_dialog()
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
     dialog_slots['your_name'] = kogi_get('name', 'あなた')
