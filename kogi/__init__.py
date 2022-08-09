@@ -1,5 +1,6 @@
 
 from .settings import kogi_set, kogi_print
+from .ui.slides import slide
 
 set = kogi_set
 print = kogi_print

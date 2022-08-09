@@ -1,4 +1,3 @@
-from re import T
 import traceback
 from .content import ICON, JS, CSS
 from IPython.display import display, HTML
