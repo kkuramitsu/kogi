@@ -25,7 +25,7 @@ def response_codegen(text: str):
     response = model_generate(text)
     if response is None:
         return 'kogi.set(model_id=...)をセットしよう'
-    print(response)
+    response = response.replace('<nl>', '\n').replace('<tab>', '    ')
     return f'<pre>{response}</pre>'
 
 
