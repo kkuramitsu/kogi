@@ -42,11 +42,11 @@ def kogi_print(*args, **kwargs):
 def kogi_log(log_type, right_now=True, **kwargs):
     global GLOBALS
     if 'class' not in kwargs:
-        if 'class' not in GLOBALS:
+        if 'class_name' not in GLOBALS:
             return
-        kwargs['class'] = GLOBALS['class']
+        kwargs['class'] = GLOBALS['class_name']
     if 'name' in GLOBALS:
-        kwargs['name'] = GLOBALS['name']
+        kwargs['user_name'] = GLOBALS['name']
     # kogi_print(kwargs)
     logging_asjson(log_type, right_now=right_now, **kwargs)
 

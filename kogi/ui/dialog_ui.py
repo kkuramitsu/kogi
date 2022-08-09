@@ -2,7 +2,7 @@ from re import T
 import traceback
 from .content import ICON, JS, CSS
 from IPython.display import display, HTML
-from kogi.settings import translate_ja
+from kogi.settings import translate_ja, kogi_get
 
 try:
     from google.colab import output
@@ -89,12 +89,12 @@ def kogi_display(text, **kwargs):
 
 
 DIALOG_HTML = '''
-<div id='dialog'>
+<div id="dialog">
     {script}
-    <div id='{target}' class='box'>
+    <div id="{target}" class="box" style="height: 150px">
     </div>
-    <div style='text-align: right'>
-        <textarea id='input' placeholder='{placeholder}'></textarea>
+    <div style="text-align: right">
+        <textarea id="input" placeholder="{placeholder}"></textarea>
     </div>
 </div>
 '''
@@ -129,7 +129,8 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
         placeholder=placeholder,
         target=dialog_target,
     )
-    display(HTML(CSS('dialog.css') + DIALOG_HTML.format(**data)))
+    DHTML = DIALOG_HTML.replace('150', str(kogi_get('chat_height', 180)))
+    display(HTML(CSS('dialog.css') + DHTML.format(**data)))
     if context is None:
         context = Conversation()
 
