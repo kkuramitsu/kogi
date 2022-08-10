@@ -113,7 +113,6 @@ class Conversation(object):
     def ask(self, input_text):
         output_text = self.response(input_text)
         self.records.append((input_text, output_text))
-        print((input_text, output_text), self.records)
         return output_text
 
     def response(self, input_text):

@@ -155,7 +155,7 @@ CHAT_CNT = 0
 
 def record_dialog():
     global PREV_CHAT, CHAT_CNT
-    print('@', PREV_CHAT)
+    print('@', PREV_CHAT, CHAT_CNT)
     if PREV_CHAT is None:
         return
     chat = PREV_CHAT
@@ -174,7 +174,7 @@ def record_dialog():
         lines.extend([data['emsg'], ''])
     if 'start' in data:
         lines.extend([data['start']])
-    print(chat.records, data)
+    #print(chat.records, data)
     if len(chat.records) > 0:
         for user_text, bot_text in chat.records:
             lines.extend([f'> {user_text}', bot_text])
