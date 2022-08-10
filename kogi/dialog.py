@@ -150,21 +150,23 @@ def set_global_slots(**kwargs):
 
 
 PREV_CHAT = None
+CHAT_CNT = 0
 
 
 def record_dialog():
-    global PREV_CHAT
+    global PREV_CHAT, CHAT_CNT
     if PREV_CHAT is None:
         return
     chat = PREV_CHAT
     PREV_CHAT = None
+    CHAT_CNT += 1
     user = kogi_get('name', 'ユーザ')
     data = {'type': 'kogi_chat'}
     data.update(chat.slots)
     data['chat'] = chat.records
     kogi_log('kogi_chat', right_now=True, **data)
     # Slack レポート
-    lines = [f'*{user}より*']
+    lines = [f'*{user}({CHAT_CNT})より*']
     if 'code' in data:
         lines.extend(['```', data['code'], '```'])
     if 'emsg' in data:
