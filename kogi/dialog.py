@@ -155,6 +155,7 @@ CHAT_CNT = 0
 
 def record_dialog():
     global PREV_CHAT, CHAT_CNT
+    print('@', PREV_CHAT)
     if PREV_CHAT is None:
         return
     chat = PREV_CHAT
