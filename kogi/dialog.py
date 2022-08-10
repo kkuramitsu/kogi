@@ -91,7 +91,9 @@ class Chatbot(Conversation):
                     return self.slots['solution']
                 if 'maybe' in self.slots:
                     return 'ひょっとしたら、' + self.slots['maybe']
-                return 'エラーメッセージから考えてみよう'
+                if 'ekey' in self.solts:
+                    return 'エラーメッセージを検索してみたら？'
+                return 'エラーなくない？'
             return response
         if nlp.startswith(text, ('ヒント', '助けて', 'たすけて')):
             if 'hint' in self.slots:
@@ -155,7 +157,6 @@ CHAT_CNT = 0
 
 def record_dialog():
     global PREV_CHAT, CHAT_CNT
-    print('@', PREV_CHAT, CHAT_CNT)
     if PREV_CHAT is None:
         return
     chat = PREV_CHAT
