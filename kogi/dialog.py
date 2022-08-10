@@ -91,7 +91,7 @@ class Chatbot(Conversation):
                     return self.slots['solution']
                 if 'maybe' in self.slots:
                     return 'ひょっとしたら、' + self.slots['maybe']
-                if 'ekey' in self.solts:
+                if 'ekey' in self.slots:
                     return 'エラーメッセージを検索してみたら？'
                 return 'エラーなくない？'
             return response
