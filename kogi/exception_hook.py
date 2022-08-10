@@ -1,6 +1,8 @@
 import traceback
 from functools import wraps
 
+from kogi.logger import sync_lazy_loggger
+
 from .dialog import kogi_catch
 from IPython.core.interactiveshell import InteractiveShell, ExecutionResult
 
@@ -8,42 +10,6 @@ from IPython.core.interactiveshell import InteractiveShell, ExecutionResult
 RUN_CELL = InteractiveShell.run_cell
 SHOW_TRACEBACK = InteractiveShell.showtraceback
 SHOW_SYNTAXERROR = InteractiveShell.showsyntaxerror
-
-# old one
-
-# def change_run_cell(func, run_judge):
-#     @wraps(func)
-#     def run_cell(*args, **kwargs):
-#         try:
-#             if len(args) > 1:
-#                 ipyshell = args[0]
-#                 raw_cell = args[1]
-#                 if 'https://atcoder.jp/contests/' in raw_cell:
-#                     #print('running cell ...')
-#                     code = run_judge(raw_cell)
-#                     args = list(args)
-#                     args[1] = code
-#         except:
-#             traceback.print_exc()
-#         value = func(*args, **kwargs)
-#         return value
-#     return run_cell
-
-
-# def change_showtraceback(func, kogi_catch):
-#     @wraps(func)
-#     def showtraceback(*args, **kwargs):
-#         sys_exc = sys.exc_info()
-#         value = func(*args, **kwargs)
-#         try:
-#             ipyshell = args[0]
-#             code = ipyshell.user_global_ns['In'][-1]
-#             kogi_catch(sys_exc, code=code)
-#         except:
-#             traceback.print_exc()
-#         return value
-
-#     return showtraceback
 
 
 DETECTOR = []

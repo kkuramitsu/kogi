@@ -1,5 +1,4 @@
 import builtins
-#from IPython import get_ipython
 from kogi.dialog import kogi_catch
 from .timeout import exec_with_timeout
 from .judge import render_result, render_footer
