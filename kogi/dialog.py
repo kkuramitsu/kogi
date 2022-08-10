@@ -173,6 +173,7 @@ def record_dialog():
         lines.extend([data['emsg'], ''])
     if 'start' in data:
         lines.extend([data['start']])
+    print(chat.records, data)
     if len(chat.records) > 0:
         for user_text, bot_text in chat.records:
             lines.extend([f'> {user_text}', bot_text])
