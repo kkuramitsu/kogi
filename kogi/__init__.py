@@ -1,5 +1,9 @@
 
-from kogi.logger import kogi_set, kogi_print
+from .settings import kogi_set, kogi_print
+from .ui.slides import slide
+
+set = kogi_set
+print = kogi_print
 
 try:
     from .exception_hook import enable_kogi_hook, kogi_register_hook

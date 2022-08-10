@@ -36,7 +36,7 @@ REMOVED_SUFFIXES = [
 
 
 def normalize(text):
-    rext = zen2han(text)
+    text = zen2han(text)
     return remove_suffixes(text, REMOVED_SUFFIXES)
 
 

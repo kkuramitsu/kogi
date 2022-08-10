@@ -1,6 +1,7 @@
 import traceback
 from .content import ICON, JS, CSS
 from IPython.display import display, HTML
+from kogi.settings import translate_ja, kogi_get
 
 try:
     from google.colab import output
@@ -53,10 +54,25 @@ dialog_count = 0
 dialog_target = None
 
 
-def kogi_display(*args, **kwargs):
-    sep = kwargs.get('sep', ' ')
+def cc(text):
+    n_ascii = sum(1 for c in text if ord(c) < 128)
+    #print(text, n_ascii, len(text), n_ascii / len(text))
+    if (n_ascii / len(text)) < 0.4:  # 日本語
+        t = translate_ja(text)
+        # print(t)
+        if t is not None:
+            return f'{text}<br><i>{t}</i>'
+    return text
+
+
+def kogi_display(text, **kwargs):
+    if isinstance(text, list):
+        text = '<br>'.join(cc(line) for line in text)
+    else:
+        text = cc(text)
+
     data = dict(
-        text=sep.join([str(s) for s in args]),
+        text=text,
         icon='kogi-fs8.png',
         name='コギー',
     )
@@ -72,12 +88,12 @@ def kogi_display(*args, **kwargs):
 
 
 DIALOG_HTML = '''
-<div id='dialog'>
+<div id="dialog">
     {script}
-    <div id='{target}' class='box'>
+    <div id="{target}" class="box" style="height: 150px">
     </div>
-    <div style='text-align: right'>
-        <textarea id='input' placeholder='{placeholder}'></textarea>
+    <div style="text-align: right">
+        <textarea id="input" placeholder="{placeholder}"></textarea>
     </div>
 </div>
 '''
@@ -112,7 +128,8 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
         placeholder=placeholder,
         target=dialog_target,
     )
-    display(HTML(CSS('dialog.css') + DIALOG_HTML.format(**data)))
+    DHTML = DIALOG_HTML.replace('150', str(kogi_get('chat_height', 180)))
+    display(HTML(CSS('dialog.css') + DHTML.format(**data)))
     if context is None:
         context = Conversation()
 

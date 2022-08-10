@@ -1,28 +1,14 @@
+import traceback
 import uuid
 import json
 import signal
 from datetime import datetime
 import requests
 
-# kogi global settings
-
-kogi_globals = {}
-
-
-def kogi_set(**kwargs):
-    global kogi_globals
-    kogi_globals.update(kwargs)
-
-
-def kogi_get(key, value=None):
-    return kogi_globals.get(key, value)
-
 
 def kogi_print(*args, **kw):
-    global kogi_globals
-    if kogi_globals.get('verbose', True):
-        print('\033[35m[🐶]', *args, **kw)
-        print('\033[0m', end='')
+    print('\033[34m[🐶]', *args, **kw)
+    print('\033[0m', end='')
 
 
 def print_nop(*x, **kw):
@@ -162,19 +148,44 @@ def logging_json(**kw):
     return logdata
 
 
-def logging_asjson(type, right_now=False, **kw):
+def logging_asjson(log_type, right_now=False, **kwargs):
     global SEQ, LOGS, epoch
     now = datetime.now()
     date = now.isoformat(timespec='seconds')
-    logdata = dict(seq=SEQ, date=date, type=type, **kw)
+    logdata = dict(log_type=log_type, seq=SEQ, date=date)
+    logdata.update(kwargs)
     LOGS.append(logdata)
     SEQ += 1
     send_log(right_now=right_now)
     return logdata
 
 
+LAZY_LOGGER = []
+
+
+def add_lazy_logger(func):
+    LAZY_LOGGER.append(func)
+
+
+def sync_lazy_loggger():
+    for logger in LAZY_LOGGER:
+        try:
+            logger()
+        except:
+            traceback.print_exc()
+
+
 def _handler(signum, frame):
-    logging_asjson('terminal', right_now=True)
+    sync_lazy_loggger()
+    version = None
+    try:
+        import google.colab as colab
+        version = f'colab {colab.__version__}'
+    except ModuleNotFoundError:
+        pass
+    if version is None:
+        version = 'unknown'
+    logging_asjson('terminal', right_now=True, version=version)
 
 
 signal.signal(signal.SIGTERM, _handler)

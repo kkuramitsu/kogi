@@ -1,8 +1,14 @@
 import sys
 import traceback
-import requests
 from IPython import get_ipython
-from kogi.diagnosis import run_diagnosis
+
+from .settings import (
+    model_generate, translate_en, translate_ja,
+    send_slack, kogi_get, kogi_log, kogi_print
+)
+
+from .diagnosis import run_diagnosis
+from .dialog_desc import get_desc
 
 try:
     from google.colab import output
@@ -10,59 +16,46 @@ except ModuleNotFoundError:
     output = None
 
 from kogi.ui import kogi_display, display_dialog, Conversation
+from kogi.liberr import kogi_print_exc, replace_eparams
+from .logger import add_lazy_logger
 
-from kogi.liberr import kogi_print_exc
-
-from .nmt import kogi_nmt_talk, kogi_nmt_wakeup
 import kogi.fake_nlp as nlp
 
-from .logger import send_log, kogi_print, send_slack, print_nop
 
-DUMMY = 'rhOcswxkXzMbhlkKQJfytbfxAPVsblhRHX'
-
-
-# コード翻訳
-
-def repr_liner(ss):
-    ss2 = []
-    for s in ss:
-        if s not in ss2:
-            ss2.append(s)
-    return '<br>'.join(f'<code>{s}</code>' for s in ss2)
+def response_codegen(text: str):
+    response = model_generate(text)
+    if response is None:
+        return 'kogi.set(model_id=...)をセットしよう'
+    response = response.replace('<nl>', '\n').replace('<tab>', '    ')
+    return f'<pre>{response}</pre>'
 
 
-def response_codenmt(text: str, slots: dict):
-    res = kogi_nmt_talk(text, beam=5)
-    if res is not None:
-        results, scores = res
-        #print(results, scores)
-        return repr_liner(results)
-    return 'コギーは、眠む眠む..'
+def response_hint(slots: dict):
+    if 'ekey' in slots and 'eparams' in slots:
+        ekey = slots['ekey']
+        eparams = ' '.join(slots['eparams'])
+        eline = slots.get('eline', '')
+        text = f'{ekey}<tab>{eparams}<tab>{eline}'
+        ans = model_generate(text)
+        if ans:
+            # kogi_print(ans, slots['eparams'])
+            return replace_eparams(ans, slots['eparams'])
+            # return f'{ans}<br>{translate_ja(ans)}'
+    return None
 
 
-def response_talknmt(text: str, slots: dict):
-    res = kogi_nmt_talk(f'talk: {text}', beam=1)
-    if res is not None:
-        return res
-    return 'コギーは、眠む眠む..'
+def response_talk(text: str):
+    response = model_generate(f'talk: {text}')
+    if response is None:
+        return 'ZZ.. zzz.. 眠む眠む..'
+    return response
 
 
-API_URL = "https://api-inference.huggingface.co/models/kkuramitsu/kogi-mt5-test"
-headers = {"Authorization": f"Bearer hf_{DUMMY}"}
-
-
-def response_translate(text):
-    if len(text) > 80:
-        return 'ぐるるるる\n（入力が長すぎます）'
-    payload = {"inputs": text}
-    response = requests.post(API_URL, headers=headers, json=payload)
-    output = response.json()
-    print(text, type(output), output)
-    if isinstance(output, (list, tuple)):
-        output = output[0]
-    if 'generated_text' in output:
-        return output['generated_text']
-    return 'ねむねむ。まだ、起きられない！\n（しばらく待ってからもう一度試してください）'
+def response_desc(text: str):
+    response = get_desc(text)
+    if response is None:
+        return response_talk(text)
+    return response
 
 
 class Chatbot(Conversation):
@@ -72,67 +65,40 @@ class Chatbot(Conversation):
         if 'user_inputs' not in self.slots:
             self.slots['user_inputs'] = []
         self.slots['user_inputs'].append(text)
-        if nlp.startswith(text, ('質問')):
-            return self.response_question(text)
-        if nlp.startswith(text, ('起き', '寝るな', '寝ない')):
-            kogi_display('あと１分！')
-            kogi_nmt_wakeup()
-            return 'おはようございます'
+        # if nlp.startswith(text, ('質問')):
+        #     return self.response_question(text)
         text = nlp.normalize(user_input)
-        if nlp.startswith(text, ('デバッグ', '助けて', 'たすけて', '困った', '分析', '調べて')):
-            if 'fault_vars' in self.slots:
-                return self.slots['fault_vars']
-            else:
-                return 'コギーも助けて...'
+        # if nlp.startswith(text, ('デバッグ', '助けて', 'たすけて', '困った', '分析', '調べて')):
+        #     if 'fault_vars' in self.slots:
+        #         return self.slots['fault_vars']
+        #     else:
+        #         return 'コギーも助けて...'
         if text.endswith('には'):
             text = text[:-2]
-            return response_codenmt(text, self.slots)
+            return response_codegen(text)
         if text.endswith('たい'):
             text = nlp.remove_tai(text)
-            return response_codenmt(text, self.slots)
+            return response_codegen(text)
         if text.endswith('って') or text.endswith('とは'):
             text = text[:-2]
-            return self.response_desc(text)
-        if nlp.startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どうして', 'どして')):
-            if 'reason' in self.slots:
-                return self.slots['reason']
-            if 'fault_lines' in self.slots:
-                return self.slots['fault_lines']
-            return 'エラーメッセージから考えてみよう'
-        if nlp.startswith(text, ('解決', 'どう', 'お手上げ', 'ヒント')):
-            if 'solution' in self.slots:
-                return self.slots['solution']
-            if 'maybe' in self.slots:
-                return 'ひょっとしたら、' + self.slots['maybe']
-            return 'きゅるるる...'
+            return response_desc(text)
+        if nlp.startswith(text, ('原因', '理由', 'なぜ', 'なんで', 'どう')):
+            response = response_hint(self.slots)
+            if response is None:
+                if 'reason' in self.slots:
+                    return self.slots['reason']
+                if 'solution' in self.slots:
+                    return self.slots['solution']
+                if 'maybe' in self.slots:
+                    return 'ひょっとしたら、' + self.slots['maybe']
+                return 'エラーメッセージから考えてみよう'
+            return response
         if nlp.startswith(text, ('ヒント', '助けて', 'たすけて')):
             if 'hint' in self.slots:
                 return self.slots['hint']
             else:
                 return 'ヒントなし'
-        return response_talknmt(text, self.slots)
-
-    def response_question(self, text):
-        send_slack(dict(
-            type='dialog_question',
-            text=text,
-            context=self.slots,
-        ))
-        return 'わん！わん！わん！ 先生を呼んでみました'
-
-    def response_desc(self, text):
-        send_slack(dict(
-            type='dialog_desc',
-            code=self.slots.get('code', ''),
-            text=text,
-        ))
-        return 'コギーの苦手な内容だから、TAさんに質問を転送したよ'
-
-    def response_vow(self, text):
-        return "わん"
-
-    def response_code(self, text):
-        return self.response_vow(text)
+        return response_talk(text)
 
 
 if output is None:
@@ -183,30 +149,61 @@ def set_global_slots(**kwargs):
         global_slots[key] = value
 
 
-def start_dialog(slots: dict, logging_json=None):
+PREV_CHAT = None
+
+
+def record_dialog():
+    global PREV_CHAT
+    if PREV_CHAT is None:
+        return
+    chat = PREV_CHAT
+    PREV_CHAT = None
+    user = kogi_get('name', 'ユーザ')
+    data = {'type': 'kogi_chat'}
+    data.update(chat.slots)
+    data['chat'] = chat.records
+    kogi_log('kogi_chat', right_now=True, **data)
+    # Slack レポート
+    lines = [f'*{user}より*']
+    if 'code' in data:
+        lines.extend(['```', data['code'], '```'])
+    if 'emsg' in data:
+        lines.extend([data['emsg'], ''])
+    if 'start' in data:
+        lines.extend([data['start']])
+    if len(chat.records) > 0:
+        for user_text, bot_text in chat.records:
+            lines.extend([f'> {user_text}', bot_text])
+    send_slack('\n'.join(lines))
+
+
+add_lazy_logger(record_dialog)
+
+
+def start_dialog(slots: dict):
+    global PREV_CHAT
+    record_dialog()
     dialog_slots = global_slots.copy()
     dialog_slots.update(slots)
-    chatbot = Chatbot(slots=dialog_slots)
-    if 'translated' in dialog_slots:
-        _start_chat(chatbot, dialog_slots['translated'])
-    else:
-        kogi_display('コギーは、未知のエラーに驚いた（みんながいじめるので隠れた）')
-        if logging_json is not None:
-            slots['type'] = 'unknown_emsg'
-            print(slots)
-            logging_json(**slots)
+    dialog_slots['your_name'] = kogi_get('name', 'あなた')
+    if 'start' not in dialog_slots:
+        dialog_slots['start'] = dialog_slots.get('translated', 'おはよう')
+    PREV_CHAT = Chatbot(slots=dialog_slots)
+    _start_chat(PREV_CHAT, dialog_slots['start'])
+    return PREV_CHAT
 
 
-def kogi_catch(exc_info=None, code: str = None, context: dict = None, exception=None, enable_dialog=True, logging_json=None):
+def kogi_catch(exc_info=None, code: str = None, context: dict = None, exception=None, enable_dialog=True):
     if exc_info is None:
         exc_info = sys.exc_info()
-    slots = kogi_print_exc(code=code, exc_info=exc_info,
-                           exception=exception, logging_json=logging_json)
+    slots = kogi_print_exc(code=code,
+                           exc_info=exc_info, caught_ex=exception,
+                           translate_en=translate_en)
     if context is not None:
         slots.update(context)
     run_diagnosis(slots)
     if enable_dialog:
-        start_dialog(slots, logging_json=logging_json)
+        start_dialog(slots)
 
 
 if __name__ == '__main__':
