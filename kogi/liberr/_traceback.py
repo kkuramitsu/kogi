@@ -238,7 +238,7 @@ def kogi_print_exc(code='', exc_info=None, caught_ex=None, translate_en=None):
         code=code,
     )
     if record['emsg'].startswith("NameError: name 'コギー"):
-        record['translated'] = '呼んだ？'
+        record['translated'] = 'ぼくを呼んだ？'
         return record
     if caught_ex is None and issubclass(etype, SyntaxError):
         try:
