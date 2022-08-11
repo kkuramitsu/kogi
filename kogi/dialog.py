@@ -21,13 +21,24 @@ from .logger import add_lazy_logger
 
 import kogi.fake_nlp as nlp
 
+MODULES = [
+    ('math.', 'import math')
+]
+
+
+def check_module(code):
+    for module, todo in MODULES:
+        if code.startswith(module):
+            return f'<pre>{todo}</pre> してから、'
+    return ''
+
 
 def response_codegen(text: str):
     response = model_generate(text)
     if response is None:
-        return 'kogi.set(model_id=...)をセットしよう'
-    response = response.replace('<nl>', '\n').replace('<tab>', '    ')
-    return f'<pre>{response}</pre>'
+        return 'kogi.set(...)を再実行しよう'
+    code = response.replace('<nl>', '\n').replace('<tab>', '    ')
+    return check_module(code) + f'<pre>{response}</pre>'
 
 
 def response_hint(slots: dict):
