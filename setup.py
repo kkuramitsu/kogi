@@ -14,7 +14,7 @@ def _requires_from_file(filename):
 
 
 setup(name="kogi",
-      version="0.1.1",
+      version="0.2.0",
       license='MIT',
       author='Kimio Kuramitsu',
       description="Kogi Programming AI",
