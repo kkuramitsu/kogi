@@ -22,14 +22,23 @@ from .logger import add_lazy_logger
 import kogi.fake_nlp as nlp
 
 MODULES = [
-    ('math.', 'import math')
+    ('math.', 'import math'),
+    ('os.', 'import os'),
+    ('sys.', 'import sys'),
+    ('collections.', 'import collections'),
+    ('time.', 'import time'),
+    ('datetime.', 'import datetime'),
+    ('random.', 'import random'),
+    ('np.', 'import numpy as np'),
+    ('plt.', 'import matplotlib.pyplot as plt'),
+    ('pd.', 'import pandas as pd'),
 ]
 
 
 def check_module(code):
     for module, todo in MODULES:
         if code.startswith(module):
-            return f'<pre>{todo}</pre> してから、'
+            return f'<tt>{todo}</tt> してから、'
     return ''
 
 
