@@ -55,6 +55,8 @@ dialog_target = None
 
 
 def cc(text):
+    if len(text)==0:
+        return text
     n_ascii = sum(1 for c in text if ord(c) < 128)
     #print(text, n_ascii, len(text), n_ascii / len(text))
     if (n_ascii / len(text)) < 0.4:  # 日本語
