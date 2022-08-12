@@ -47,7 +47,7 @@ def response_codegen(text: str):
     if response is None:
         return 'kogi.set(...)を再実行しよう'
     code = response.replace('<nl>', '\n').replace('<tab>', '    ')
-    check_module(code) + f'<pre>{code}</pre>'
+    return check_module(code) + f'<pre>{code}</pre>'
 
 
 def response_hint(slots: dict):
