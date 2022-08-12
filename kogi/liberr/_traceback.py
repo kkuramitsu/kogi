@@ -237,7 +237,7 @@ def kogi_print_exc(code='', exc_info=None, caught_ex=None, translate_en=None):
         emsg=(f'{etype.__name__}: {evalue}').strip(),
         code=code,
     )
-    if record['emsg'].startswith("NameError: name 'コギー"):
+    if record['emsg'].startswith("NameError: name 'コギー") or record['emsg'].startswith("NameError: name 'こぎー"):
         record['translated'] = 'ぼくを呼んだ？'
         return record
     if caught_ex is None and issubclass(etype, SyntaxError):
