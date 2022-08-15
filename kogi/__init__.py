@@ -10,6 +10,7 @@ try:
     enable_kogi_hook()
     from .problem import atcoder_detector, atcoder_judge
     kogi_register_hook('atcoder', atcoder_judge, atcoder_detector)
+    from .ui import rmt
 except ModuleNotFoundError as e:
     import traceback
     traceback.print_exc()
