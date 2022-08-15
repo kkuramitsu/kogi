@@ -6,7 +6,7 @@ import json
 import requests
 from requests_oauthlib import OAuth1
 
-from kogi.logger import logging_asjson
+from kogi.logger import logging_asjson, print_nop
 
 GLOBALS = {
     # 'class': 'レギオ入門',
