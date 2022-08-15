@@ -45,10 +45,31 @@ class TransformWeaver(object):
 
 TransformWeaverNone = TransformWeaver()
 
+MODULES = [
+    ('math.', 'import math'),
+    ('os.', 'import os'),
+    ('sys.', 'import sys'),
+    ('collections.', 'import collections'),
+    ('time.', 'import time'),
+    ('datetime.', 'import datetime'),
+    ('random.', 'import random'),
+    ('np.', 'import numpy as np'),
+    ('plt.', 'import matplotlib.pyplot as plt'),
+    ('pd.', 'import pandas as pd'),
+]
+
+
+def check_module(code, fmt='<tt>{}</tt> してから、'):
+    for module, todo in MODULES:
+        if code.startswith(module):
+            return fmt.format(todo)
+    return ''
+
 
 def codegen(text):
     if '<nl>' in text:
         text = text.replace('<nl>', '\n').replace('<tab>', '\t')
+    text = check_module(text, fmt='{}\n') + text
     return text
 
 
