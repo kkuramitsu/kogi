@@ -17,7 +17,7 @@ inputPane.addEventListener('input', (e) => {
             const textarea = document.getElementById('output');
             textarea.textContent = data.result;
         })();
-    }, 600);  // 何も打たななかったら600ms秒後に送信
+    }, 800);  // 何も打たななかったら600ms秒後に送信
     logtimer = setTimeout(() => {
         // logtimer = null;
         google.colab.kernel.invokeFunction('notebook.Logger', [], {});

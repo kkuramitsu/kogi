@@ -2,7 +2,7 @@ import time
 import traceback
 from .content import ICON, JS, CSS
 from IPython.display import display, HTML, JSON
-from kogi.settings import kogi_log, translate_en, model_generate, print_nop
+from kogi.settings import kogi_log, translate_ja, model_generate, print_nop
 
 try:
     from google.colab import output as colab_output
@@ -66,11 +66,13 @@ def check_module(code, fmt='<tt>{}</tt> してから、'):
     return ''
 
 
-def codegen(text):
-    if '<nl>' in text:
-        text = text.replace('<nl>', '\n').replace('<tab>', '\t')
-    text = check_module(text, fmt='{}\n') + text
-    return text
+def codegen(code, text=''):
+    if '<nl>' in code:
+        code = code.replace('<nl>', '\n').replace('<tab>', '\t')
+    if text != '':
+        text = f'# {translate_ja(text)}\n'
+    code = check_module(code, fmt='{}\n') + text + code
+    return code
 
 
 _LOGS = []
