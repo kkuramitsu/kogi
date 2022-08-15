@@ -1,3 +1,4 @@
+import time
 import traceback
 from .content import ICON, JS, CSS
 from IPython.display import display, HTML, JSON
@@ -44,6 +45,13 @@ class TransformWeaver(object):
 
 TransformWeaverNone = TransformWeaver()
 
+
+def codegen(text):
+    if '<nl>' in text:
+        text = text.replace('<nl>', '\n').replace('<tab>', '\t')
+    return text
+
+
 _LOGS = []
 
 
@@ -60,9 +68,12 @@ def rmt(input='入力', output='予測', delay=600, print=print_nop,
             for line in text.splitlines():
                 if line not in cached:
                     _line = transform.before(line)
+                    s = time.time()
                     _translated = generate(_line)
+                    e = time.time()
+                    _tanslated = codegen(_translated)
                     translated = transform.after(_translated)
-                    print(len(line), line, '=>', translated)
+                    print(e-s, line, '=>', translated)
                     if line == _line and translated == _translated:
                         _LOGS.append((line, translated))
                     else:
