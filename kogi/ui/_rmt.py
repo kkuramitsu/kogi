@@ -71,9 +71,9 @@ def rmt(input='入力', output='予測', delay=600, print=print_nop,
                     s = time.time()
                     _translated = generate(_line)
                     e = time.time()
-                    _tanslated = codegen(_translated)
+                    _translated = codegen(_translated)
                     translated = transform.after(_translated)
-                    print(e-s, line, '=>', translated)
+                    print(f'{e-s:.3f}', line, '=>', translated)
                     if line == _line and translated == _translated:
                         _LOGS.append((line, translated))
                     else:
