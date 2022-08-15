@@ -96,7 +96,8 @@ def rmt(input='入力', output='予測', delay=600, print=print_nop,
                         _line = translate(line, lang='en_ja')
                         _line = transform.before(_line)
                         print(line, '=>', _line)
-                    _line = transform.before(line)
+                    else:
+                        _line = transform.before(line)
                     s = time.time()
                     _translated = generate(_line)
                     e = time.time()
