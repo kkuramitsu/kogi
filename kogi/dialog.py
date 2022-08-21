@@ -10,13 +10,8 @@ from .settings import (
 from .diagnosis import run_diagnosis
 from .dialog_desc import get_desc
 
-try:
-    from google.colab import output
-except ModuleNotFoundError:
-    output = None
-
-from kogi.ui import kogi_display, display_dialog, Conversation
-from kogi.liberr import kogi_print_exc, replace_eparams
+from .ui import kogi_display, display_dialog, Conversation, google_colab
+from .liberr import kogi_print_exc, replace_eparams
 from .logger import add_lazy_logger
 
 import kogi.fake_nlp as nlp
@@ -123,7 +118,7 @@ class Chatbot(Conversation):
         return response_talk(text)
 
 
-if output is None:
+if google_colab is None:
 
     def show_slots(slots, print=kogi_display):
         if 'reason' in slots:
@@ -217,6 +212,10 @@ def start_dialog(slots: dict):
     _start_chat(PREV_CHAT, dialog_slots['start'])
     return PREV_CHAT
 
+def kogi_ask(text:str):
+    global PREV_CHAT
+    if PREV_CHAT is not None:
+        print(PREV_CHAT.ask(text))
 
 def kogi_catch(exc_info=None, code: str = None, context: dict = None, exception=None, enable_dialog=True):
     if exc_info is None:

@@ -1,13 +1,11 @@
 import time
 import traceback
 from .content import ICON, JS, CSS
+from ._google import google_colab
+
 from IPython.display import display, HTML, JSON
 from kogi.settings import kogi_log, translate, model_generate, print_nop
 
-try:
-    from google.colab import output as colab_output
-except ModuleNotFoundError:
-    colab_output = None
 
 RMT_HTML = '''
 <div id="{id}" class="parent">
@@ -123,6 +121,6 @@ def rmt(input='入力', output='予測', delay=600, print=print_nop,
             kogi_log('rmt', pairs=_LOGS)
             _LOGS = []
 
-    if colab_output is not None:
-        colab_output.register_callback('notebook.Convert', convert)
-        colab_output.register_callback('notebook.Logger', logger)
+    if google_colab is not None:
+        google_colab.register_callback('notebook.Convert', convert)
+        google_colab.register_callback('notebook.Logger', logger)
