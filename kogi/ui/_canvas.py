@@ -262,7 +262,7 @@ class Canvas(object):
         return self.redraw1(x, y)
 
     def save_png(self):
-        max_iter = len(self.buffers)+1
+        max_iter = len(self.buffers)+2
         js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
         HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
         display(IPython.display.HTML(HTML))
@@ -280,7 +280,7 @@ class Canvas(object):
         filename2 = shlex.quote(filename)
         framerate = int(framerate)
         os.system(
-            f'ffmpeg -framerate {self.framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
+            f'ffmpeg -framerate {framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
         if os.path.exists(filename):
             print(f'Saved {filename}')
             return MP4(filename, self.width)
