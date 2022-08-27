@@ -256,7 +256,7 @@ class Canvas(object):
 
     def redraw(self, x=-1, y=-1, dataURI=''):
         if dataURI != '':
-            self.redraw_png(x, y, dataURI)
+            return self.redraw_png(x, y, dataURI)
         if len(self.buffers) > 0 or self.draw_fn is None:
             return self.redraw0(x, y)
         return self.redraw1(x, y)
@@ -265,7 +265,7 @@ class Canvas(object):
         _, _, dataURI = dataURI.partition("base64,")
         binary_data = a2b_base64(dataURI)
         fname = f'image{self.time_index:04d}.png'
-        print(fname, len(binary_data))
+        print(fname, len(binary_data), self.time_index)
         with open(fname, 'wb') as fd:
             fd.write(binary_data)
         return self.redraw0(x, y)
@@ -275,12 +275,16 @@ class Canvas(object):
         js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
         HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
         display(IPython.display.HTML(HTML))
-        filename2 = shlex.quote(filename)
+        self.filename = filename
+        self.framerate = int(framerate)
+
+    def _show_mp4(self):
+        filename = shlex.quote(self.filename)
         framerate = int(framerate)
         os.system(
             f'ffmpeg -framerate {framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
         if os.path.exists(filename):
-            print('Saved {filename}')
+            print(f'Saved {self.filename}')
             return MP4(filename, self.width)
 
 
