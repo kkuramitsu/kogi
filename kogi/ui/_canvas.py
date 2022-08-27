@@ -149,8 +149,14 @@ canvas.onmousedown = ()=>{
 '''
 
 ANIME_JS = '''
+const frame_max = 100;
+var frame_index = 0;
 const tm = setInterval(()=>{
     redraw(mouse.x, mouse.y, '');
+    frame_index += 1;
+    if(frame_index >= frame_max) {
+        clearInterval(tm);
+    }
 }, 500);
 '''
 
@@ -168,6 +174,10 @@ const tm = setInterval(()=>{
 '''
 
 
+def display_none(html):
+    return f'<div style="display:none;">\n{html}\n</div>\n'
+
+
 def safe(f):
     def safe_fn(*args):
         nonlocal f
@@ -182,12 +192,12 @@ def safe(f):
 
 
 class Canvas(object):
-    def __init__(self, width=400, height=300, delay=500, draw=None):
+    def __init__(self, width=400, height=300, delay=500, onclick=None):
         self.width = width
         self.height = height
         self.images = {}
         self.buffers = []
-        self.draw_fn = draw
+        self.draw_fn = onclick
         self.time_index = 0
         self.delay = delay
         if google_colab:
@@ -203,16 +213,18 @@ class Canvas(object):
         ss = []
         for key, data_url in self.images.items():
             ss.append(f'<img id="{key}" src="{data_url}">')
-        images = '\n'.join(ss)
-        return f'<div style="display:none;">\n{images}\n</div>\n' + html
+        return display_none('\n'.join(ss)) + html
+
+    def canvas_js(self):
+        js = DRAW_JS
+        if self.draw_fn is not None:
+            js += CLICK_JS
+        if len(self.buffers) > 0 and self.delay > 100:
+            js += ANIME_JS.replace('500', f'{self.delay}')
+        return f'<script>\n{js}\n</script>'
 
     def _repr_html_(self):
-        JS = DRAW_JS
-        if self.draw_fn is not None:
-            JS += CLICK_JS
-        if len(self.buffers) > 0 and self.delay > 100:
-            JS += ANIME_JS.replace('500', f'{self.delay}')
-        return self.canvas_html()+f'<script>\n{JS}\n</script>'
+        return self.canvas_html()+self.canvas_js()
 
     def getContext(self, target='2d'):
         cb = []
@@ -244,17 +256,45 @@ class Canvas(object):
 
     def redraw(self, x=-1, y=-1, dataURI=''):
         if dataURI != '':
-            _, _, dataURI = dataURI.partition("base64,")
-            binary_data = a2b_base64(dataURI)
-            fname = f'image{self.time_index:04d}.png'
-            print(fname, len(binary_data))
-            with open(fname, 'wb') as fd:
-                fd.write(binary_data)
-            return self.redraw0(x, y)
+            self.redraw_png(x, y, dataURI)
         if len(self.buffers) > 0 or self.draw_fn is None:
             return self.redraw0(x, y)
         return self.redraw1(x, y)
 
-    def save_to(self, filename='canvas.mp4'):
-        HTML = self.canvas_html()+f'<script>\n{DRAW_JS+MOVIE_JS}\n</script>'
+    def redraw_png(self, x=-1, y=-1, dataURI=''):
+        _, _, dataURI = dataURI.partition("base64,")
+        binary_data = a2b_base64(dataURI)
+        fname = f'image{self.time_index:04d}.png'
+        print(fname, len(binary_data))
+        with open(fname, 'wb') as fd:
+            fd.write(binary_data)
+        return self.redraw0(x, y)
+
+    def save_to_mp4(self, filename='canvas.mp4', framerate=30):
+        max_iter = len(self.buffers)+1
+        js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
+        HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
         display(IPython.display.HTML(HTML))
+        filename2 = shlex.quote(filename)
+        framerate = int(framerate)
+        os.system(
+            f'ffmpeg -framerate {framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
+        if os.path.exists(filename):
+            print('Saved {filename}')
+            return MP4(filename, self.width)
+
+
+class MP4(object):
+    def __init__(self, filename, width=400):
+        self.filename = filename
+        self.width = width
+
+    def _repr_html_(self):
+        with open(self.filename, 'rb') as fd:
+            bin = fd.read()
+            data_url = "data:video/mp4;base64," + b64encode(bin).decode()
+            return f'''
+            <video width="{self.width}" controls >
+            <source src="{data_url}" type="video/mp4" >
+            </video >
+            '''
