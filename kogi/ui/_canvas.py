@@ -261,31 +261,28 @@ class Canvas(object):
             return self.redraw0(x, y)
         return self.redraw1(x, y)
 
+    def save_png(self):
+        max_iter = len(self.buffers)+1
+        js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
+        HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
+        display(IPython.display.HTML(HTML))
+
     def redraw_png(self, x=-1, y=-1, dataURI=''):
         _, _, dataURI = dataURI.partition("base64,")
         binary_data = a2b_base64(dataURI)
         fname = f'image{self.time_index:04d}.png'
         print(fname, len(binary_data), self.time_index)
-        if self.time_index == 0:
-            self._show_mp4()
         with open(fname, 'wb') as fd:
             fd.write(binary_data)
         return self.redraw0(x, y)
 
-    def save_to_mp4(self, filename='canvas.mp4', framerate=15):
-        max_iter = len(self.buffers)+1
-        js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
-        HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
-        display(IPython.display.HTML(HTML))
-        self.filename = filename
-        self.framerate = int(framerate)
-
-    def _show_mp4(self):
-        filename = shlex.quote(self.filename)
+    def save_mp4(self, filename='canvas.mp4', framerate=15):
+        filename2 = shlex.quote(filename)
+        framerate = int(framerate)
         os.system(
-            f'ffmpeg -framerate {self.framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename}')
+            f'ffmpeg -framerate {self.framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
         if os.path.exists(filename):
-            print(f'Saved {self.filename}')
+            print(f'Saved {filename}')
             return MP4(filename, self.width)
 
 
