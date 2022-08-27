@@ -10,7 +10,17 @@ from .settings import (
 from .diagnosis import run_diagnosis
 from .dialog_desc import get_desc
 
-from .ui import kogi_display, display_dialog, Conversation, google_colab
+from .ui import Conversation, google_colab
+
+if google_colab:
+    from .ui.dialog_colab import display_dialog
+else:
+    try:
+        import ipywidgets
+        from .ui.dialog_ipywidgets import display_dialog
+    except ModuleNotFoundError:
+        from .ui.dialog_colab import display_dialog
+
 from .liberr import kogi_print_exc, replace_eparams
 from .logger import add_lazy_logger
 
@@ -118,41 +128,41 @@ class Chatbot(Conversation):
         return response_talk(text)
 
 
-if google_colab is None:
+# if google_colab is None:
 
-    def show_slots(slots, print=kogi_display):
-        if 'reason' in slots:
-            print(slots['reason'])
-        if 'fault_lines' in slots:
-            for reason in slots['fault_lines']:
-                print(reason)
-        if 'solution' in slots:
-            print(slots['solution'])
-        if 'maybe' in slots:
-            print(slots['maybe'])
-        if 'fault_vars' in slots:
-            for reason in slots['fault_vars']:
-                print(reason)
-        if 'hint' in slots:
-            print(slots['hint'])
+#     def show_slots(slots, print=kogi_display):
+#         if 'reason' in slots:
+#             print(slots['reason'])
+#         if 'fault_lines' in slots:
+#             for reason in slots['fault_lines']:
+#                 print(reason)
+#         if 'solution' in slots:
+#             print(slots['solution'])
+#         if 'maybe' in slots:
+#             print(slots['maybe'])
+#         if 'fault_vars' in slots:
+#             for reason in slots['fault_vars']:
+#                 print(reason)
+#         if 'hint' in slots:
+#             print(slots['hint'])
 
-    def _start_chat(chatbot, start_message):
-        try:
-            chatbot.get('bot_name', 'コギー')
-            kogi_display(start_message)
-            show_slots(chatbot.slots)
-        except:
-            kogi_print('バグりました。ご迷惑をおかけします')
-            traceback.print_exc()
+#     def _start_chat(chatbot, start_message):
+#         try:
+#             chatbot.get('bot_name', 'コギー')
+#             kogi_display(start_message)
+#             show_slots(chatbot.slots)
+#         except:
+#             kogi_print('バグりました。ご迷惑をおかけします')
+#             traceback.print_exc()
 
-    def _start_chat(chatbot, start_message):
-        bot, _ = display_dialog(chatbot)
-        bot(start_message)
+#     def _start_chat(chatbot, start_message):
+#         bot, _ = display_dialog(chatbot)
+#         bot(start_message)
 
-else:
-    def _start_chat(chatbot, start_message):
-        bot, _ = display_dialog(chatbot)
-        bot(start_message)
+# else:
+#     def _start_chat(chatbot, start_message):
+#         bot, _ = display_dialog(chatbot)
+#         bot(start_message)
 
 
 global_slots = {
@@ -209,7 +219,7 @@ def start_dialog(slots: dict):
     if 'start' not in dialog_slots:
         dialog_slots['start'] = dialog_slots.get('translated', 'おはよう')
     PREV_CHAT = Chatbot(slots=dialog_slots)
-    _start_chat(PREV_CHAT, dialog_slots['start'])
+    display_dialog(PREV_CHAT, dialog_slots['start'])
     return PREV_CHAT
 
 def kogi_ask(text:str):

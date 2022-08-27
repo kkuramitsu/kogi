@@ -141,6 +141,10 @@ html[theme=dark] {
     height: 150px;
 }
 
+.box2 {
+    background: var(--box-background);
+}
+
 textarea {
     width: 100%;
     box-sizing: border-box;
