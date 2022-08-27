@@ -272,7 +272,7 @@ class Canvas(object):
             fd.write(binary_data)
         return self.redraw0(x, y)
 
-    def save_to_mp4(self, filename='canvas.mp4', framerate=30):
+    def save_to_mp4(self, filename='canvas.mp4', framerate=15):
         max_iter = len(self.buffers)+1
         js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
         HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
@@ -283,7 +283,7 @@ class Canvas(object):
     def _show_mp4(self):
         filename = shlex.quote(self.filename)
         os.system(
-            f'ffmpeg -framerate {self.framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
+            f'ffmpeg -framerate {self.framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename}')
         if os.path.exists(filename):
             print(f'Saved {self.filename}')
             return MP4(filename, self.width)
