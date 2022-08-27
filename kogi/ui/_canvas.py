@@ -161,7 +161,7 @@ const tm = setInterval(()=>{
 '''
 
 MOVIE_JS = '''
-const frame_max = 10;
+const frame_max = 1000;
 var frame_index = 0;
 const tm = setInterval(()=>{
     const dataURL = canvas.toDataURL();
@@ -266,6 +266,8 @@ class Canvas(object):
         binary_data = a2b_base64(dataURI)
         fname = f'image{self.time_index:04d}.png'
         print(fname, len(binary_data), self.time_index)
+        if self.time_index == 0:
+            self._show_mp4()
         with open(fname, 'wb') as fd:
             fd.write(binary_data)
         return self.redraw0(x, y)
@@ -280,9 +282,8 @@ class Canvas(object):
 
     def _show_mp4(self):
         filename = shlex.quote(self.filename)
-        framerate = int(framerate)
         os.system(
-            f'ffmpeg -framerate {framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
+            f'ffmpeg -framerate {self.framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
         if os.path.exists(filename):
             print(f'Saved {self.filename}')
             return MP4(filename, self.width)
