@@ -144,43 +144,26 @@ canvas.addEventListener('mousemove', function(e) {
 redraw(mouse.x, mouse.y, '');
 '''
 
+ANIME_JS = '''
+var frame_index = 0;
+const tm = setInterval(()=>{
+    draw(data[frame_index]);
+    frame_index = (frame_index + 1) % data.length;
+}, 100);
+'''
+
 CLICK_JS = '''
 canvas.onmousedown = ()=>{
   redraw(mouse.x, mouse.y, '');
 }
 '''
 
-DATA_JS = '''
-const frame_max = data.length;
-var frame_index = 0;
-const tm = setInterval(()=>{
-    draw(data[frame_index]);
-    frame_index += 1;
-    if(frame_index >= frame_max) {
-        clearInterval(tm);
-    }
-}, 500);
-'''
-
-ANIME_JS = '''
-const frame_max = 100;
-var frame_index = 0;
-const tm = setInterval(()=>{
-    redraw(mouse.x, mouse.y, '');
-    frame_index += 1;
-    if(frame_index >= frame_max) {
-        clearInterval(tm);
-    }
-}, 500);
-'''
-
-
 MOVIE_JS = '''
 const frame_max = 1000;
 var frame_index = 0;
 const tm = setInterval(()=>{
     const dataURL = canvas.toDataURL();
-    redraw(mouse.x, mouse.y, dataURL);
+    redraw(frame_index|0, frame_max|0, dataURL);
     frame_index += 1;
     if(frame_index >= frame_max) {
         clearInterval(tm);
@@ -207,14 +190,15 @@ def safe(f):
 
 
 class Canvas(object):
-    def __init__(self, width=400, height=300, delay=500, onclick=None):
+    def __init__(self, width=400, height=300, framerate=5, onclick=None):
         self.width = width
         self.height = height
         self.images = {}
         self.buffers = []
         self.draw_fn = onclick
         self.time_index = 0
-        self.delay = delay
+        self.filename = 'canvas.mp4'
+        self.framerate = framerate
         if google_colab:
             google_colab.register_callback(
                 'notebook.redraw', safe(self.redraw))
@@ -236,10 +220,10 @@ class Canvas(object):
             data = [[c.to_json() for c in cb] for cb in self.buffers]
             data = json.dumps(data)
             js += f'const data = {data};\ndraw(data[0]);\n'
-        if len(self.buffers) > 0 and self.delay > 100:
-            js += ANIME_JS.replace('500', f'{self.delay}')
-        if self.draw_fn is not None:
+        if self.draw_fn:
             js += CLICK_JS
+        else:
+            js += ANIME_JS.replace('100', f'{1000//self.framerate}')
         return f'<script>\n{js}\n</script>'
 
     def _repr_html_(self):
@@ -252,18 +236,7 @@ class Canvas(object):
         ctx.clearRect(0, 0, self.width, self.height)
         return ctx
 
-    def redraw0(self, x=-1, y=-1):
-        size = len(self.buffers)
-        if self.time_index < size:
-            cb = self.buffers[self.time_index]
-            self.time_index = (self.time_index+1) % size
-        else:
-            cb = []
-        return IPython.display.JSON({
-            'result': [c.to_json() for c in cb]
-        })
-
-    def redraw1(self, x=-1, y=-1):
+    def redraw_click(self, x, y):
         cb = []
         ctx = new_context(cb)
         ctx.clearRect(0, 0, self.width, self.height)
@@ -278,9 +251,13 @@ class Canvas(object):
             return self.redraw_png(x, y, dataURI)
         if len(self.buffers) > 0 or self.draw_fn is None:
             return self.redraw0(x, y)
-        return self.redraw1(x, y)
+        return self.redraw_click(x, y)
 
-    def save_png(self):
+    def capture_movie(self, filename=None, framerate=None):
+        if filename is not None:
+            self.filename = filename
+        if framerate is not None:
+            self.framerate = framerate
         i = 0
         while True:
             fname = f'image{i:04d}.png'
@@ -293,11 +270,11 @@ class Canvas(object):
         HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
         display(IPython.display.HTML(HTML))
 
-    def redraw_png(self, x=-1, y=-1, dataURI=''):
+    def redraw_png(self, x, y, dataURI=''):
         _, _, dataURI = dataURI.partition("base64,")
         binary_data = a2b_base64(dataURI)
-        fname = f'image{self.time_index:04d}.png'
-        index = f'{self.time_index}/{len(self.buffers)}'
+        fname = f'image{x:04d}.png'
+        index = f'{x}/{y}'
         size = f'size={len(binary_data)}'
         if google_colab:
             google_colab.clear(output_tags='outputs')
@@ -308,9 +285,14 @@ class Canvas(object):
             print(f'[{index}] {fname} {size}')
         with open(fname, 'wb') as fd:
             fd.write(binary_data)
-        return self.redraw0(x, y)
+        if x + 1 == y:
+            self.save_mp4(self.filename, self.framerate)
+        cb = self.buffers[x]
+        return IPython.display.JSON({
+            'result': [c.to_json() for c in cb]
+        })
 
-    def save_mp4(self, filename='canvas.mp4', framerate=15, cleanup=True):
+    def save_movie(self, filename='canvas.mp4', framerate=15):
         filename2 = shlex.quote(filename)
         framerate = int(framerate)
         if os.path.exists(filename):
