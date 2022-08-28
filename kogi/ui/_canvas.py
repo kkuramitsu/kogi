@@ -121,17 +121,11 @@ const draw = (data) => {
             ctx[op[1]] = op[2];
         }
         else{
-            if(op[1] === 'drawImage') {
+            if(op[1] === 'drawImage' && typeof op[2][0] === 'string') {
                 console.log(op[2][0]);
                 op[2][0] = document.getElementById(op[2][0]);
             }
-            try{
-                ctx[op[1]](...op[2]);
-            }
-            catch(e) {
-                console.log(e);
-                console.log(op);
-            }
+            ctx[op[1]](...op[2]);
         }
     }
 };
