@@ -233,7 +233,8 @@ class Canvas(object):
     def canvas_js(self):
         js = DRAW_JS
         if len(self.buffers) > 0:
-            data = json.dumps(self.buffers)
+            data = [[c.to_json() for c in cb] for cb in self.buffers]
+            data = json.dumps(data)
             js += f'const data = {data};\ndraw(data[0]);\n'
         if len(self.buffers) > 0 and self.delay > 100:
             js += ANIME_JS.replace('500', f'{self.delay}')
