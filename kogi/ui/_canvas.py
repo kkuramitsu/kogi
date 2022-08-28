@@ -111,11 +111,24 @@ CANVAS_HTML = '''
 
 DRAW_JS = '''
 const canvas = document.getElementById('canvas');
+const dpr = window.devicePixelRatio || 1,
+const width = canvas.width,
+const height = canvas.height;
+// Canvasをピクセル比で拡大
+canvas.width *= dpr;
+canvas.height *= dpr;
+// CSSで元のサイズに戻す
+canvas.style.width = width + 'px';
+canvas.style.height = height + 'px';
+
+// Canvasの描画自体を拡大
+const ctx = canvas.getContext('2d');
+ctx.scale(dpr, dpr);
+
 const draw = (data) => {
     if(data.length===0) {
         return;
     }
-    const ctx = canvas.getContext('2d');
     for(const op of data) {
         if(op[0] === 0) {
             ctx[op[1]] = op[2];
