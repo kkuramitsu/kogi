@@ -112,6 +112,9 @@ CANVAS_HTML = '''
 DRAW_JS = '''
 const canvas = document.getElementById('canvas');
 const draw = (data) => {
+    if(data.length===0) {
+        return;
+    }
     const ctx = canvas.getContext('2d');
     for(const op of data) {
         if(op[0] === 0) {
@@ -122,7 +125,13 @@ const draw = (data) => {
                 console.log(op[2][0]);
                 op[2][0] = document.getElementById(op[2][0]);
             }
-            ctx[op[1]](...op[2]);
+            try{
+                ctx[op[1]](...op[2]);
+            }
+            catch(e) {
+                console.log(e);
+                console.log(op);
+            }
         }
     }
 };
