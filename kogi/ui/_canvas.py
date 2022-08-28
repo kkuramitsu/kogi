@@ -249,8 +249,11 @@ class Canvas(object):
     def redraw(self, x=-1, y=-1, dataURI=''):
         if dataURI != '':
             return self.redraw_png(x, y, dataURI)
-        if len(self.buffers) > 0 or self.draw_fn is None:
-            return self.redraw0(x, y)
+        if self.draw_fn is None:
+            cb = self.buffers[0] if len(self.buffers) > 0 else []
+            return IPython.display.JSON({
+                'result': [c.to_json() for c in cb]
+            })
         return self.redraw_click(x, y)
 
     def capture_movie(self, filename=None, framerate=None):
