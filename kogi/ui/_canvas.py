@@ -1,3 +1,4 @@
+import json
 import os
 import shlex
 from base64 import b64encode
@@ -148,6 +149,18 @@ canvas.onmousedown = ()=>{
 }
 '''
 
+DATA_JS = '''
+const frame_max = data.length;
+var frame_index = 0;
+const tm = setInterval(()=>{
+    draw(data[frame_index]);
+    frame_index += 1;
+    if(frame_index >= frame_max) {
+        clearInterval(tm);
+    }
+}, 500);
+'''
+
 ANIME_JS = '''
 const frame_max = 100;
 var frame_index = 0;
@@ -159,6 +172,7 @@ const tm = setInterval(()=>{
     }
 }, 500);
 '''
+
 
 MOVIE_JS = '''
 const frame_max = 1000;
@@ -217,10 +231,13 @@ class Canvas(object):
 
     def canvas_js(self):
         js = DRAW_JS
-        if self.draw_fn is not None:
-            js += CLICK_JS
+        if len(self.buffers) > 0:
+            data = json.dumps(self.buffers)
+            js += f'const data = {data};\ndraw(data[0]);\n'
         if len(self.buffers) > 0 and self.delay > 100:
             js += ANIME_JS.replace('500', f'{self.delay}')
+        if self.draw_fn is not None:
+            js += CLICK_JS
         return f'<script>\n{js}\n</script>'
 
     def _repr_html_(self):
