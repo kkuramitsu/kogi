@@ -276,7 +276,7 @@ class Canvas(object):
             fd.write(binary_data)
         return self.redraw0(x, y)
 
-    def save_mp4(self, filename='canvas.mp4', framerate=15):
+    def save_mp4(self, filename='canvas.mp4', framerate=15. cleanup=True):
         filename2 = shlex.quote(filename)
         framerate = int(framerate)
         if os.path.exists(filename):
@@ -286,6 +286,13 @@ class Canvas(object):
         if os.path.exists(filename):
             print(f'Saved {filename}')
             return MP4(filename, self.width)
+        i = 0
+        while cleanup:
+            fname = f'image{i:04d}.png'
+            if not os.path.exisits(fname):
+                break
+            os.remove(fname)
+            i += 1
 
 
 class MP4(object):
