@@ -279,8 +279,10 @@ class Canvas(object):
     def save_mp4(self, filename='canvas.mp4', framerate=15):
         filename2 = shlex.quote(filename)
         framerate = int(framerate)
+        if os.path.exists(filename):
+            os.remove(filename)
         os.system(
-            f'ffmpeg -framerate {framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p -r 60 {filename2}')
+            f'ffmpeg -y -framerate {framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p {filename2}')
         if os.path.exists(filename):
             print(f'Saved {filename}')
             return MP4(filename, self.width)
