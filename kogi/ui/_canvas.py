@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import shlex
 from base64 import b64encode
 from binascii import a2b_base64
@@ -279,7 +280,14 @@ class Canvas(object):
         return self.redraw1(x, y)
 
     def save_png(self):
-        max_iter = len(self.buffers)+2
+        i = 0
+        while True:
+            fname = f'image{i:04d}.png'
+            if not os.path.exisits(fname):
+                break
+            os.remove(fname)
+            i += 1
+        max_iter = len(self.buffers)
         js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
         HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
         display(IPython.display.HTML(HTML))
@@ -288,12 +296,20 @@ class Canvas(object):
         _, _, dataURI = dataURI.partition("base64,")
         binary_data = a2b_base64(dataURI)
         fname = f'image{self.time_index:04d}.png'
-        print(fname, len(binary_data), self.time_index)
+        index = f'{self.time_index}/{len(self.buffers)}'
+        size = f'size={len(binary_data)}'
+        if google_colab:
+            google_colab.clear(output_tags='outputs')
+            with google_colab.use_tags('outputs'):
+                sys.stdout.write(f'[{index}] {fname} {size}\n')
+                sys.stdout.flush()
+        else:
+            print(f'[{index}] {fname} {size}')
         with open(fname, 'wb') as fd:
             fd.write(binary_data)
         return self.redraw0(x, y)
 
-    def save_mp4(self, filename='canvas.mp4', framerate=15. cleanup=True):
+    def save_mp4(self, filename='canvas.mp4', framerate=15, cleanup=True):
         filename2 = shlex.quote(filename)
         framerate = int(framerate)
         if os.path.exists(filename):
@@ -303,13 +319,6 @@ class Canvas(object):
         if os.path.exists(filename):
             print(f'Saved {filename}')
             return MP4(filename, self.width)
-        i = 0
-        while cleanup:
-            fname = f'image{i:04d}.png'
-            if not os.path.exisits(fname):
-                break
-            os.remove(fname)
-            i += 1
 
 
 class MP4(object):
