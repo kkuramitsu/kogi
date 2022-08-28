@@ -166,7 +166,7 @@ const frame_max = 1000;
 var frame_index = 0;
 const tm = setInterval(()=>{
     const dataURL = canvas.toDataURL();
-    redraw(frame_index|0, frame_max|0, dataURL);
+    redraw(frame_index, frame_max, dataURL);
     frame_index += 1;
     if(frame_index >= frame_max) {
         clearInterval(tm);
@@ -276,12 +276,13 @@ class Canvas(object):
         HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
         display(IPython.display.HTML(HTML))
 
-    def redraw_png(self, x, y, dataURI=''):
+    def redraw_png(self, x, y, dataURI):
         _, _, dataURI = dataURI.partition("base64,")
         binary_data = a2b_base64(dataURI)
         fname = f'image{x:04d}.png'
         index = f'{x}/{y}'
         size = f'size={len(binary_data)}'
+        print(f'[{index}] {fname} {size}')
         if google_colab:
             google_colab.clear(output_tags='outputs')
             with google_colab.use_tags('outputs'):
