@@ -259,15 +259,15 @@ class Canvas(object):
             })
         return self.redraw_click(x, y)
 
-    def capture_movie(self, filename=None, framerate=None):
+    def save_movie(self, filename=None, framerate=None):
         if filename is not None:
             self.filename = filename
         if framerate is not None:
-            self.framerate = framerate
+            self.framerate = int(framerate)
         i = 0
         while True:
             fname = f'image{i:04d}.png'
-            if not os.path.exisits(fname):
+            if not os.path.exists(fname):
                 break
             os.remove(fname)
             i += 1
@@ -292,13 +292,13 @@ class Canvas(object):
         with open(fname, 'wb') as fd:
             fd.write(binary_data)
         if x + 1 == y:
-            self.save_mp4(self.filename, self.framerate)
+            self._save_movie(self.filename, self.framerate)
         cb = self.buffers[x]
         return IPython.display.JSON({
             'result': [c.to_json() for c in cb]
         })
 
-    def save_movie(self, filename='canvas.mp4', framerate=15):
+    def _save_movie(self, filename='canvas.mp4', framerate=15):
         filename2 = shlex.quote(filename)
         framerate = int(framerate)
         if os.path.exists(filename):
