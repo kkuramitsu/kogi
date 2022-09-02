@@ -74,6 +74,7 @@ def display_dialog(chat: Conversation, start=None, placeholder='質問はこち�
                 user_text = user_text.strip()
                 dialog_user(user_text)
                 bot_text = chat.ask(user_text)
+                dialog_bot(bot_text)
                 #print('@', bot_text)
             except:
                 dialog_bot('バグで処理に失敗しました。ごめんなさい')
