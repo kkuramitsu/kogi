@@ -9,8 +9,6 @@ from requests_oauthlib import OAuth1
 from kogi.logger import logging_asjson, print_nop
 
 GLOBALS = {
-    # 'class': 'レギオ入門',
-    # 'name': 'たぬき',
     'textra': 'cb25461ac40e7a2dc0b2bc05d381995a',
     'model_key': 'rhOcswxkXzMbhlkKQJfytbfxAPVsblhRHX',
 }
@@ -29,6 +27,9 @@ def kogi_set(**kwargs):
         load_textra(kwargs['textra_key'])
     if 'slack_key' in kwargs:
         load_slack(kwargs['slack_key'])
+
+def isEnglishDemo():
+    return kogi_get('english_demo', False)
 
 
 # LOGGING
@@ -155,6 +156,7 @@ def load_mt5(model_id, qint8=True, device='cpu'):
     tokenizer = MT5Tokenizer.from_pretrained(model_id, is_fast=True)
 
     if qint8:
+        kogi_print('quantization')
         model = torch.quantization.quantize_dynamic(
             model, {torch.nn.Linear}, dtype=torch.qint8
         )

@@ -1,12 +1,14 @@
 import traceback
 from .content import ICON, JS, CSS
+from ._google import google_colab
+
 from IPython.display import display, HTML
 from kogi.settings import translate_ja, kogi_get
 
-try:
-    from google.colab import output
-except ModuleNotFoundError:
-    output = None
+if not google_colab:
+    from ipywidgets import Text
+    #from IPython.display import display, clear_output
+
 
 APPEND_JS = '''
 <script>
@@ -18,7 +20,6 @@ if(target !== undefined) {{
 }}
 </script>
 '''
-
 
 def append_content(target, html):
     html = html.replace('\\', '\\\\')
@@ -66,13 +67,11 @@ def cc(text):
             return f'{text}<br><i>{t}</i>'
     return text
 
-
 def kogi_display(text, **kwargs):
     if isinstance(text, list):
         text = '<br>'.join(cc(line) for line in text)
     else:
         text = cc(text)
-
     data = dict(
         text=text,
         icon='kogi-fs8.png',
@@ -82,20 +81,28 @@ def kogi_display(text, **kwargs):
     data['icon'] = ICON(data.get('icon', '/'))
     _HTML = kwargs.get('html', DIALOG_BOT_HTML)
     html = _HTML.format(**data)
-    #print('@@', html, kwargs)
     if dialog_target is not None:
         append_content(dialog_target, html=html)
     else:
         display(HTML(CSS('dialog.css') + html))
+    
 
 
-DIALOG_HTML = '''
+DIALOG_COLAB_HTML = '''
 <div id="dialog">
     {script}
     <div id="{target}" class="box" style="height: 150px">
     </div>
     <div style="text-align: right">
         <textarea id="input" placeholder="{placeholder}"></textarea>
+    </div>
+</div>
+'''
+
+DIALOG_HTML = '''
+<div id="dialog">
+    {script}
+    <div id="{target}" class="box" style="height: 150px">
     </div>
 </div>
 '''
@@ -130,8 +137,19 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
         placeholder=placeholder,
         target=dialog_target,
     )
-    DHTML = DIALOG_HTML.replace('150', str(kogi_get('chat_height', 180)))
-    display(HTML(CSS('dialog.css') + DHTML.format(**data)))
+    if google_colab:
+        DHTML = DIALOG_COLAB_HTML.replace('150', str(kogi_get('chat_height', 180)))
+        display(HTML(CSS('dialog.css') + DHTML.format(**data)))
+    else:
+        DHTML = DIALOG_HTML.replace('150', str(kogi_get('chat_height', 180)))
+        display(HTML(CSS('dialog.css') + DHTML.format(**data)))
+        text = Text(value='',
+            placeholder=placeholder,
+            description='質問:',
+            disabled=False
+            )
+        display(text)
+
     if context is None:
         context = Conversation()
 
@@ -154,7 +172,7 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
         data.update(kwargs)
         kogi_display(user_text, **data)
 
-    if output is not None:
+    if google_colab:
         def ask(user_text):
             try:
                 user_text = user_text.strip()
@@ -165,6 +183,20 @@ def display_dialog(context=None, placeholder='質問はこちらに'):
             except:
                 kogi_display('バグで処理に失敗しました。ごめんなさい')
                 traceback.print_exc()
-        output.register_callback('notebook.ask', ask)
+        google_colab.register_callback('notebook.ask', ask)
+    else:
+        def ask2(submit):
+            try:
+                print(submit.value)
+                user_text = str(submit.value).strip()
+                dialog_user(user_text)
+                bot_text = context.ask(user_text)
+                dialog_bot(bot_text)
+                #print('@', bot_text)
+                text.value=''
+            except:
+                kogi_display('バグで処理に失敗しました。ごめんなさい')
+                traceback.print_exc()
+        text.on_submit(ask2)
 
     return dialog_bot, dialog_user
