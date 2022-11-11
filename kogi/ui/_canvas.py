@@ -111,13 +111,11 @@ CANVAS_HTML = '''
 
 DRAW_JS = '''
 const canvas = document.getElementById('canvas');
-const dpr = window.devicePixelRatio || 1,
-const width = canvas.width,
+const dpr = window.devicePixelRatio || 1;
+const width = canvas.width;
 const height = canvas.height;
-// Canvasをピクセル比で拡大
 canvas.width *= dpr;
 canvas.height *= dpr;
-// CSSで元のサイズに戻す
 canvas.style.width = width + 'px';
 canvas.style.height = height + 'px';
 
