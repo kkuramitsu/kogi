@@ -22,9 +22,9 @@ def _install():
 
 def _convert(file, width=None, height=None):
     if height is None:
-        height = width*10 if width else None
+        height = width * 10 if width else None
     if width is None:
-        width = height*10 if height else None
+        width = height * 10 if height else None
     if width and height:
         file2 = file.replace('.', '_.')
         os.system(f'convert -resize {width}x{height} {file} {file2}')
@@ -44,8 +44,9 @@ IMAGE_CACHE = {}
 
 def wget(url, width=None, height=None):
     _install()
-    if url in IMAGE_CACHE:
-        return IMAGE_CACHE[url]
+    key = f'{url}{width}x{height}'
+    if key in IMAGE_CACHE:
+        return IMAGE_CACHE[key]
     qurl = shlex.quote(url)
     data_url = None
     if url.endswith('.png') or url.endswith('.PNG'):
@@ -67,7 +68,7 @@ def wget(url, width=None, height=None):
         os.remove(file)
     if data_url is None:
         return False
-    IMAGE_CACHE[url] = data_url
+    IMAGE_CACHE[key] = data_url
     return data_url
 
 
@@ -106,7 +107,8 @@ def new_context(contexts=[]):
 
 
 CANVAS_HTML = '''
-<canvas id="canvas" width="400" height="300" style="background-color:rgb(240,240,240)"></canvas>
+<canvas id="canvas" width="400" height="300" style="background-color:rgb(0,0,0)">
+</canvas>
 '''
 
 DRAW_JS = '''
