@@ -240,7 +240,7 @@ class Canvas(object):
             js += CLICK_JS
         else:
             js += ANIME_JS.replace('100', f'{1000//self.framerate}')
-        return f'<script>\n{js}\n</script>'
+        return f'<script type="text/javascript">\n{js}\n</script>'
 
     def _repr_html_(self):
         return self.canvas_html()+self.canvas_js()
