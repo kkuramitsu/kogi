@@ -1,3 +1,5 @@
+import builtins
+import numpy as np
 import json
 import os
 import sys
@@ -6,6 +8,7 @@ from base64 import b64encode
 from binascii import a2b_base64
 import traceback
 import IPython
+from IPython.display import HTML, JSON
 
 from ._google import google_colab
 
@@ -42,7 +45,7 @@ def toDataURL(file, mimetype):
 IMAGE_CACHE = {}
 
 
-def wget(url, width=None, height=None):
+def wget_dataurl(url, width=None, height=None):
     _install()
     key = f'{url}{width}x{height}'
     if key in IMAGE_CACHE:
@@ -72,6 +75,22 @@ def wget(url, width=None, height=None):
     return data_url
 
 
+class MP4(object):
+    def __init__(self, filename, width=400):
+        self.filename = filename
+        self.width = width
+
+    def _repr_html_(self):
+        with open(self.filename, 'rb') as fd:
+            bin = fd.read()
+            data_url = "data:video/mp4;base64," + b64encode(bin).decode()
+            return f'''
+            <video width="{self.width}" controls>
+            <source src="{data_url}" type="video/mp4">
+            </video>
+            '''
+
+
 def new_context(contexts=[]):
     class KParam(object):
         def __init__(self, name, value):
@@ -86,6 +105,7 @@ def new_context(contexts=[]):
     class KMethod(object):
         def __init__(self, name):
             self.name = name
+            self.args = ()
             nonlocal contexts
             contexts.append(self)
 
@@ -105,14 +125,47 @@ def new_context(contexts=[]):
 
     return Context()
 
+# HTML
 
-CANVAS_HTML = '''
+
+def html_img(key, data_url):
+    return f'<img id="{key}" src="{data_url}">'
+
+
+ANIME = '''
+<div style="display:none;">
+IMG
+</div>
 <canvas id="canvas" width="400" height="300" style="background-color:rgb(0,0,0)">
 </canvas>
 '''
 
+MOVIE = '''
+<progress id="prog_bar" value="0" max="100"></progress>
+<div style="display:none;">
+IMG
+<canvas id="canvas" width="400" height="300" style="background-color:rgb(0,0,0)">
+</canvas>
+</div>
+'''
+
+
+def make_html(canvas, base=ANIME):
+    images = ''
+    if len(canvas.images) > 0:
+        ss = [html_img(key, data_url)
+              for key, data_url in canvas.images.items()]
+        images = '\n'.join(ss)
+    newid = f'"canvas{id(canvas)}"'
+    base = base.replace('"canvas"', newid)
+    base = base.replace('400', f'{canvas.width}')
+    base = base.replace('300', f'{canvas.height}')
+    base = base.replace('IMG', images)
+    return base
+
+
 DRAW_JS = '''
-const canvas = document.getElementById('canvas');
+const canvas = document.getElementById("canvas");
 const dpr = window.devicePixelRatio || 1;
 const width = canvas.width;
 const height = canvas.height;
@@ -142,54 +195,92 @@ const draw = (data) => {
         }
     }
 };
-const redraw = (x, y, dataURL) => {
-    (async function() {
-    const result = await google.colab.kernel.invokeFunction(
-        'notebook.redraw', // The callback name.
-        [x, y, dataURL], // The arguments.
-        {}); // kwargs
-    const cdata = result.data['application/json'];
-    draw(cdata.result);
-    })();
-};
+
+var frame = [[]];
+'''
+
+ANIME_JS = '''
+var repeat = true;
+var frame_idx = 0;
+const tm = setInterval(()=>{
+    draw(frame[frame_idx]);
+    frame_idx += 1;
+    if(frame_idx >= frame.length) {
+        if(repeat) {
+            frame_idx = 0;
+        }
+        else {
+            frame_idx = frame.length - 1;
+        }
+    }
+}, 100);
+'''
+
+CLICK_JS = '''
 var mouse = {x: 0, y: 0};
 canvas.addEventListener('mousemove', function(e) {
   mouse.x = e.pageX - this.offsetLeft
   mouse.y = e.pageY - this.offsetTop
 });
-redraw(mouse.x, mouse.y, '');
-'''
 
-ANIME_JS = '''
-var frame_index = 0;
-const tm = setInterval(()=>{
-    draw(data[frame_index]);
-    frame_index = (frame_index + 1) % data.length;
-}, 100);
-'''
+const redraw = (x, y) => {
+    (async function() {
+        const result = await google.colab.kernel.invokeFunction(
+            'notebook.click',
+            [x, y],
+            {}); // kwargs
+        const updated = result.data['application/json'].result;
+        if(updated.length > 0) {
+            frame = updated;
+            frame_idx = 0;
+            repeat = false;
+            draw(updated[0]);
+        }
+    })();
+};
 
-CLICK_JS = '''
-canvas.onmousedown = ()=>{
-  redraw(mouse.x, mouse.y, '');
+canvas.onmousedown = () => {
+  redraw(mouse.x, mouse.y);
 }
 '''
 
 MOVIE_JS = '''
-const frame_max = 1000;
-var frame_index = 0;
-const tm = setInterval(()=>{
+var frame_count=0;
+const bar = document.getElementById('prog_bar');
+const save = () => {
+    draw(frame[0]);
+    const idx = frame_count++;
     const dataURL = canvas.toDataURL();
-    redraw(frame_index, frame_max, dataURL);
-    frame_index += 1;
-    if(frame_index >= frame_max) {
-        clearInterval(tm);
-    }
-}, 500);
+    (async function() {
+        const result = await google.colab.kernel.invokeFunction(
+            'notebook.save',
+            [idx, dataURL],
+            {}); // kwargs
+        const jsondata = result.data['application/json']
+        const updated = jsondata.result;
+        bar.value = jsondata.value;
+        bar.max = jsondata.max;    
+        if(updated.length > 0) {
+            frame = updated;
+            save();
+        }
+    })();
+};
+save()
 '''
 
 
-def display_none(html):
-    return f'<div style="display:none;">\n{html}\n</div>\n'
+def make_js(canvas, asm, fps=0, onclick=None):
+    js = DRAW_JS.replace('[[]]', json.dumps(asm))
+    newid = f'"canvas{id(canvas)}"'
+    js = js.replace('"canvas"', newid)
+    if fps > 0:
+        js += ANIME_JS.replace('100', f'{1000//fps}')
+    else:
+        js += MOVIE_JS
+    if onclick is not None:
+        js += CLICK_JS
+    return f'<script>\n{js}\n</script>'
 
 
 def safe(f):
@@ -199,142 +290,151 @@ def safe(f):
             return f(*args)
         except:
             traceback.print_exc()
-            return IPython.display.JSON({
-                'result': []
+            return JSON({
+                'result': [[]]
             })
     return safe_fn
 
 
 class Canvas(object):
-    def __init__(self, width=400, height=300, framerate=5, onclick=None):
+    def __init__(self, width=400, height=300, background='white', fps=5, onclick=None):
         self.width = width
         self.height = height
         self.images = {}
         self.buffers = []
-        self.draw_fn = onclick
-        self.time_index = 0
+        self.background = background
+        self.fps = fps
+        self.onclick_fn = onclick
         self.filename = 'canvas.mp4'
-        self.framerate = framerate
         if google_colab:
             google_colab.register_callback(
-                'notebook.redraw', safe(self.redraw))
+                'notebook.click', safe(self.click))
+            google_colab.register_callback(
+                'notebook.save', safe(self.save))
 
     def loadImage(self, image_key, url, width=None, height=None):
-        self.images[image_key] = wget(url, width=width, height=height)
-
-    def canvas_html(self):
-        html = CANVAS_HTML.replace('400', f'{self.width}')
-        html = html.replace('300', f'{self.height}')
-        ss = []
-        for key, data_url in self.images.items():
-            ss.append(f'<img id="{key}" src="{data_url}">')
-        return display_none('\n'.join(ss)) + html
-
-    def canvas_js(self):
-        js = DRAW_JS
-        if len(self.buffers) > 0:
-            data = [[c.to_json() for c in cb] for cb in self.buffers]
-            data = json.dumps(data)
-            js += f'const data = {data};\ndraw(data[0]);\n'
-        if self.draw_fn:
-            js += CLICK_JS
-        else:
-            js += ANIME_JS.replace('100', f'{1000//self.framerate}')
-        return f'<script type="text/javascript">\n{js}\n</script>'
-
-    def _repr_html_(self):
-        return self.canvas_html()+self.canvas_js()
+        self.images[image_key] = wget_dataurl(url, width=width, height=height)
+        return HTML(html_img(image_key, self.images[image_key]))
 
     def getContext(self, target='2d'):
         cb = []
         self.buffers.append(cb)
         ctx = new_context(cb)
         ctx.clearRect(0, 0, self.width, self.height)
+        ctx.fillStyle = self.background
+        ctx.fillRect(0, 0, self.width, self.height)
         return ctx
 
-    def redraw_click(self, x, y):
-        cb = []
-        ctx = new_context(cb)
-        ctx.clearRect(0, 0, self.width, self.height)
-        self.draw_fn(ctx, self.time_index, self.width, self.height, x, y)
-        self.time_index += 1
-        return IPython.display.JSON({
-            'result': [c.to_json() for c in cb]
+    def asm(self):
+        if len(self.buffers) == 0:
+            return [[]]
+        return [[c.to_json() for c in cb] for cb in self.buffers]
+
+    def _repr_html_(self):
+        return make_html(self) + make_js(self, self.asm(), self.fps, self.onclick_fn)
+
+    def click(self, x, y):
+        self.buffers = []
+        self.onclick_fn(self, x, y)
+        return JSON({
+            'result': self.asm()
         })
 
-    def redraw(self, x=-1, y=-1, dataURI=''):
-        if dataURI != '':
-            return self.redraw_png(x, y, dataURI)
-        if self.draw_fn is None:
-            cb = self.buffers[0] if len(self.buffers) > 0 else []
-            return IPython.display.JSON({
-                'result': [c.to_json() for c in cb]
-            })
-        return self.redraw_click(x, y)
-
-    def save_movie(self, filename=None, framerate=None):
+    def save_movie(self, filename=None, fps=None):
         if filename is not None:
             self.filename = filename
-        if framerate is not None:
-            self.framerate = int(framerate)
+        if fps is not None:
+            self.fps = int(fps)
         i = 0
         while True:
-            fname = f'image{i:04d}.png'
+            fname = f'frame{i:04d}.png'
             if not os.path.exists(fname):
                 break
             os.remove(fname)
             i += 1
-        max_iter = len(self.buffers)
-        js = DRAW_JS+MOVIE_JS.replace('1000', f'{max_iter}')
-        HTML = display_none(self.canvas_html())+f'<script>\n{js}\n</script>\n'
-        display(IPython.display.HTML(HTML))
+        first_frame = [[c.to_json() for c in self.buffers[0]]]
+        display(HTML(make_html(self, MOVIE) + make_js(self, first_frame)))
 
-    def redraw_png(self, x, y, dataURI):
+    def save(self, idx, dataURI):
         _, _, dataURI = dataURI.partition("base64,")
         binary_data = a2b_base64(dataURI)
-        fname = f'image{x:04d}.png'
-        index = f'{x}/{y}'
-        size = f'size={len(binary_data)}'
-        print(f'[{index}] {fname} {size}')
-        if google_colab:
-            google_colab.clear(output_tags='outputs')
-            with google_colab.use_tags('outputs'):
-                sys.stdout.write(f'[{index}] {fname} {size}\n')
-                sys.stdout.flush()
-        else:
-            print(f'[{index}] {fname} {size}')
+        fname = f'frame{idx:04d}.png'
+        # print(fname)
         with open(fname, 'wb') as fd:
             fd.write(binary_data)
-        if x + 1 == y:
-            self._save_movie(self.filename, self.framerate)
-        cb = self.buffers[x]
-        return IPython.display.JSON({
-            'result': [c.to_json() for c in cb]
+        update = []
+        msg = f'Saved'
+        if idx < len(self.buffers):
+            cb = self.buffers[idx]
+            update = [[c.to_json() for c in cb]]
+            value = idx
+            msg = f'Saved [{idx}/{len(self.buffers)}] {fname}'
+        else:
+            self._save_movie()
+            value = len(self.buffers)
+            msg = f'Saved {self.filename}'
+        return JSON({
+            'result': update,
+            'max': len(self.buffers),
+            'value': value,
+            'meg': msg,
         })
 
-    def _save_movie(self, filename='canvas.mp4', framerate=15):
-        filename2 = shlex.quote(filename)
-        framerate = int(framerate)
+    def _save_movie(self):
+        filename = shlex.quote(self.filename)
+        framerate = int(self.fps)
         if os.path.exists(filename):
             os.remove(filename)
         os.system(
-            f'ffmpeg -y -framerate {framerate} -i image%04d.png -vcodec libx264 -pix_fmt yuv420p {filename2}')
+            f'ffmpeg -y -framerate {framerate} -i frame%04d.png -vcodec libx264 -pix_fmt yuv420p {filename}')
         if os.path.exists(filename):
             print(f'Saved {filename}')
-            return MP4(filename, self.width)
+            display(MP4(filename, self.width))
 
 
-class MP4(object):
-    def __init__(self, filename, width=400):
-        self.filename = filename
-        self.width = width
+a = np.array([[2, 1, 3], [3, 2, 1]])
 
-    def _repr_html_(self):
-        with open(self.filename, 'rb') as fd:
-            bin = fd.read()
-            data_url = "data:video/mp4;base64," + b64encode(bin).decode()
-            return f'''
-            <video width="{self.width}" controls >
-            <source src="{data_url}" type="video/mp4" >
-            </video >
-            '''
+
+def draw_np1d(ctx, a, x=0, y=0, width=400, height=300, ensure_square=True, margin=1, rgb=(255, 219, 237), min=None, max=None):
+    max = max or a.max()
+    min = min or a.min()
+    w = len(a)
+    a = a - min
+    dx = width//w
+    a = a * height / (max-min)
+    ca = np.array(rgb)
+    ca = ca / (max-min)
+    for i, dy in enumerate(a):
+        c = (((ca * dy) % 128) + 128).astype(int)
+        ctx.fillStyle = f'rgb({c[0]},{c[1]},{c[2]})'
+        ctx.fillRect(x+i*dx, y+height-dy, dx-margin, dy)
+
+
+def draw_np2d(ctx, a, x=0, y=0, width=400, height=300, ensure_square=True, margin=1, rgb=(0, 128, 0), min=None, max=None):
+    h, w = a.shape
+    min = min or a.min()
+    max = max or a.max()
+    a = a - min
+    dx = width//w
+    dy = height//h
+    if ensure_square:
+        dx = builtins.min(dx, dy)
+        dy = builtins.min(dx, dy)
+    ca = np.array(rgb)
+    ca = ca / (max-min)
+    for wi in range(w):
+        for hi in range(h):
+            c = (ca*a[hi][wi]).astype(int)
+            ctx.fillStyle = f'rgb({c[0]},{c[1]},{c[2]})'
+            ctx.fillRect(x+wi*dx, y+hi*dy, dx-margin, dy-margin)
+
+
+def draw_np(ctx, a, x=0, y=0, width=400, height=300, ensure_square=True, margin=1, rgb=(255, 219, 237), min=None, max=None):
+    if not isinstance(a, np.ndarray):
+        a = np.array(list(a))
+    if len(a.shape) == 2:
+        draw_np2d(ctx, a, x, y, width, height,
+                  ensure_square, margin, rgb, min, max)
+    else:
+        draw_np1d(ctx, a, x, y, width, height,
+                  ensure_square, margin, rgb, min, max)
