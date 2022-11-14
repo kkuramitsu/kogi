@@ -220,7 +220,7 @@ const start_anime = (repeat) => {
         }
     }, 100);
 };
-repeat(10);
+start_anime(10);
 '''
 
 CLICK_JS = '''
