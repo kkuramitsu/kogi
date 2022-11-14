@@ -200,20 +200,27 @@ var frame = [[]];
 '''
 
 ANIME_JS = '''
-var repeat = true;
-var frame_idx = 0;
-const tm = setInterval(()=>{
-    draw(frame[frame_idx]);
-    frame_idx += 1;
-    if(frame_idx >= frame.length) {
-        if(repeat) {
-            frame_idx = 0;
-        }
-        else {
-            frame_idx = frame.length - 1;
-        }
+var tm = undefined;
+const start_anime = (repeat) => {
+    if(tm !== undefined) {
+        clearInterval(tm);
     }
-}, 100);
+    var frame_idx = 0;
+    tm = setInterval(() => {
+        draw(frame[frame_idx]);
+        frame_idx += 1;
+        if(frame_idx >= frame.length) {
+            if(repeat > 0) {
+                frame_idx = 0;
+                repeat -= 1;
+            }
+            else {
+                clearInterval(tm);
+            }
+        }
+    }, 100);
+};
+repeat(10);
 '''
 
 CLICK_JS = '''
@@ -232,9 +239,7 @@ const redraw = (x, y) => {
         const updated = result.data['application/json'].result;
         if(updated.length > 0) {
             frame = updated;
-            frame_idx = 0;
-            repeat = false;
-            draw(updated[0]);
+            start_anime(0);
         }
     })();
 };
@@ -306,6 +311,7 @@ class Canvas(object):
         self.fps = fps
         self.onclick_fn = onclick
         self.filename = 'canvas.mp4'
+        self.displayed = False
         if google_colab:
             google_colab.register_callback(
                 'notebook.click', safe(self.click))
@@ -317,6 +323,9 @@ class Canvas(object):
         return HTML(html_img(image_key, self.images[image_key]))
 
     def getContext(self, target='2d'):
+        if self.displayed:
+            self.displayed = False
+            self.buffers = []
         cb = []
         self.buffers.append(cb)
         ctx = new_context(cb)
@@ -331,6 +340,7 @@ class Canvas(object):
         return [[c.to_json() for c in cb] for cb in self.buffers]
 
     def _repr_html_(self):
+        self.displayed = True
         return make_html(self) + make_js(self, self.asm(), self.fps, self.onclick_fn)
 
     def click(self, x, y):
